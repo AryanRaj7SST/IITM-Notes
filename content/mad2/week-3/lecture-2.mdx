@@ -1,236 +1,468 @@
 ---
 subject: "mad2"
 week: 3
-lecture: 2
-title: "Vue Router: Dynamic Routing, Nested Routes, and Navigation Guards"
-duration: "52 mins"
-overviewSummary: "Details the official routing solution for Vue.js (Vue Router 4), configuring route records, dynamic path parameters (:id), nested parent-child routing (<RouterView>), programmatic navigation, and protecting authenticated paths with Navigation Guards."
+lecture: "screencast-3-1"
+title: "Screencast 3.1: Introduction to Vue.js"
+duration: "[check: duration not in transcript]"
+overviewSummary: "A hands-on screencast that builds a Hello World page into a small Vue 2 app. Sets up the editor, browser and Vue Devtools, includes Vue with a script tag, creates a Vue instance with el and data, and shows reactivity in Devtools. Then adds a button with v-on and methods, conditionals with v-if, v-else-if and v-else, two-way binding with v-model, an array of visitors, v-for loops and a computed count."
 topics:
-  - id: "router-setup"
-    title: "1. Configuring Vue Router and Route Records"
-    keyIdea: "Vue Router integrates into the app instance via createRouter(), mapping path strings to components rendered in <RouterView>."
-  - id: "dynamic-params"
-    title: "2. Dynamic Route Matching and Route Parameters"
-    keyIdea: "Colons denote dynamic segments (e.g. /courses/:code), accessible in components via useRoute().params."
-  - id: "nested-routes"
-    title: "3. Nested Routes and Component Hierarchies"
-    keyIdea: "Complex UIs with persistent layouts use nested routes where child components render into nested <RouterView> outlets."
-  - id: "navigation-guards"
-    title: "4. Navigation Guards and Route Authentication"
-    keyIdea: "router.beforeEach() acts as an authorization middleware, validating tokens or user permissions before allowing route transitions."
+  - id: "setup"
+    title: "1. Setup: editor, browser and Vue Devtools"
+    keyIdea: "You need an editor, Firefox or Chrome, and the Vue Devtools add-on, which adds a Vue tab to the developer tools."
+  - id: "hello-page"
+    title: "2. A plain Hello World page"
+    keyIdea: "Start with a simple HTML page and move the app code into a separate application.js file."
+  - id: "why-vue"
+    title: "3. Plain JavaScript vs Vue, and which Vue"
+    keyIdea: "Setting innerHTML by hand does not scale to a full app, so we use Vue 2 (development build while learning)."
+  - id: "vue-instance"
+    title: "4. The Vue instance: el, data and an expression"
+    keyIdea: "A Vue instance attaches to an element with el, holds its values in data, and the HTML shows them with an expression."
+  - id: "reactivity"
+    title: "5. Vue Devtools and reactivity"
+    keyIdea: "Change a data value and the page updates by itself; you never touch the UI."
+  - id: "events"
+    title: "6. Events: v-on and methods"
+    keyIdea: "v-on plus an event name (such as click) calls a function defined under methods on the Vue object."
+  - id: "counter"
+    title: "7. Counting replies with data"
+    keyIdea: "Add a count value to data, increase it inside the method and show it in the page."
+  - id: "conditionals"
+    title: "8. Conditionals: v-if, v-else-if and v-else"
+    keyIdea: "Show different elements depending on the value of an attribute."
+  - id: "v-model"
+    title: "9. Taking input with v-model (two-way binding)"
+    keyIdea: "v-model binds an input and a data value in both directions."
+  - id: "visitors"
+    title: "10. Storing visitors in an array"
+    keyIdea: "Push each name into a visitors array and clear the input so the user sees it was used."
+  - id: "loops"
+    title: "11. Looping with v-for"
+    keyIdea: "v-for repeats an element once for each item in an array."
+  - id: "computed"
+    title: "12. Computed properties"
+    keyIdea: "A computed attribute is calculated from other data (here the length of visitors), so values never go out of sync."
+  - id: "recap"
+    title: "13. Recap"
+    keyIdea: "The Vue object, data, v-on, v-model, conditionals and loops make up the basics of Vue."
 projectTree: |
-  vue-router-app/
-  ├── src/
-  │   ├── main.js
-  │   ├── router/
-  │   │   └── index.js
-  │   └── views/
-  │       ├── HomeView.vue
-  │       ├── CourseDetailView.vue
-  │       └── LoginView.vue
-  ├── package.json
-  └── vite.config.js
+  vue-hello/
+  ├── application.html
+  └── application.js
 codeSnippets:
-  - title: "Vue Router 4 Configuration with Authentication Guard"
-    filename: "vue-router-app/src/router/index.js"
+  - title: "Rudimentary JavaScript way to show a message [untested]"
+    filename: "vue-hello/application.js (plain JavaScript version)"
     language: "javascript"
-    tested: true
+    tested: false
     code: |
-      import { createRouter, createWebHistory } from 'vue-router';
-      import HomeView from '../views/HomeView.vue';
-
-      const routes = [
-        {
-          path: '/',
-          name: 'home',
-          component: HomeView
-        },
-        {
-          path: '/courses/:code',
-          name: 'course-detail',
-          // Lazy-loaded route component
-          component: () => import('../views/CourseDetailView.vue'),
-          props: true,
-          meta: { requiresAuth: true }
-        },
-        {
-          path: '/login',
-          name: 'login',
-          component: () => import('../views/LoginView.vue')
-        }
-      ];
-
-      const router = createRouter({
-        history: createWebHistory(),
-        routes
-      });
-
-      // Global Navigation Guard
-      router.beforeEach((to, from, next) => {
-        const isAuthenticated = !!localStorage.getItem('user_token');
-
-        if (to.meta.requiresAuth && !isAuthenticated) {
-          // Redirect unauthenticated user to login screen
-          next({ name: 'login', query: { redirect: to.fullPath } });
-        } else {
-          // Allow navigation
-          next();
-        }
-      });
-
-      export default router;
+      let message = 'Hello world';
+      document.getElementById('app').innerHTML = message;
     explanations:
-      - lines: "8-21"
-        explanation: "Declares routes array; /courses/:code defines dynamic parameter and marks route with meta: { requiresAuth: true }."
-      - lines: "16"
-        explanation: "props: true passes route.params directly as component props, decoupling components from the router object."
-      - lines: "30-41"
-        explanation: "router.beforeEach checks authentication status and redirects to login with return query parameter."
+      - lines: "1"
+        explanation: "The message we want to show."
+      - lines: "2"
+        explanation: "Gets the div whose id is app and sets its inner HTML to the message. This works for a small message but becomes unmanageable for a whole application inside the app div."
     output: |
-      Navigating to /courses/mad2 without a token immediately intercepts the transition and redirects to /login?redirect=/courses/mad2.
+      The page shows: Hello world
+  - title: "Minimal Vue page [untested]"
+    filename: "vue-hello/application.html (first Vue version)"
+    language: "html"
+    tested: false
+    code: |
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Hello world</title>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+      </head>
+      <body>
+        <div id="app">{{ message }}</div>
+        <script src="application.js"></script>
+      </body>
+      </html>
+    explanations:
+      - lines: "5"
+        explanation: "Includes Vue 2 (development version) with a script tag."
+      - lines: "8"
+        explanation: "The div with id app is the element Vue attaches to. The expression {{ message }} takes its value from the data of the Vue instance. Without this expression the message does not show, even though el points at the div."
+      - lines: "9"
+        explanation: "application.js is included at the bottom, after the page has loaded."
+    output: |
+      Together with the next snippet, the page shows: Hello world
+  - title: "Minimal Vue app [untested]"
+    filename: "vue-hello/application.js (first Vue version)"
+    language: "javascript"
+    tested: false
+    code: |
+      var app = new Vue({
+        el: '#app',
+        data: {
+          message: 'Hello world'
+        }
+      });
+    explanations:
+      - lines: "1"
+        explanation: "Creates an app by instantiating the Vue class with a configuration object."
+      - lines: "2"
+        explanation: "el (element) takes the id of our app element, written #app."
+      - lines: "3-5"
+        explanation: "data holds the values used in the app. Here the message is Hello world, which moved out of the HTML."
+    output: |
+      The page shows: Hello world
+  - title: "Final page with button, input, conditionals and loop [untested]"
+    filename: "vue-hello/application.html"
+    language: "html"
+    tested: false
+    code: |
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Hello world</title>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+      </head>
+      <body>
+        <div id="app">
+          <p>{{ message }}</p>
+          <input type="text" v-model="visitor_name" placeholder="Your name">
+          <button v-on:click="say_hi">Say hi</button>
+          <p v-if="count == 0">No replies yet</p>
+          <p v-else-if="count > 3">You are very popular</p>
+          <p v-else>Number of replies: {{ count }}</p>
+          <ul>
+            <li v-for="name in visitors">{{ name }}</li>
+          </ul>
+        </div>
+        <script src="application.js"></script>
+      </body>
+      </html>
+    explanations:
+      - lines: "9"
+        explanation: "The message is now wrapped in a p tag; it still works."
+      - lines: "10"
+        explanation: "A text input bound with v-model to the data value visitor_name (two-way binding)."
+      - lines: "11"
+        explanation: "A standard button. v-on:click names the event (click) and the handler (say_hi), a method of the Vue object."
+      - lines: "12-14"
+        explanation: "Conditionals on count: v-if shows No replies yet when count is 0, v-else-if shows You are very popular above the threshold, and v-else shows Number of replies otherwise."
+      - lines: "15-17"
+        explanation: "v-for creates one li for each name in the visitors array and prints the name."
+    output: |
+      At first: Hello World, an input, a Say hi button and No replies yet.
+      After each name is entered and Say hi is clicked: the message becomes hi, the name is added to the list and the input is cleared.
+      The reply message changes to Number of replies: followed by the count, and once the count is above the threshold it shows You are very popular.
+  - title: "Final Vue app with methods and a computed count [untested]"
+    filename: "vue-hello/application.js"
+    language: "javascript"
+    tested: false
+    code: |
+      var app = new Vue({
+        el: '#app',
+        data: {
+          message: 'Hello World',
+          visitor_name: '',
+          visitors: []
+        },
+        methods: {
+          say_hi: function () {
+            this.message = 'hi';
+            this.visitors.push(this.visitor_name);
+            this.visitor_name = '';
+          }
+        },
+        computed: {
+          count: function () {
+            return this.visitors.length;
+          }
+        }
+      });
+    explanations:
+      - lines: "3-7"
+        explanation: "data: the message, the name typed into the input (starts empty) and the array of visitors (starts empty). The separate count value from the earlier version was removed."
+      - lines: "8-14"
+        explanation: "methods holds the function say_hi. Inside it this refers to the Vue object. It sets message to hi, pushes the typed name into visitors and resets visitor_name to empty so the input clears."
+      - lines: "15-19"
+        explanation: "computed: count is calculated as the length of the visitors array. It always matches the list and no longer has to be incremented."
+    output: |
+      Say hi sets the message to hi. Each click adds the typed name to visitors; the count follows automatically.
+      The visitors array can be seen in the Vue tab of the developer tools by selecting root.
+  - title: "Changing data from the browser console [untested]"
+    filename: "Browser console (not a project file)"
+    language: "javascript"
+    tested: false
+    code: |
+      app.message = 'Hello Thej'
+    explanations:
+      - lines: "1"
+        explanation: "app is the Vue instance created in application.js. Assigning to app.message changes the data value, and the page updates immediately."
+    output: |
+      The text on the page changes to Hello Thej, and the value also changes in the Vue Devtools panel.
 selfTest:
-  - question: "Why is props: true recommended when defining dynamic routes like '/courses/:code'?"
-    answer: "props: true automatically passes route params as props to the component. This decouples the view component from $route or useRoute(), making it reusable anywhere and easy to unit test."
-    explanation: "Without props: true, the component must tightly bind to this.$route.params.code or useRoute().params.code."
-  - question: "What happens if a user navigates from '/courses/mad2' to '/courses/mlt' when both use the same component?"
-    answer: "By default, Vue reuses the existing component instance for performance and does NOT trigger lifecycle hooks like onMounted() again."
-    explanation: "To detect the change, watch route.params or use a watcher: watch(() => route.params.code, (newCode) => fetchCourse(newCode))."
-  - question: "What is the difference between createWebHistory() and createWebHashHistory()?"
-    answer: "createWebHistory() uses the standard HTML5 History API producing clean URLs (/courses), but requires server rewrite rules. createWebHashHistory() uses URL hashes (/#/courses) which work without any server configuration."
-    explanation: "For production modern web apps, createWebHistory() is the preferred standard."
-  - question: "What parameters do global navigation guards receive in Vue Router?"
-    answer: "They receive 'to' (target RouteLocation), 'from' (current RouteLocation), and an optional 'next' callback (or can return a boolean / route path directly)."
-    explanation: "In modern Vue Router 4, returning false cancels navigation, and returning a path string redirects without needing next()."
+  - question: "Why is Vue used instead of setting innerHTML directly with document.getElementById?"
+    answer: "Setting innerHTML by hand is a rudimentary way that works for a simple message, but it becomes unmanageable for a complete application inside the app div. Vue gives a better structure."
+    explanation: "With Vue you declare which values the page uses and Vue keeps the page up to date."
+  - question: "What are el and data in new Vue, and what is needed in the HTML for the message to show?"
+    answer: "el takes the id of the element the Vue instance is attached to (#app). data holds the values used in the app (such as message). The HTML needs an expression, such as message in double curly brackets, so that the page shows the value from data."
+    explanation: "Setting el alone does not show the message; the HTML has not been told to use the attribute."
+  - question: "What is reactivity, and how does the lecture show it?"
+    answer: "Vue looks at the values in data and, as soon as one changes, it updates the page. In the demo, app.message was changed in the console and edited in the Vue tab of Devtools, and the page updated at once without changing any UI code. Refreshing the page returns to the original value."
+    explanation: "You only change the data; the UI is updated automatically."
+  - question: "How do you handle a button click in Vue?"
+    answer: "Add v-on with the event name, for example v-on:click, and the handler name. Define the handler in the methods attribute of the Vue object (for example say_hi as an anonymous function) and use this to refer to the data, such as this.message."
+    explanation: "Without a defined method the page throws an error, as it did before say_hi was added."
+  - question: "What is the difference between one-way binding and v-model?"
+    answer: "In one-way binding, changes in data go to the HTML only. v-model binds from the HTML input back into the data as well, so typing a name sets the data value (visitor_name) and the visitor name can be read in the Vue tab."
+    explanation: "This is two-way binding."
+  - question: "Why change count from a data value to a computed property?"
+    answer: "A separately incremented count can go out of sync with the visitors array (for example if a name is removed from visitors). A computed count returns the length of visitors, so both always agree."
+    explanation: "Computed is useful when an attribute depends on one or more other attributes."
 resources:
-  - title: "Vue Router Official Documentation"
-    url: "https://router.vuejs.org/guide/"
+  - title: "Vue Devtools"
+    url: "https://devtools.vuejs.org/"
+    type: "Official Site"
+    description: "Install page for the Chrome and Firefox add-ons mentioned in the screencast."
+    verified: false
+  - title: "Vue 2 documentation"
+    url: "https://v2.vuejs.org/"
     type: "Official Reference"
-    description: "Definitive guide on dynamic routing, nested routes, and navigation guards."
-    verified: true
-  - title: "Vue Router: Navigation Guards Guide"
-    url: "https://router.vuejs.org/guide/advanced/navigation-guards.html"
+    description: "Vue 2 guide and installation (development and production builds)."
+    verified: false
+  - title: "Vue 2: Event handling"
+    url: "https://v2.vuejs.org/v2/guide/events.html"
     type: "Official Reference"
-    description: "Covers global before guards, per-route guards, and in-component guards."
-    verified: true
+    description: "v-on and methods."
+    verified: false
+  - title: "Vue 2: Conditional rendering"
+    url: "https://v2.vuejs.org/v2/guide/conditional.html"
+    type: "Official Reference"
+    description: "v-if, v-else-if and v-else."
+    verified: false
+  - title: "Vue 2: List rendering"
+    url: "https://v2.vuejs.org/v2/guide/list.html"
+    type: "Official Reference"
+    description: "v-for."
+    verified: false
+  - title: "Vue 2: Form input bindings"
+    url: "https://v2.vuejs.org/v2/guide/forms.html"
+    type: "Official Reference"
+    description: "v-model."
+    verified: false
+  - title: "Vue 2: Computed properties and watchers"
+    url: "https://v2.vuejs.org/v2/guide/computed.html"
+    type: "Official Reference"
+    description: "Computed properties."
+    verified: false
 ---
 
-<TopicSection id="router-setup" title="1. Configuring Vue Router and Route Records">
+<TopicSection id="setup" title="1. Setup: editor, browser and Vue Devtools">
 
 <KeyIdea>
-Vue Router synchronizes browser navigation with component rendering via the `<RouterLink>` navigation element and the `<RouterView>` viewport container.
+You need an editor, Firefox or Chrome, and the Vue Devtools add-on, which adds a Vue tab to the developer tools.
 </KeyIdea>
 
-In modern Vue applications, the router is created and registered in `main.js`:
-
-```javascript
-import { createApp } from 'vue';
-import App from './App.vue';
-import router from './router';
-
-const app = createApp(App);
-app.use(router);
-app.mount('#app');
-```
-
-In your root template (`App.vue`), place `<RouterLink>` for navigation anchors and `<RouterView>` where matching views should mount:
-
-```html
-<nav>
-  <RouterLink to="/">Home</RouterLink>
-  <RouterLink to="/courses">Courses</RouterLink>
-</nav>
-<main>
-  <RouterView />
-</main>
-```
-
-Vue Router automatically applies active CSS classes (`router-link-active`) to links matching the current route.
+- Goal: set up and run a Hello World Vue application, as an introduction to the basics of Vue.
+- You need an editor (VSCodium, Sublime Text or Gedit; the speaker uses Sublime Text), a browser (Firefox or Chrome) and Vue Devtools.
+- Vue is a JavaScript framework. **Vue Devtools** is a Chrome or Firefox add-on used for debugging throughout the course.
+- Install it from devtools.vuejs.org using the Google Chrome extension or the Firefox extension link. It then shows under extensions and themes in the browser settings.
+- To check it is enabled, right click on any page, choose Inspect, and look for the **Vue** tab in the developer tools. The speaker also runs it in a private window.
 
 </TopicSection>
 
 ---
 
-<TopicSection id="dynamic-params" title="2. Dynamic Route Matching and Route Parameters">
+<TopicSection id="hello-page" title="2. A plain Hello World page">
 
 <KeyIdea>
-Dynamic segments marked with a colon (`:`) match variable path segments, making it easy to display dynamic resources from a single template.
+Start with a simple HTML page and move the app code into a separate application.js file.
 </KeyIdea>
 
-```javascript
-// Route definition
-{ path: '/students/:rollNo', component: StudentProfile, props: true }
-```
-
-When a user visits `/students/21F1000123`, the component receives `rollNo="21F1000123"` directly as a prop:
-
-```html
-<script setup>
-const props = defineProps({
-  rollNo: String
-});
-</script>
-
-<template>
-  <h2>Profile for Student: {{ rollNo }}</h2>
-</template>
-```
-
-Using `props: true` ensures the component remains modular and independent of routing implementation details.
+- Create a simple HTML file (`application.html`), give it the title Hello world and add a div with the text Hello world. Open it locally and refresh to see it.
+- Add a second file `application.js` where all the application code will go.
+- Include it with a `script` tag (`src="application.js"`) at the bottom of the page, so it loads once the whole page is loaded. This is just including a JavaScript file in the HTML.
 
 </TopicSection>
 
 ---
 
-<TopicSection id="nested-routes" title="3. Nested Routes and Component Hierarchies">
+<TopicSection id="why-vue" title="3. Plain JavaScript vs Vue, and which Vue">
 
 <KeyIdea>
-Nested routes model nested user interfaces where parent shells (like sidebars and tabs) persist while interior content swaps dynamically.
+Setting innerHTML by hand does not scale to a full app, so we use Vue 2 (development build while learning).
 </KeyIdea>
 
-Nested routes are declared using the `children` array:
-
-```javascript
-const routes = [
-  {
-    path: '/dashboard',
-    component: DashboardLayout,
-    children: [
-      { path: '', component: DashboardOverview }, // default child
-      { path: 'grades', component: DashboardGrades },
-      { path: 'settings', component: DashboardSettings }
-    ]
-  }
-];
-```
-
-When navigating to `/dashboard/grades`, `DashboardLayout` renders its outer shell, and `DashboardGrades` renders inside the `<RouterView>` located inside `DashboardLayout`.
+- Suppose the message should live in JavaScript and be displayed in the div. One option: give the div an id (`app`) and use `document.getElementById('app').innerHTML` set to the message.
+- This is a very rudimentary way and very limited. It is fine for one simple message, but if the whole application lives inside the app div it becomes unmanageable. That is where Vue.js comes in.
+- There are two versions, Vue 2 and Vue 3. Vue 2 is the most used currently and is the one used in this course (with small changes Vue 3 could be used too).
+- Include Vue from its Get started page. The **development version** has more logs and console logs, so debugging is easier. For production use the minimised, optimised version. The speaker copies the development script tag into the page.
 
 </TopicSection>
 
 ---
 
-<TopicSection id="navigation-guards" title="4. Navigation Guards and Route Authentication">
+<TopicSection id="vue-instance" title="4. The Vue instance: el, data and an expression">
 
 <KeyIdea>
-Navigation guards intercept route transitions, allowing developers to enforce authentication, verify permissions, and fetch critical data before views load.
+A Vue instance attaches to an element with el, holds its values in data, and the HTML shows them with an expression.
 </KeyIdea>
 
-Vue Router provides guards at three levels:
-1. **Global Guards**: `router.beforeEach()` executes on every single route transition across the entire app.
-2. **Per-Route Guards**: `beforeEnter: (to, from) => { ... }` defined directly on specific route records.
-3. **In-Component Guards**: `onBeforeRouteLeave` and `onBeforeRouteUpdate` hooks inside component `<script setup>`.
-
-```javascript
-// Modern Vue Router 4 returning boolean or route location
-router.beforeEach(async (to) => {
-  const isAuth = checkLoginToken();
-  if (to.meta.requiresAuth && !isAuth) {
-    return { name: 'login' }; // Cancels and redirects
-  }
-});
-```
-
-Using `meta` fields is the standard way to declare metadata like required permissions, page titles, or breadcrumbs.
+- Create the app by instantiating the Vue class: an app called `app` created with `new Vue`.
+- Vue takes parameters; the two most important are:
+  - `el` (element): the id of our app, written `#app`.
+  - `data`: the data used in the app. Here `message` with the value Hello world, moved out of the HTML.
+- Loading the page now still shows nothing. Although `el` is tied to the div, the HTML has not been told to use this attribute.
+- Add an **expression** in the HTML (similar to a template): the message in double curly brackets. The id app is attached to the Vue instance through `el`, and the expression takes its value from the `message` attribute in `data`. Now Hello world shows.
 
 </TopicSection>
 
+---
+
+<TopicSection id="reactivity" title="5. Vue Devtools and reactivity">
+
+<KeyIdea>
+Change a data value and the page updates by itself; you never touch the UI.
+</KeyIdea>
+
+- Inspect the page and open the Vue tab: it shows the root element, an instance of the Vue class associated with our div, with its data and `message` Hello world.
+- In the console `app` is available. Setting `app.message` to Hello Thej changes the value on the page and in the Vue tab at once.
+- You can also edit the value in the Vue tab (the speaker types Hari and saves) and the page changes. Devtools gives direct access to components, attributes, events and so on.
+- This is **reactivity**. Vue looks at the values, and as soon as the value of `message` changes it reacts and updates the page, instantly.
+- Refreshing returns to the original message. You only update the data and the UI follows; no change to the UI is needed. This is the most important part of using Vue.
+
+</TopicSection>
+
+---
+
+<TopicSection id="events" title="6. Events: v-on and methods">
+
+<KeyIdea>
+v-on plus an event name (such as click) calls a function defined under methods on the Vue object.
+</KeyIdea>
+
+- Put the message in a `p` tag (it still works) and write it as Hello World. Add a standard `button` labelled Say hi. At first, clicking it does nothing.
+- To act on an event we need an **event handler**. Normally one writes onclick (as in the previous session); in Vue, use `v-on`, followed by the event name to handle, here `click`, and the handler name (`say_hi`).
+- Refreshing and clicking throws an error, because `say_hi` is not defined yet.
+- Like `data`, the Vue object can have a `methods` attribute. Define the first method `say_hi` as an anonymous function.
+- Inside it, set the message to hi using `this.message`. `this` is used because the message belongs to the same object. Now clicking gives hi.
+- What we learned: add a button, attach a handler with `v-on` and `click`, and implement it in the `methods` of the root Vue object. There can be many methods in one Vue object, called from various places.
+- Other events exist too, such as mouse over, which could be added and handled in the same way.
+
+</TopicSection>
+
+---
+
+<TopicSection id="counter" title="7. Counting replies with data">
+
+<KeyIdea>
+Add a count value to data, increase it inside the method and show it in the page.
+</KeyIdea>
+
+- The lecture calls this part "attribute binding" (making the messaging easier) [check: what is shown is displaying a data value in the page, not binding an HTML attribute].
+- Goal: besides setting the message to hi, count how many hi's were said.
+- Define another data point `count` starting at 0, and show "number of replies" with the count in the page.
+- Clicking Say hi gives hi but the zero does not change, because nothing increments the count. Add `this.count` incremented in `say_hi` (add one to it). Now it increases on each click.
+- We simply added another attribute, count, incremented it and referred to it in the page.
+
+</TopicSection>
+
+---
+
+<TopicSection id="conditionals" title="8. Conditionals: v-if, v-else-if and v-else">
+
+<KeyIdea>
+Show different elements depending on the value of an attribute.
+</KeyIdea>
+
+- Goal: show "No replies yet" when the count is 0, and the number of replies when it is more than 0. With two `p` tags and no condition, both show.
+- Vue has conditionals based on attributes: `v-if` with the condition (count equal to 0) on the first, and `v-else` (spelled e-l-s-e) on the second.
+- Now it shows No replies yet; after Say hi it shows the new text. While count was 0 the first was used, and once it passed 0 the second was used.
+- For fun add another condition with `v-else-if`: when the count is above a threshold show "You are very popular"; until then show the number of replies. The speaker first tries 5, and later uses 3 for the demo [check: threshold spoken as 5, then "greater than two ... make it three"].
+- In the demo: No replies yet, then hi, hi, hi, and once the threshold is passed, You are very popular. This is how conditional statements are used in Vue.
+
+</TopicSection>
+
+---
+
+<TopicSection id="v-model" title="9. Taking input with v-model (two-way binding)">
+
+<KeyIdea>
+v-model binds an input and a data value in both directions.
+</KeyIdea>
+
+- Goal: find out who is saying hi. Add an `input` of type text with the placeholder Your name.
+- Typing a name and clicking Say hi does nothing with the name yet.
+- Until now there was **one-way binding**: when data changed, the HTML changed. There was no binding from the HTML into data.
+- That is done with `v-model`, which binds the other way, i.e. **two-way binding**. Bind the input to `visitor_name` and add it to `data`, empty by default.
+- Check in Devtools: after typing Rajesh and clicking, the value of `visitor_name` (checked through `app` in the console and the Vue tab) is Rajesh.
+- The speaker also shows the visitor name in the page (a "who said hi to you" p tag showing Rajesh said hi), then removes it later.
+
+</TopicSection>
+
+---
+
+<TopicSection id="visitors" title="10. Storing visitors in an array">
+
+<KeyIdea>
+Push each name into a visitors array and clear the input so the user sees it was used.
+</KeyIdea>
+
+- We do not want the name to show as soon as it is typed; we want it to count when Say hi is clicked.
+- Add another data variable `visitors`, an array. In `say_hi`, `this.visitors.push(this.visitor_name)` adds the name to the array.
+- Test: Raj, Thej and Krishna each say hi. In the Vue tab, root shows the visitors array containing all three names, and `visitor_name` shows the latest, Krishna.
+- Clear the input after each click by setting `this.visitor_name` back to empty, so people know it was used.
+- **Bug:** the first attempt did not clear because the speaker typed a comma instead of a dot (`this.visitor_name` needs the dot). After the fix, the input clears after each click, while the array in the Vue tab still holds every name (Raj, Thej, Abdul, then Fatima).
+- Now there are three replies and their names are captured; the next step is to show the names.
+
+</TopicSection>
+
+---
+
+<TopicSection id="loops" title="11. Looping with v-for">
+
+<KeyIdea>
+v-for repeats an element once for each item in an array.
+</KeyIdea>
+
+- Create an unordered list (`ul`). We want as many `li` items as there are names in `visitors`.
+- On the `li`, add `v-for` with `name in visitors`. It loops over `visitors` and each name appears in `name`, one by one. Print `name` inside the `li` with an expression.
+- In the demo each name is added below the list as it is added to `visitors`, e.g. Rajat, Rani, Maya, Rajesh. Adding Fatima shows her in the list and also moves the message to You are very popular.
+- Removing a name from the data by another route (Devtools) removes it from the list too. The count does not follow, because `count` is a separate value incremented on each click [check: the speech here is unclear ("this will not run, so that is how it is two-way"); this is my reading].
+
+</TopicSection>
+
+---
+
+<TopicSection id="computed" title="12. Computed properties">
+
+<KeyIdea>
+A computed attribute is calculated from other data (here the length of visitors), so values never go out of sync.
+</KeyIdea>
+
+- To make the message follow the names, do not depend on a separately kept count. Take the count from `visitors` instead, so that you do not depend on one and not on the other.
+- Remove `count` from `data` (and the increment) and declare `count` under **computed**, as a function that returns the length of the array: `this.visitors.length`. The attribute is computed and not stored, so both are in sync.
+- First try: the replies showed the wrong value. There was a spelling mistake in `length`, which the speaker fixed. The speaker also changed the threshold (set to three).
+- Test: Raj, Thej, Rahim, Shweta. The page now follows the computed count and not a count we keep ourselves.
+- Computed attributes are very useful when the value of an attribute depends on multiple other attributes; many calculations can be done in them.
+
+</TopicSection>
+
+---
+
+<TopicSection id="recap" title="13. Recap">
+
+<KeyIdea>
+The Vue object, data, v-on, v-model, conditionals and loops make up the basics of Vue.
+</KeyIdea>
+
+| Feature | Used for in this screencast |
+|---|---|
+| `new Vue` with `el` and `data` | Create the Vue object and set values |
+| `methods` with `v-on` | Bind events such as click to functions |
+| `v-model` | Two-way data binding for the input |
+| `v-if`, `v-else-if`, `v-else` | Conditionals |
+| `v-for` | Loops over an array |
+| `computed` | Value calculated from other data (the count) |
+
+- This completes the basics of Vue.js. The next session covers some advanced features of Vue.js.
+
+> **Added by tutor:** the full `application.html` and `application.js` are reconstructed from the narration (names `say_hi` and `visitor_name`, the placeholder, the Vue 2 link, the exact message text). They are `[untested]`. The resource links are not from the transcript.
+
+</TopicSection>

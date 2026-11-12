@@ -2,177 +2,928 @@
 subject: "mad2"
 week: 3
 lecture: 1
-title: "Single Page Application (SPA) Architecture and Client-Side Routing"
-duration: "47 mins"
-overviewSummary: "Deconstructs the architectural shift from traditional Multi-Page Applications (MPAs) to Single Page Applications (SPAs), browser History API (pushState, popstate), client-side virtual routing, and performance trade-offs."
+title: "Frontend Implementation: State, Declarative UI and Vue.js"
+duration: "[check: not stated; last timestamp is about 2 hrs 2 mins]"
+overviewSummary: "Introduces the frontend (UI and UX), what we want from it, imperative vs declarative programming, and the idea that UI = f(state). Separates system, application and ephemeral state, and shows how stateless HTTP forces a choice about where state lives. Four Tic-Tac-Toe implementations (Flask with server state, vanilla JavaScript with client state, basic Vue, composed Vue components) motivate Vue.js, reactivity and computed properties. Ends with a long Q&A."
 topics:
-  - id: "mpa-vs-spa"
-    title: "1. Traditional MPAs vs Single Page Applications (SPAs)"
-    keyIdea: "MPAs reload full HTML pages from the server on every link click; SPAs load a single HTML shell and dynamically re-render views in the browser."
-  - id: "history-api"
-    title: "2. The HTML5 History API: pushState and popstate"
-    keyIdea: "HTML5 History methods change the browser URL bar and session history without triggering a full network page refresh."
-  - id: "client-side-routing"
-    title: "3. How Client-Side Routers Work Under the Hood"
-    keyIdea: "A client router intercepts URL changes, parses route parameters, and mounts the corresponding component into a viewport outlet."
-  - id: "tradeoffs"
-    title: "4. Trade-offs: Initial Load, SEO, and Server Fallback"
-    keyIdea: "SPAs deliver smooth desktop-like navigation but require larger initial JavaScript bundles and specialized server fallback configuration."
+  - id: "frontend-ui-ux"
+    title: "1. Frontend, UI and UX"
+    keyIdea: "The frontend is the user-facing part of an app; a good UI is an effective one, not necessarily a fancy one."
+  - id: "requirements"
+    title: "2. Frontend requirements and desirable aspects"
+    keyIdea: "Keep logic and data on the server; the frontend should look good, react quickly and adapt to different screens."
+  - id: "imperative-declarative"
+    title: "3. Imperative vs declarative programming"
+    keyIdea: "Imperative code gives the steps; declarative code states the result you want and lets a system work out how."
+  - id: "state-equation"
+    title: "4. State and UI = f(state)"
+    keyIdea: "State is the memory of the system; given the state, the user interface is uniquely determined."
+  - id: "kinds-of-state"
+    title: "5. System, application and UI (ephemeral) state"
+    keyIdea: "System state is everything stored; application state is what one user sees; UI state is short-lived display detail."
+  - id: "http-state"
+    title: "6. Keeping state over stateless HTTP"
+    keyIdea: "HTTP is stateless, so state must live either mostly in the client or mostly on the server; real apps sit in between."
+  - id: "ttt-problem"
+    title: "7. Problem statement: Tic-Tac-Toe and why Vue.js"
+    keyIdea: "A simple game is implemented four ways to show where state lives and to motivate Vue."
+  - id: "qa-ui-perf"
+    title: "8. Q&A: UI design, load time, bandwidth and scripts"
+    keyIdea: "There is no single rule for layout or performance; judge by the real experience of your users."
+  - id: "qa-stateful"
+    title: "9. Q&A: why not use stateful protocols everywhere?"
+    keyIdea: "Connections break often, and stateful protocols cannot cope cheaply with that."
+  - id: "demo-flask"
+    title: "10. Demo 1: Tic-Tac-Toe with Flask (server-side state)"
+    keyIdea: "All state is in global variables on the server; the client is just a set of links."
+  - id: "demo-vanilla"
+    title: "11. Demo 2: Tic-Tac-Toe with vanilla JavaScript (client-side state)"
+    keyIdea: "State lives in the browser and the page is updated imperatively; reloading loses the state."
+  - id: "qa-async"
+    title: "12. Q&A: asynchronous JavaScript"
+    keyIdea: "Asynchronous behaviour was in JavaScript from the start; background data fetching became popular around 2004."
+  - id: "demo-vue-basic"
+    title: "13. Demo 3: basic Vue (reactivity and computed properties)"
+    keyIdea: "Vue watches data and recomputes dependent values and the page automatically."
+  - id: "demo-vue-components"
+    title: "14. Demo 4: composed components in idiomatic Vue"
+    keyIdea: "A self-contained board component can be reused any number of times, each copy with its own state."
+  - id: "qa-vue-basics"
+    title: "15. Q&A: Vue basics"
+    keyIdea: "Vue is a JavaScript library that hides the repetitive work of tracking changes and redrawing the page."
+  - id: "qa-vue-state"
+    title: "16. Q&A: component state, server state and two-way binding"
+    keyIdea: "Each component instance has its own data; v-model binds in both directions."
 projectTree: |
-  vanilla-spa/
-  ├── index.html
-  └── router.js
+  tictactoe/
+  ├── flask-version/
+  │   ├── app.py
+  │   └── templates/
+  │       ├── tic.html
+  │       └── end.html
+  ├── vanilla-version/
+  │   ├── index.html
+  │   └── tictactoe.js
+  ├── vue-basic/
+  │   ├── index.html
+  │   └── tictactoe-vue.js
+  └── vue-components/
+      ├── index2.html
+      └── ttt-comp.js
 codeSnippets:
-  - title: "Minimal Vanilla HTML5 History API Router"
-    filename: "vanilla-spa/router.js"
-    language: "javascript"
-    tested: true
+  - title: "Flask Tic-Tac-Toe, state on the server [untested]"
+    filename: "tictactoe/flask-version/app.py"
+    language: "python"
+    tested: false
     code: |
-      "use strict";
+      from flask import Flask, render_template, redirect
 
-      // View definitions
-      const routes = {
-        "/": "<h2>Home Dashboard</h2><p>Welcome to IITM BS Degree Portal.</p>",
-        "/courses": "<h2>Courses</h2><p>List of enrolled courses: MLT, MAD 2, BDM.</p>",
-        "/profile": "<h2>User Profile</h2><p>Student Roll No: 21F1000123</p>"
-      };
+      board = [0] * 9
+      next = 1 # 1 corresponds to X, -1 corresponds to O
 
-      function navigateTo(url) {
-        // Push state without reloading the page
-        history.pushState(null, null, url);
-        renderView();
+      app = Flask(__name__, static_folder="static", template_folder="templates")
+
+      def check_state(board):
+          patterns = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
+                      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                      [0, 4, 8], [2, 4, 6]]
+          for p in patterns:
+              s = sum(board[i] for i in p)
+              if s == 3:
+                  return 1
+              if s == -3:
+                  return -1
+          if 0 in board:
+              return 0
+          return 2
+
+      @app.route("/")
+      def homepage():
+          return render_template("tic.html", board=board, next=next)
+
+      @app.route("/set/<int:i>")
+      def set_value(i):
+          global board, next
+          board[i] = next
+          next = -next
+          r = check_state(board)
+          if r == 0:
+              return redirect("/")
+          return render_template("end.html", board=board, r=r)
+
+      @app.route("/new")
+      def new_game():
+          global board, next
+          board = [0] * 9
+          next = 1
+          return redirect("/")
+
+      if __name__ == "__main__":
+          app.run()
+    explanations:
+      - lines: "3-4"
+        explanation: "These two lines are exact from the lecture. board is a list of nine zeros ([0] * 9 is a shortcut for [0, 0, ...]); next holds whose turn it is. Together they are the application state. They are globals so that several routes can use them."
+      - lines: "6"
+        explanation: "Creates the app with a static folder (images) and a template folder."
+      - lines: "8-20"
+        explanation: "check_state tries all eight winning patterns (3 rows, 3 columns, 2 diagonals) and sums the board values at those indices. Sum 3 returns 1 (X won), sum -3 returns -1 (O won). Otherwise it returns 0 if any entry is still 0 (game in progress), else 2 (draw)."
+      - lines: "22-24"
+        explanation: "The / route defines homepage, which renders tic.html and passes in board and next."
+      - lines: "26-34"
+        explanation: "set_value(i) is the /set/i route. It declares board and next as global because it changes them (otherwise it would create local variables). It sets board[i] to next, toggles next with next = -next (possible because X is 1 and O is -1), then calls check_state. If r is 0 it redirects to /; otherwise it renders end.html."
+      - lines: "36-41"
+        explanation: "The /new route (new_game) resets board and next and redirects to /."
+    output: |
+      Open the app in a browser: the heading shows Next move: X and every empty square is a link to /set/0 ... /set/8.
+      Clicking a square puts X or O there and the square stops being a link.
+      When three line up: Congratulations! and a Play again link.
+      Reloading, or opening an incognito window, shows the same board (state is on the server).
+  - title: "Vanilla JavaScript page, state on the client [untested]"
+    filename: "tictactoe/vanilla-version/index.html"
+    language: "html"
+    tested: false
+    code: |
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Tic-Tac-Toe</title>
+      </head>
+      <body>
+        <span id="next"></span>
+        <table border="1">
+          <tr><td><span id="td0"></span></td><td><span id="td1"></span></td><td><span id="td2"></span></td></tr>
+          <tr><td><span id="td3"></span></td><td><span id="td4"></span></td><td><span id="td5"></span></td></tr>
+          <tr><td><span id="td6"></span></td><td><span id="td7"></span></td><td><span id="td8"></span></td></tr>
+        </table>
+        <script src="tictactoe.js"></script>
+      </body>
+      </html>
+    explanations:
+      - lines: "7"
+        explanation: "An empty span with id next. It holds no data; the script fills it in."
+      - lines: "8-12"
+        explanation: "The full 3x3 table is written out, each cell holding an empty span with id td0 to td8. There is no logic and no content here."
+      - lines: "13"
+        explanation: "The script tag at the bottom of the body does all the work. With JavaScript turned off the page shows nothing."
+    output: |
+      Without the script running the page is blank. With it, the page shows Next move: X and an empty 3x3 grid.
+  - title: "Vanilla JavaScript game logic [untested]"
+    filename: "tictactoe/vanilla-version/tictactoe.js"
+    language: "javascript"
+    tested: false
+    code: |
+      let board = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+      let next = 1;
+      let gstate = 0;
+
+      function reset_board() {
+        board = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        next = 1;
+        gstate = 0;
+        update_page();
       }
 
-      function renderView() {
-        const path = window.location.pathname;
-        const app = document.getElementById("content-outlet");
-        app.innerHTML = routes[path] || "<h2>404 Not Found</h2><p>Page does not exist.</p>";
+      function update_page() {
+        const n = document.getElementById("next");
+        if (gstate == 0) {
+          n.innerHTML = "Next move: " + (next == 1 ? "X" : "O");
+        } else {
+          if (gstate == 1) n.innerHTML = "X won! ";
+          else if (gstate == -1) n.innerHTML = "O won! ";
+          else n.innerHTML = "Oh, that was a boring draw! ";
+          n.innerHTML += '<button onclick="reset_board()">Play again</button>';
+        }
+        for (let i = 0; i < 9; i++) {
+          const cell = document.getElementById("td" + i);
+          cell.innerHTML = board[i] == 1 ? "X" : board[i] == -1 ? "O" : "&nbsp;";
+          cell.onclick = function () { update_entry(i); };
+        }
       }
 
-      // Handle browser Back / Forward buttons
-      window.addEventListener("popstate", renderView);
+      function check_state(b) {
+        const patterns = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
+                          [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                          [0, 4, 8], [2, 4, 6]];
+        for (const p of patterns) {
+          const s = p.reduce((sum, i) => sum + b[i], 0);
+          if (s == 3) return 1;
+          if (s == -3) return -1;
+        }
+        return b.includes(0) ? 0 : 2;
+      }
 
-      // Intercept anchor clicks
-      document.addEventListener("DOMContentLoaded", () => {
-        document.body.addEventListener("click", e => {
-          if (e.target.matches("[data-link]")) {
-            e.preventDefault();
-            navigateTo(e.target.getAttribute("href"));
+      function update_entry(x) {
+        if (gstate == 0 && board[x] == 0) {
+          board[x] = next;
+          next = -next;
+          gstate = check_state(board);
+          update_page();
+        }
+      }
+
+      reset_board();
+    explanations:
+      - lines: "1-3"
+        explanation: "Exact from the lecture. let at the top level gives global variables (var is avoided). gstate is the game state: 0 in progress, 1 X won, -1 O won, otherwise draw."
+      - lines: "5-10"
+        explanation: "reset_board puts board, next and gstate back to their starting values and calls update_page."
+      - lines: "12-27"
+        explanation: "update_page does all the DOM work. It finds the element with id next and sets its innerHTML (Next move, or the result plus a Play again button at game end). It then loops over 0 to 8, finds each cell span by id td plus the index, sets X, O or blank, and attaches an onclick handler that calls update_entry(i)."
+      - lines: "29-39"
+        explanation: "check_state has the same logic as the Python version. The lecture uses reduce to sum entries over a pattern; a for loop works the same way."
+      - lines: "41-48"
+        explanation: "update_entry(x) acts only if the game is in progress and the clicked square is empty: it sets the square, toggles next, recomputes gstate and redraws with update_page."
+      - lines: "50"
+        explanation: "Calls reset_board when the script loads to initialise the page."
+    output: |
+      Opening index.html directly (file:///...) works with no server. Clicks place X and O and show win or draw plus a Play again button.
+      Reloading the page clears the board. A second tab starts its own independent game.
+  - title: "Vue Tic-Tac-Toe page (basic version) [untested]"
+    filename: "tictactoe/vue-basic/index.html"
+    language: "html"
+    tested: false
+    code: |
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Tic-Tac-Toe (Vue)</title>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+      </head>
+      <body>
+        <div id="app">
+          <span v-html="head_msg"></span>
+          <table border="1">
+            <tr><td><tic :pos="0"></tic></td><td><tic :pos="1"></tic></td><td><tic :pos="2"></tic></td></tr>
+            <tr><td><tic :pos="3"></tic></td><td><tic :pos="4"></tic></td><td><tic :pos="5"></tic></td></tr>
+            <tr><td><tic :pos="6"></tic></td><td><tic :pos="7"></tic></td><td><tic :pos="8"></tic></td></tr>
+          </table>
+        </div>
+        <script src="tictactoe-vue.js"></script>
+      </body>
+      </html>
+    explanations:
+      - lines: "5"
+        explanation: "Loading vue.js with a script tag is all it takes to bring Vue in (the lecture loads the development version)."
+      - lines: "8"
+        explanation: "Vue takes everything inside this element, usually a div with id app, and applies Vue functionality to it."
+      - lines: "9"
+        explanation: "v-html renders whatever head_msg returns inside this span."
+      - lines: "10-14"
+        explanation: "A 3x3 table. Each cell holds tic, a custom Vue component (not a normal HTML tag), given its position through the pos property (0 to 8)."
+      - lines: "16"
+        explanation: "Loads the script holding the components and the Vue app."
+    output: |
+      Same behaviour as the vanilla version: the game works, and reloading the page resets it.
+  - title: "Vue app with a tic component and computed properties [untested]"
+    filename: "tictactoe/vue-basic/tictactoe-vue.js"
+    language: "javascript"
+    tested: false
+    code: |
+      Vue.component('tic', {
+        props: ['pos'],
+        template: '<img :src="img_l" @click="set_val" />',
+        methods: {
+          set_val: function () {
+            this.$parent.set_val(this.pos);
           }
-        });
-        renderView();
+        },
+        computed: {
+          img_l: function () {
+            const v = this.$parent.board[this.pos];
+            if (v == 1) return 'x.png';
+            if (v == -1) return 'o.png';
+            return 'b.png';
+          }
+        }
+      });
+
+      var app = new Vue({
+        el: '#app',
+        data: {
+          board: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+          next: 1
+        },
+        methods: {
+          set_val: function (i) {
+            if (this.result == 0) {
+              if (this.board[i] == 0) {
+                Vue.set(this.board, i, this.next);
+                this.next = -this.next;
+              }
+            }
+          }
+        },
+        computed: {
+          head_msg: function () {
+            if (this.result == 0) return 'Next move: ' + (this.next == 1 ? 'X' : 'O');
+            if (this.result == 1) return 'X won!';
+            if (this.result == -1) return 'O won!';
+            return 'Oh, that was a boring draw!';
+          },
+          result: function () {
+            const patterns = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
+                              [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                              [0, 4, 8], [2, 4, 6]];
+            for (const p of patterns) {
+              const s = p.reduce((sum, i) => sum + this.board[i], 0);
+              if (s == 3) return 1;
+              if (s == -3) return -1;
+            }
+            return this.board.includes(0) ? 0 : 2;
+          }
+        }
       });
     explanations:
-      - lines: "11-15"
-        explanation: "history.pushState() pushes a new URL into the browser history stack without making an HTTP request to the server."
-      - lines: "24"
-        explanation: "popstate listener ensures clicking browser Back/Forward arrows updates the rendered view automatically."
-      - lines: "28-33"
-        explanation: "Delegated click listener intercepts links marked with data-link, preventing default browser page reloads."
+      - lines: "1-17"
+        explanation: "Registers a component called tic, a new custom HTML tag. It takes a pos property and outputs an img whose click calls its own set_val. That method calls set_val on the parent Vue app with its position. The computed property img_l picks the image path for O, blank or X from the parent's board at pos."
+      - lines: "19-24"
+        explanation: "new Vue creates a Vue instance. el ties it to the div with id app. data holds board and next; what were globals before now belong to this instance."
+      - lines: "25-35"
+        explanation: "The method set_val(i) acts only if result is 0 (game in progress) and the square is empty. It must use Vue.set(this.board, i, this.next), because a plain array assignment this.board[i] = ... is not detected by Vue 2. A scalar like this.next can be assigned normally."
+      - lines: "36-52"
+        explanation: "Computed properties head_msg and result. result checks the winning patterns on this.board (1 X won, -1 O won, 0 in progress, 2 draw). head_msg depends on this.next and this.result. Vue tracks these dependencies and recomputes them only when needed, so there is no update_page function."
     output: |
-      Clicking links changes the browser URL to /courses or /profile and instantly swaps view content without any white screen flash.
+      The behaviour is identical to the vanilla version, with all state on the client.
+  - title: "Vue page with a single board component [untested]"
+    filename: "tictactoe/vue-components/index2.html"
+    language: "html"
+    tested: false
+    code: |
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Tic-Tac-Toe (Vue components)</title>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+        <style>
+          .board { display: flex; flex-wrap: wrap; width: 156px; height: 156px; }
+          .cell { width: 48px; height: 48px; border: 1px solid black; }
+        </style>
+      </head>
+      <body>
+        <div id="app">
+          <board></board>
+        </div>
+        <script src="ttt-comp.js"></script>
+      </body>
+      </html>
+    explanations:
+      - lines: "7"
+        explanation: "The board is a Flexbox container with wrapping, 156px square."
+      - lines: "8"
+        explanation: "Each cell is 48px square plus a border. Three cells fit on a line, so the fourth wraps to the next row, giving a 3x3 grid without a table."
+      - lines: "12-14"
+        explanation: "The whole body of the app is one custom tag, board."
+    output: |
+      One Tic-Tac-Toe grid. Adding a second board tag (next snippet) shows two independent games.
+  - title: "Composed components: tic inside board [untested]"
+    filename: "tictactoe/vue-components/ttt-comp.js"
+    language: "javascript"
+    tested: false
+    code: |
+      Vue.component('tic', {
+        props: ['val'],
+        template: `<div class="cell" @click="$emit('click')">{{ val == 1 ? 'X' : val == -1 ? 'O' : ' ' }}</div>`
+      });
+
+      Vue.component('board', {
+        data: function () {
+          return {
+            board: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            next: 1
+          };
+        },
+        template: `
+          <div>
+            <div>{{ head_msg }}</div>
+            <div class="board">
+              <tic v-for="(v, i) in board" :val="v" @click="update(i)"></tic>
+            </div>
+          </div>`,
+        methods: {
+          update: function (i) {
+            if (this.result == 0 && this.board[i] == 0) {
+              Vue.set(this.board, i, this.next);
+              this.next = -this.next;
+            }
+          }
+        },
+        computed: {
+          head_msg: function () {
+            if (this.result == 0) return 'Next move: ' + (this.next == 1 ? 'X' : 'O');
+            if (this.result == 1) return 'X won!';
+            if (this.result == -1) return 'O won!';
+            return 'Oh, that was a boring draw!';
+          },
+          result: function () {
+            const patterns = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
+                              [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                              [0, 4, 8], [2, 4, 6]];
+            for (const p of patterns) {
+              const s = p.reduce((sum, i) => sum + this.board[i], 0);
+              if (s == 3) return 1;
+              if (s == -3) return -1;
+            }
+            return this.board.includes(0) ? 0 : 2;
+          }
+        }
+      });
+
+      var app = new Vue({ el: '#app' });
+    explanations:
+      - lines: "1-4"
+        explanation: "The tic component takes a val prop and renders a cell div showing O, a blank or X. [check: the click emit is added here so the cell's click reaches the board in Vue 2; the transcript shows only the plain click listener on the tic tag]"
+      - lines: "6-13"
+        explanation: "The board component. Inside a component, data must be a function that returns a fresh object, so every board instance gets its own independent copy of board and next."
+      - lines: "14-22"
+        explanation: "The template shows head_msg and a div of class board. v-for generates nine tic children from the board array. :val is shorthand for v-bind:val and @click is shorthand for v-on:click."
+      - lines: "23-30"
+        explanation: "One method, update(i): if the game is in progress and the square is empty, it uses Vue.set and toggles next."
+      - lines: "31-49"
+        explanation: "The same head_msg and result computed properties as before, now local to each board."
+      - lines: "51"
+        explanation: "The root Vue instance only mounts the app on the div with id app."
+    output: |
+      A playable Tic-Tac-Toe board with its heading. Reloading resets the game, since all state is in the browser.
+  - title: "Two boards on one page [untested]"
+    filename: "tictactoe/vue-components/index2.html (app div only)"
+    language: "html"
+    tested: false
+    code: |
+      <div id="app">
+          <board></board>
+          <board></board>
+      </div>
+    explanations:
+      - lines: "2-3"
+        explanation: "Each board tag creates a new component instance with its own data function result, so there are two independent games."
+    output: |
+      Two grids on the page. One game can finish while the other is a draw; neither affects the other.
 selfTest:
-  - question: "Why does refreshing a client-side route like 'myapp.com/profile' cause a 404 error on standard static servers without special configuration?"
-    answer: "Because standard servers look for a physical file at /profile/index.html on the disk. Since an SPA has only a single index.html at root, the server returns 404 Not Found."
-    explanation: "Web servers (Nginx, Netlify, Vercel) must be configured with a fallback rewrite rule redirecting all unknown requests back to index.html."
-  - question: "What is the primary SEO drawback of client-rendered SPAs compared to server-rendered MPAs?"
-    answer: "Search engine web crawlers that do not execute JavaScript see only an empty <div id=\"app\"></div> shell, hindering indexing of page content."
-    explanation: "Server-Side Rendering (SSR) frameworks like Nuxt.js or Next.js resolve this by pre-rendering HTML on the server before serving it."
-  - question: "What does window.history.replaceState() do compared to pushState()?"
-    answer: "replaceState() updates the current URL without adding a new entry to the browser's history stack. pushState() adds a new history entry."
-    explanation: "replaceState is useful when updating query filters or redirecting after a login so the back button doesn't loop."
-  - question: "What is 'Code Splitting' and why is it essential for large SPAs?"
-    answer: "Code splitting divides the application's compiled JavaScript into smaller asynchronous chunks loaded on-demand per route, rather than downloading the entire application bundle on first page load."
-    explanation: "In Vue Router, code splitting is achieved using dynamic imports: component: () => import('./views/Dashboard.vue')."
+  - question: "What does UI = f(state) mean, and what is 'state'?"
+    answer: "Given the application state, applying a set of functions (build methods) gives the layout seen on screen, so the UI is uniquely determined by the state. State is the memory of the system: everything needed to reproduce a given state of the system somewhere else."
+    explanation: "Given a state, the system should show the same UI and respond the same way to further inputs."
+  - question: "Name and give examples of system state, application state and UI (ephemeral) state."
+    answer: "System state is the whole stored data of the system (e.g. all items, prices and users on Amazon). Application state is the system as one user sees it (shopping cart, currency preference, theme, dashboard). UI state is short-lived display detail (a loading spinner, progress bar, selected tab)."
+    explanation: "Losing UI state has no long-term effect on the functionality of the system."
+  - question: "Why do we keep saying HTTP is stateless, and what are the two extreme ways of keeping state?"
+    answer: "Each HTTP request is more or less independent; the protocol does not remember the application state. Either the client keeps the state and UI and asks the server for specific items, or the client is a dumb client and the server keeps the full state and tells it, through URLs, which requests it may make. Real frontends sit between the two."
+    explanation: "The server may infer state from cookies or the IP address, but that is not part of the protocol."
+  - question: "Compare imperative and declarative programming, with the UI example from the lecture."
+    answer: "Imperative: give the exact sequence of steps (draw a box in the top 100 pixels, then draw the footer, and so on). Declarative: say what the result should be (a navigation bar on top, a footer at the bottom, a sidebar on the left) and let a compiler or interpreter achieve it. Declarative suits UIs; imperative suits something like a climate simulation."
+    explanation: "The vanilla JavaScript demo is imperative (explicit DOM updates); the Vue demo is declarative."
+  - question: "Why must set_value declare board and next as global, and why does Vue need Vue.set for the board array?"
+    answer: "In Flask, assigning without a global declaration would create local variables instead of changing the globals. In Vue 2, a plain array index assignment is not detected, so the page would not update; Vue.set(this.board, i, this.next) triggers the change detection. A scalar like this.next can be assigned normally."
+    explanation: "Vue watches data for changes and recomputes whatever depends on it."
+  - question: "Why is data a function in a component, and what happens if it is a plain object?"
+    answer: "A function returns a fresh object for every component instance, so each board has its own independent data. With a plain object, all instances would share a reference to the same data object (Vue warns against this)."
+    explanation: "This is why two board tags give two independent games."
 resources:
-  - title: "MDN Web Docs: Manipulating the browser history"
-    url: "https://developer.mozilla.org/en-US/docs/Web/API/History_API"
+  - title: "Vue 2 documentation"
+    url: "https://v2.vuejs.org/"
     type: "Official Reference"
-    description: "Detailed documentation on pushState, replaceState, and the popstate event."
-    verified: true
-  - title: "web.dev: Single-page applications vs multi-page applications"
-    url: "https://web.dev/articles/rendering-on-the-web"
-    type: "Architectural Guide"
-    description: "Google Developers guide on client rendering, SSR, static generation, and Core Web Vitals."
-    verified: true
+    description: "Vue 2 guide, including components, computed properties and data."
+    verified: false
+  - title: "Vue 2: Reactivity in depth"
+    url: "https://v2.vuejs.org/v2/guide/reactivity.html"
+    type: "Official Reference"
+    description: "How Vue 2 tracks changes, including the array change caveat."
+    verified: false
+  - title: "Flutter: Start thinking declaratively"
+    url: "https://docs.flutter.dev/data-and-backend/state-mgmt/declarative"
+    type: "Official Reference"
+    description: "The UI = f(state) picture used in the lecture."
+    verified: false
+  - title: "Flutter: Differentiate between ephemeral state and app state"
+    url: "https://docs.flutter.dev/data-and-backend/state-mgmt/ephemeral-vs-app"
+    type: "Official Reference"
+    description: "Ephemeral state versus app state."
+    verified: false
+  - title: "MDN Web Docs: An overview of HTTP"
+    url: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview"
+    type: "Official Reference"
+    description: "HTTP as a stateless protocol."
+    verified: false
+  - title: "Nielsen Norman Group: 10 Usability Heuristics"
+    url: "https://www.nngroup.com/articles/ten-usability-heuristics/"
+    type: "Guidelines"
+    description: "Jakob Nielsen's UI design guidelines mentioned in the Q&A."
+    verified: false
+  - title: "W3C: Web Content Accessibility Guidelines (WCAG) overview"
+    url: "https://www.w3.org/WAI/standards-guidelines/wcag/"
+    type: "Official Guidelines"
+    description: "W3C accessibility guidelines mentioned in the Q&A."
+    verified: false
 ---
 
-<TopicSection id="mpa-vs-spa" title="1. Traditional MPAs vs Single Page Applications (SPAs)">
+<TopicSection id="frontend-ui-ux" title="1. Frontend, UI and UX">
 
 <KeyIdea>
-SPAs replace the traditional cycle of full-page server reloads with instant in-browser component swapping, delivering desktop-like fluid user experiences.
+The frontend is the user-facing part of an app, and a good UI is an effective one, not necessarily a fancy one.
 </KeyIdea>
 
-In traditional Multi-Page Applications (MPAs) built with Django, Flask, or PHP:
-1. User clicks a link.
-2. The browser requests an entirely new HTML document from the server.
-3. The screen flashes white while old assets are discarded and new assets are fetched and parsed.
-
-In a Single Page Application (SPA):
-1. The initial request fetches one minimal `index.html` file along with the JavaScript bundle.
-2. Clicking a link updates the URL locally and dynamically fetches only raw JSON data from API endpoints.
-3. The existing DOM is patched in place with zero screen flicker.
+- In MAD 1 the focus was the backend and application logic: Python Flask code for database connectivity, the HTTP server, the controller, and views built with Jinja templates.
+- MAD 2 looks deeper into the frontend and techniques for a better user experience.
+- The terms **User Interface (UI)** and **User Experience (UX)** come up often in conversations and articles.
+- It is easy to dismiss the frontend as "making it look fancy", but a good UI and UX can decide whether people use an app at all, even when another app has great functionality that nobody wants to use.
+- A good UI is not the same as a fancy UI. The Linux command line is an example: you type commands, each does one kind of operation, and in the terminal you can chain them into complex functionality.
+- Almost nobody except a die-hard Linux fan calls it beautiful, but it is elegant: it does what is required, efficiently, with nothing ultra-fancy. What matters is how effective the UI is at being usable.
 
 </TopicSection>
 
 ---
 
-<TopicSection id="history-api" title="2. The HTML5 History API: pushState and popstate">
+<TopicSection id="requirements" title="2. Frontend requirements and desirable aspects">
 
 <KeyIdea>
-The HTML5 History API allows JavaScript to manipulate the browser address bar and travel through session history programmatically.
+Keep logic and data on the server; the frontend should look good, react quickly and adapt to different screens.
 </KeyIdea>
 
-Before HTML5, single-page navigation relied on URL hashes (`example.com/#/courses`). The History API modernized this:
+**Requirements**
+- Avoid complex logic in the frontend. Application logic, computations, detailed comparisons and selecting parts of the database should be pushed to the server where the data is stored.
+- The frontend should only make data requests to the server and portray the result.
+- Do not store application data at the frontend as far as possible. The connection can be cut, or something else can break communication between the user's view and the server.
+- HTTP is a **stateless protocol**: the messages exchanged do not by themselves depend on the state of the system. That does not make state impossible in an HTTP-based system; it means that giving the illusion of memory (who you are, what you were doing) needs other mechanisms beyond the protocol.
 
-```javascript
-// Adds a new entry to the history stack
-history.pushState({ pageId: "courses" }, "Courses", "/courses");
+**Desirable aspects**
 
-// Overwrites current entry without adding to history
-history.replaceState({ pageId: "courses" }, "Courses", "/courses");
+| Aspect | Meaning in this lecture |
+|---|---|
+| Aesthetically pleasing | You should not be turned off: no ugly fonts, no jarring colours. Obvious, but often missed. This also depends on what you are used to (the command line is not pleasing to many). |
+| Responsive | The app responds to your interaction very quickly: you input or click and there is an immediate response. |
+| Adaptive | The app adapts to different outputs, screen sizes and monitors. In CSS the word "responsive" is often used for this meaning. |
 
-// Listens to user clicking browser Back or Forward buttons
-window.addEventListener("popstate", (event) => {
-  console.log("Navigated to:", window.location.pathname);
-});
-```
-
-`pushState` alters the URL displayed in the address bar without issuing an HTTP `GET` request to the web server.
+- This week and the next couple of weeks use one framework to achieve these things and build a good UI.
 
 </TopicSection>
 
 ---
 
-<TopicSection id="client-side-routing" title="3. How Client-Side Routers Work Under the Hood">
+<TopicSection id="imperative-declarative" title="3. Imperative vs declarative programming">
 
 <KeyIdea>
-A client-side router acts as an event-driven dispatcher mapping URL patterns to specific component views.
+Imperative code gives the steps; declarative code states the result you want and lets a system work out how.
 </KeyIdea>
 
-The operational flow of a client router:
-1. Intercepts anchor tag click events globally (`preventDefault()`).
-2. Calls `history.pushState()` with the target URI.
-3. Matches the URI against an internal route table (e.g. `/students/:id`).
-4. Extracts dynamic route parameters (`id = 42`).
-5. Destroys the current view component and mounts the matching component into the router viewport.
+| | Imperative | Declarative |
+|---|---|---|
+| You specify | The exact sequence of actions the computer must take | What the final result should look like |
+| Who does the work | Your code, step by step | A compiler, interpreter or other intermediate code |
+
+- **Imperative example:** the screen should have a navigation bar, footer, sidebar, a date module in a corner, a blob of text and a picture. You would say: in the top 100 pixels draw a box and enter the text (back arrow, forward arrow, home link). That is one function for the navigation bar, another for the footer, another for the sidebar, another for the picture, and so on.
+- **Declarative version:** say there is a navigation bar at the top, a footer at the bottom, a sidebar on the left and text in the middle. The programmer concentrates on what the result should look like, not how to achieve it.
+- Imperative style makes more sense for something like a **climate simulation**: read the climate data (temperatures, air pressures, latitudes, longitudes), construct a model, then run a time simulation with numerical integration. Here it makes sense to specify every detail.
+- For a UI, full detail is not the best route. Say broadly what you want and let another system deliver it and keep it up to date. The declarative style is the one used in this course for frontends.
 
 </TopicSection>
 
 ---
 
-<TopicSection id="tradeoffs" title="4. Trade-offs: Initial Load, SEO, and Server Fallback">
+<TopicSection id="state-equation" title="4. State and UI = f(state)">
 
 <KeyIdea>
-While SPAs deliver unmatched runtime speed, they introduce architectural trade-offs in initial bundle size, search crawler indexing, and server routing.
+State is the memory of the system; given the state, the user interface is uniquely determined.
 </KeyIdea>
 
-### Key Architectural Trade-offs:
-- **First Contentful Paint (FCP)**: SPAs can feel slower on first load over cellular networks because the browser must download and execute the entire framework bundle before rendering.
-- **Server Fallback Requirement**: Refreshing a deep link requires the web server to rewrite all requests back to `/index.html`, allowing the client router to boot and read `window.location.pathname`.
-- **Search Engine Optimization (SEO)**: Traditional search bots may not wait for asynchronous API calls to populate templates before indexing text.
-
-Modern applications address bundle size through route-level lazy loading (dynamic `import()`).
+- The lecture shows a picture from the Flutter documentation, in the part titled "Start thinking declaratively". It says UI is preferably built declaratively.
+- Flutter is a separate Software Development Kit from Google, in the language Dart. It was originally developed for Android and is cross-platform (Android, iOS, and I believe desktops). It is not our focus; this course uses simple platforms so the concepts carry over to other languages and SDKs.
+- The equation is `UI = f(state)`. Apply a set of functions (Flutter calls them **build methods**) to the application state and you get the layout seen on screen.
+- Once you know the state, the user interface is uniquely determined. Understanding what application state means is essential for designing an application and its UI.
+- **State** is the memory of the system: all internal details, everything needed to reproduce a given state of the system somewhere else. This includes the database and what has been clicked on the screen, in effect everything about the system at a point in time. (The wording sounds circular, but the point is reproducibility.)
+- The equation says that, given a system state, the system always shows the same UI and responds the same way to further inputs.
+- An app with no internal state (a constant UI) is trivial: a static page with no variation. Any useful application needs some internal state.
 
 </TopicSection>
 
+---
+
+<TopicSection id="kinds-of-state" title="5. System, application and UI (ephemeral) state">
+
+<KeyIdea>
+System state is everything stored; application state is what one user sees; UI state is short-lived display detail.
+</KeyIdea>
+
+| Kind | Meaning | Examples from the lecture |
+|---|---|---|
+| System state | Everything that describes the system | Amazon.in or Flipkart: the full database of items, prices, registered users and logged-in users. Times of India, The Hindu or BBC: all published articles and information about them. NPTEL or the online degree: registered students, courses, marks, certificates. |
+| Application state | The system as seen by an individual user | Shopping cart, currency preference (Indian Rupees or US Dollars), a Gmail theme, the date display style, news recommended from your past reading, a dashboard (registered courses; on NPTEL the running courses, number of students registered, the state of the course, whether quizzes were conducted). |
+| UI state (ephemeral state) | The part being interacted with; lasts a short time | A loading spinner, a progress bar, which tab is selected. Losing it has no long-term effect on how the application behaves. |
+
+- Flutter uses the term "ephemeral" (lasting a very short time) for UI state.
+- System state is huge for any non-trivial app (it includes the entire database), so you cannot simply ask "what is the state of this system?".
+- It is independent of the user interface, i.e. of who is looking and how the page looks. A frontend developer needs to know where the data is, but it does not directly affect the design.
+- Application state matters directly to a frontend designer: you need to know what information must be in the state and how it affects the UI.
+- Keep application state and ephemeral state in mind when designing an application and its frontend.
+
+</TopicSection>
+
+---
+
+<TopicSection id="http-state" title="6. Keeping state over stateless HTTP">
+
+<KeyIdea>
+HTTP is stateless, so state must live mostly in the client or mostly on the server; real apps sit in between.
+</KeyIdea>
+
+- HTTP does not remember the application state. The protocol only defines requests like GET and POST, and the server sends back information.
+- The server may also see cookies that were set or the IP address, and must infer the client's state from these, including "are you logged in?". That depends on a cookie or other information passed over HTTP requests but not part of the protocol.
+- Other transport protocols are **stateful**. The protocol itself can say "now I can accept a certain kind of request", "now you may only close the connection" or "now you can send an image".
+- In HTTP every request is more or less independent. Only by tracking the requests one after the other can the server build a picture of where the client is.
+- **Two extreme ways** to carry state between client and server:
+  1. The client keeps the application state and the UI, and asks the server for specific items to update on screen.
+  2. A pure "dumb client" has no processing of its own. The server keeps the complete state, shows the client which requests it may make (probably as URLs), and depending on which URL is clicked decides what to show next and sends back the entire information.
+- A real frontend does something in between.
+
+</TopicSection>
+
+---
+
+<TopicSection id="ttt-problem" title="7. Problem statement: Tic-Tac-Toe and why Vue.js">
+
+<KeyIdea>
+A simple game is implemented four ways to show where state lives and to motivate Vue.
+</KeyIdea>
+
+- Tic-Tac-Toe (Noughts and Crosses): a 3x3 grid on screen, X plays first, then O, alternating.
+- The UI lets the person place an X or an O marker. When three align it says "X wins" or "O wins", or "It's a draw" if neither side wins.
+- The game is simple. The point is to see what must be kept as state, the different ways to implement it, and where the state is recorded in each.
+- This motivates **Vue.js**, the frontend framework used from here on.
+- Vue is used in a restricted manner, in baby steps. Those who know the Vue CLI and its modules should note that this is not what we use. Vue is a platform for showing basic concepts: what you can and cannot do and how to build good applications. This is not advanced Vue.
+- The four implementations: Flask (Demo 1), vanilla JavaScript (Demo 2), basic Vue (Demo 3), composed Vue components (Demo 4).
+
+</TopicSection>
+
+---
+
+<TopicSection id="qa-ui-perf" title="8. Q&A: UI design, load time, bandwidth and scripts">
+
+<KeyIdea>
+There is no single rule for layout or performance; judge by the real experience of your users.
+</KeyIdea>
+
+**Persistent header or side panel vs a wider view area?**
+- No simple answer; a few PhD theses exist on this. It depends on the application and on the person (personal preference).
+- Many sites now have a huge banner image on top (a banner or jumbotron) that slides away as you scroll. The instructor finds it irritating, but that is personal.
+- Mostly it comes from experience. Useful guidelines: Jakob Nielsen's UI design guidelines (covered in MAD 1) and the W3C (World Wide Web Consortium) accessibility guidelines. Beyond that there is no clear-cut right or wrong.
+
+**How to measure page loading time when it varies per user?**
+- There is no single standard. The user should have a good experience.
+- A score is not enough: saying you measured 100 on PageSpeed [check: instructor says "light speed", probably Google PageSpeed Insights or Lighthouse] is useless if the user's load feels slow.
+- Sometimes it is not in your control (poor, low-bandwidth or high-latency connections), though some tests show how to improve performance for such users.
+- Nobody cares about the score beyond a point. Measure the worst case, or an average or median, and set metrics for certain kinds of users.
+
+**Choose what to show based on the user's bandwidth (like Google AMP)?**
+- It can be done. AMP means Accelerated Mobile Pages and is controversial because people felt it was too Google-specific.
+- Gmail example: at the bottom of gmail.com there is "Load basic HTML (for slow connections)". The user clicks it and gets pure HTML with little or no JavaScript, which loads much faster.
+- You can leave the choice to the user, or try to detect the speed. Detection is hard because communication is mostly one-way (you send to the user), so measuring round-trip time without becoming more invasive is not easy.
+- If you know the connection is slow, the server can skip some images or send smaller ones.
+
+**Do more scripts slow page loading?**
+- In general yes. A rule of thumb is that fewer scripts are better. Large images or other heavy content can also slow loading.
+
+</TopicSection>
+
+---
+
+<TopicSection id="qa-stateful" title="9. Q&A: why not use stateful protocols everywhere?">
+
+<KeyIdea>
+Connections break often, and stateful protocols cannot cope cheaply with that.
+</KeyIdea>
+
+- Think of the context in which HTTP was designed: the internet is subject to broken connections, and nearly 30 years later dropped or lost connections still happen (a bad mobile signal area, a home power cut that kills Wi-Fi).
+- With a stateful protocol the protocol knows exactly where you are, and suddenly it does not receive the requests it expected.
+- Example: the connection goes away for five minutes, or the phone or desktop reboots. The desktop no longer knows the state of the connection while the server thinks it is in a certain state.
+- So stateful protocols are usually avoided for network things unless there is a strong guarantee the connection will not be easily lost.
+- Recovery is possible: on a bad request, fall back, re-establish the connection and recreate the state from the beginning. The overhead is usually too high, and with so many people connecting, maintaining state for each one is not worth it. So other ways of maintaining state are used.
+
+</TopicSection>
+
+---
+
+<TopicSection id="demo-flask" title="10. Demo 1: Tic-Tac-Toe with Flask (server-side state)">
+
+<KeyIdea>
+All state is in global variables on the server; the client is just a set of links.
+</KeyIdea>
+
+**State and setup**
+- Lines 3 and 4 of `app.py` define `board = [0] * 9` (a list of nine zeros, a shortcut for writing out nine 0 entries) and `next = 1`. 1 stands for X and -1 for O. Using 'X' and 'O' directly would also work, but numbers make checking for completion easier.
+- These two variables are the application state of this trivial example. They are globals because several routes (URLs) need them.
+- The app sets a static folder and a template folder. The `/` route runs `homepage()`, which renders `tic.html` and passes in `board` and `next`.
+
+**The template `tic.html` (described in the lecture, code not shown)**
+- The head has a little CSS that changes the background colour, not crucial.
+- The body has a header "Next move:" with Jinja code choosing one of three stored images by the value of `next` (-1 shows O, 0 shows B for blank, 1 shows X), using a small array indexed with compact Python syntax.
+- The grid is a `table`. It is not the best way (a cleaner way comes later) but it works. The Jinja code loops over rows and over `td` entries. If the entry e is 0 it becomes a link (`a`); otherwise O, B or X is displayed. When the column index c is 0 a new `tr` starts, and when c is 2 it ends, giving three rows of three.
+- The lecture stresses this is not claimed to be the most efficient or clean code, nor is the point to show Python, JavaScript or Vue as better; they are just different options.
+
+**Running it** (`python app.py`)
+- The page shows "Next move: X" and each empty square is a link to `/set/0` up to `/set/8`: the same `/set` endpoint with a parameter 0 to 8.
+- `set_value(i)`: declares `board` and `next` global (otherwise it would create locals), sets `board[i] = next`, toggles with `next = -next` (works because of 1 and -1), calls `r = check_state(board)`, and redirects to `/` if `r == 0` (game in progress).
+- A filled square is no longer a link, because the template checks that the entry is 0 before making a link. When three align it shows "Congratulations!" and a "Play again" link.
+- `check_state(board)` tries the patterns `[0, 1, 2]`, `[3, 4, 5]`, `[6, 7, 8]` (rows), `[0, 3, 6]`, `[1, 4, 7]`, `[2, 5, 8]` (columns) and `[0, 4, 8]`, `[2, 4, 6]` (diagonals), summing the board values. Sum 3 returns 1 (X won), sum -3 returns -1 (O won). Otherwise it returns 0 if any entry is 0, else 2 (draw).
+- If `r` is not 0, `end.html` shows the final board and the winner message. In the demo code there is a minor bug: for a draw (`r == 2`) it displays "B won" instead of a draw message.
+- `/new` (`new_game()`) resets `board = [0] * 9`, sets `next = 1` and redirects to `/`.
+
+**What the demo shows about state**
+- Reloading shows the same state. An incognito window (another browser or user) shows the same state too, and moves made there persist after it is closed.
+- The client has almost no smart functionality, only links. Everything is done on the server, so you can reload, disconnect and come back later to find the server in the state you left it.
+- In this simple code everyone sees the same game. You could change it so the server uses the IP address or a session to show a different game.
+
+> **Added by tutor:** the full `app.py` is reconstructed from the narration. The names `end.html`, `board`, `r` passed to it, the route converter `int:i` and the file layout are guesses; see the code section. All of it is `[untested]`.
+
+</TopicSection>
+
+---
+
+<TopicSection id="demo-vanilla" title="11. Demo 2: Tic-Tac-Toe with vanilla JavaScript (client-side state)">
+
+<KeyIdea>
+State lives in the browser and the page is updated imperatively; reloading loses the state.
+</KeyIdea>
+
+**`index.html`**
+- In the body there is a `span` with `id="next"` that has no data inside.
+- A `table` has empty `span` tags in its cells (`id="td0"` to `id="td8"`).
+- The 3x3 structure is explicit but has no logic or content. With JavaScript turned off nothing shows. (You could add a dummy span saying "You need to turn on JavaScript" and have the script empty it.)
+- All the work is done by `tictactoe.js`, loaded through a `script` tag at the bottom of the body.
+
+**`tictactoe.js`**
+- Globals are declared with `let` at the top level: `board`, `next` and `gstate` (current state of the game). `var` is avoided now that we are in ES6 / ES2020 and beyond; use `let` or `const`.
+- `reset_board()` sets `board`, `next` and `gstate` to their initial values and calls `update_page()`.
+- `update_page()` does the DOM work. It gets the element with id next using `document.getElementById` and sets its `innerHTML` to "Next move: X" or "Next move: O" when `gstate == 0`. If `gstate` is 1 it says X won, if -1 O won, otherwise "Oh, that was a boring draw!". At game end it appends a `button` with `onclick="reset_board()"` labelled "Play again" inside that span.
+- It then loops from 0 to 8, gets each cell span by `"td" + i`, sets its `innerHTML` to X, O or blank from `board[i]`, and attaches an `onclick` handler calling `update_entry(i)`.
+- `check_state()` has the same logic as the Python version. The lecture uses `Array.prototype.reduce()` to sum entries across winning patterns; a for loop would do the same.
+- `update_entry(x)`: if `gstate == 0` and `board[x] == 0`, it sets `board[x] = next`, toggles `next = -next`, sets `gstate = check_state(board)` and calls `update_page()`.
+- At the bottom `reset_board()` is called to initialise the page when the script loads.
+- This is **imperative** programming: every update explicitly walks the DOM elements, sets `innerHTML` and redraws through `update_page()`.
+
+**Behaviour when opened as a local file (`file:///...`)**
+- Clicks update X and O, detect wins and draws, and show a "Play again" button that resets the board.
+- Reloading loses all moves and gives a new empty board. A second tab starts a fresh board, and two games can run independently in parallel.
+- There is no server. The browser runs `tictactoe.js` and the state is entirely client-side, which is why reloading loses it.
+- To send state to a server you would need a running server and a way for every click to send the state back (asynchronous requests, fetch or AJAX), covered in later weeks.
+
+> **Added by tutor:** full `index.html` and `tictactoe.js` are reconstructed apart from the three `let` lines. See the code section; `[untested]`.
+
+</TopicSection>
+
+---
+
+<TopicSection id="qa-async" title="12. Q&A: asynchronous JavaScript">
+
+<KeyIdea>
+Asynchronous behaviour was in JavaScript from the start; background data fetching became popular around 2004.
+</KeyIdea>
+
+- JavaScript was meant for browsers from the beginning, and people wanted features that do not block the browser unnecessarily. So asynchronous interaction (such as event listeners) was there from the start.
+- Retrieving data asynchronously from URLs in the background (XMLHttpRequest / AJAX, later fetch) became popular around 2004 or thereabouts.
+- Asynchrony is not unique to JavaScript. Many languages have it so that long-running operations and user interaction do not block each other.
+
+</TopicSection>
+
+---
+
+<TopicSection id="demo-vue-basic" title="13. Demo 3: basic Vue (reactivity and computed properties)">
+
+<KeyIdea>
+Vue watches data and recomputes dependent values and the page automatically.
+</KeyIdea>
+
+**About Vue**
+- Spelled V-U-E and pronounced "view". It has nothing to do with the "View" in Model-View-Controller, although it follows a variant of the MVC approach to updating and displaying.
+- Think of it as a set of extra library functions on top of JavaScript. It is not a new language; it gives a cleaner interface for certain kinds of frontend work.
+
+**`index.html`**
+- The head loads the core `vue.js` with a `script` tag. That is all Vue needs.
+- The body has `div id="app"`. Vue takes everything inside a specified element (usually a div with `id="app"`) and applies Vue functionality to it.
+- `span v-html="head_msg"` is a Vue directive. A 3x3 `table` holds `tic :pos="0"` up to `tic :pos="8"` in its cells. `tic` is not a normal HTML tag but a custom Vue component the lecture wrote.
+- At the bottom it loads `tictactoe-vue.js`.
+
+**The Vue app in `tictactoe-vue.js`**
+- `new Vue({...})` makes an instance of the Vue class from a configuration object. `el: '#app'` ties it to the div with id app.
+- `data` holds `board` and `next`. What were globals in Python and vanilla JavaScript now belong to this Vue instance.
+- `methods` are functions callable on the instance. `set_val(i)` checks `this.result == 0` and `this.board[i] == 0`, then calls `Vue.set(this.board, i, this.next)` and `this.next = -this.next`.
+- **Reactivity gotcha:** `this.board[i] = this.next` is what you would write, and it did not work. Vue (specifically Vue 2) watches variables and adds logic so that anything depending on a changed variable updates the DOM. A plain array index assignment cannot be detected, so for arrays call `Vue.set`. A scalar like `this.next` works with normal assignment.
+
+**Computed properties**
+- Two are declared: `head_msg` and `result`. In the HTML, `v-html="head_msg"` renders whatever `head_msg` returns.
+- Vue does a data flow analysis (dependency tracking). `head_msg` reads `this.next` and `this.result`, so whenever either changes Vue recomputes `head_msg` and updates the DOM.
+- `result` is also computed, from the winning patterns over `this.board` (1 X won, -1 O won, 0 in progress, 2 draw). When `this.board` changes through `Vue.set`, `result` is recomputed, and a change in `result` triggers `head_msg`.
+- **Declarative advantage:** there is no `update_page()` and no explicit call to `result()` or `head_msg()` after a move. Vue calls them when required and not otherwise. You declare how they depend on the state.
+
+**The `tic` component** (lines 1 to 15 of the script)
+- `Vue.component('tic', {...})` defines a new custom HTML tag.
+- `props: ['pos']` accepts the position (0 to 8) from the HTML as `:pos`.
+- `template` outputs `img :src="img_l" @click="set_val"`.
+- Its own method `set_val` calls `this.$parent.set_val(this.pos)` on the parent app. Its computed `img_l` computes the image path for O, blank or X from `this.$parent.board[this.pos]`.
+
+**Result:** the same as the vanilla version; state is only on the client and reloading resets the game.
+
+> **Added by tutor:** reconstructed code (CDN link for Vue 2, image names `x.png`, `o.png`, `b.png`, the exact text of the messages) is `[untested]`.
+
+</TopicSection>
+
+---
+
+<TopicSection id="demo-vue-components" title="14. Demo 4: composed components in idiomatic Vue">
+
+<KeyIdea>
+A self-contained board component can be reused any number of times, each copy with its own state.
+</KeyIdea>
+
+- The previous Vue example was not idiomatic: `tic` reached into `$parent`, and the 3x3 table was written out by hand. The fourth version uses composed components and CSS Flexbox.
+
+**Flexbox grid (`index2.html`)**
+- `.board` has `display: flex; flex-wrap: wrap; width: 156px; height: 156px;` and each `.cell` has `width: 48px; height: 48px;` plus a border.
+- 48 x 3 = 144 pixels plus borders is just under 156, so after three cells in a row Flexbox wraps the fourth to the next row. This gives a 3x3 grid without a table.
+- The body is simplified to a single tag: `board` inside `div id="app"`.
+
+**`ttt-comp.js`**
+- `tic` component: `Vue.component('tic', { props: ['val'], template: ... })`. It takes a `val` prop and renders a cell div showing 'O', ' ' or 'X'.
+- `board` component:
+  - `data` is a function returning an object (`board` of nine zeros, `next: 1`). The Vue documentation says to do this when each instance of a component should carry its own independent copy of the data.
+  - `template` has a container div showing `{{ head_msg }}` and a `.board` div using `v-for="(v, i) in board"` to generate nine `tic :val="v" @click="update(i)"` children.
+  - Shorthands: `:val` is `v-bind:val` and `@click` is `v-on:click`.
+  - `methods` has one method `update(i)`: if `this.result == 0 && this.board[i] == 0`, it calls `Vue.set(this.board, i, this.next)` and toggles `this.next`.
+  - `computed` has the same `head_msg` and `result` as before.
+- The root instance at the bottom is `var app = new Vue({ el: '#app' })`, which just mounts the app.
+
+**Why this effort? Reuse**
+- Add a second `board` tag inside `div id="app"` and reload: two Tic-Tac-Toe grids appear and can be played at the same time. One game can finish while the other becomes a draw.
+- `board` is a self-contained component instantiated twice. It is object orientation in UI: an object that stands by itself and takes care of its own styling, font size, internal state (data) and logic (methods and computed). Multiple chessboards on a page work the same way; the lecture notes chess.com is built on Vue.
+- Vue is not the only framework for this (React, Angular and others do similar), but Vue is simple and clean enough to illustrate the ideas.
+
+> **Added by tutor:** reconstructed code for `index2.html` and `ttt-comp.js`. `[check: Vue 2 needs the child to emit a click event, or the tic tag to use the native click modifier, for a click listener on a component to fire; the transcript shows only the plain click on the tic tag]`. `[untested]`.
+
+</TopicSection>
+
+---
+
+<TopicSection id="qa-vue-basics" title="15. Q&A: Vue basics">
+
+<KeyIdea>
+Vue is a JavaScript library that hides the repetitive work of tracking changes and redrawing the page.
+</KeyIdea>
+
+**`var` vs `let`**
+- The lecture avoids `var` because its scoping rules are tricky. `let` and `const` were brought in to fix those problems.
+- Production sites like chess.com do not show raw Vue code because much is pre-rendered on the server and only minified JavaScript is sent for performance.
+
+**Reactivity and declarative programming**
+- Declarative UI relies on reactivity. You declare where things are and what they depend on, and the framework updates itself.
+- In the demo, two `board` tags were enough; the logic for updates and reacting to clicks is handled inside Vue's reactivity system.
+
+**Minification**
+- Minifying makes the data sent over the network smaller. The lecture loaded the development version of Vue; for production the Vue documentation recommends a different link (`vue.min.js`), already minified.
+- For more optimisation, Vue has a compilation and build process to bundle only the parts you need. That is beyond the scope here.
+
+**"Vue feels like magic" (vanilla shows exactly how the DOM updates)**
+- Think of Vue as a library or module on top of JavaScript, like the `csv` module in Python (`csv.reader`), which splits on commas and masks special characters without you writing the loop.
+- Vue is a module written in JavaScript that provides reactive behaviour: watch for changes in data values, recompute dependent values and redraw those parts of the screen. Vue (and React or Angular) hides that repetitive work, which raises productivity and lets you focus on the data and logic.
+
+**Which Vue example is better?**
+- Demo 4, because it is more component-oriented and composes self-contained components. Demo 3 was a stepping stone to show basic reactivity.
+
+**Svelte vs Vue**
+- Svelte achieves similar reactivity but is compiler-based. Vue can be used directly by pulling in `vue.js` with a `script` tag (as here) or through a CLI build step. With Svelte you write Svelte syntax, compile it ahead of time and load the compiled output. It is optimised nicely, but the principles of building on reactivity are the same.
+
+**How does a browser treat custom tags like `tic` or `board`?**
+- This is part of the HTML5 specification and Web Components. Browsers were designed to be forgiving and to hide errors.
+- An unknown tag such as `mytag` with the text Hello, with no JavaScript or Web Component registered, is simply ignored; only the text inside is shown.
+- If a Vue component (or a standard HTML5 Web Component) is registered for it, Vue or JavaScript replaces the tag with the component's template.
+
+</TopicSection>
+
+---
+
+<TopicSection id="qa-vue-state" title="16. Q&A: component state, server state and two-way binding">
+
+<KeyIdea>
+Each component instance has its own data; v-model binds in both directions.
+</KeyIdea>
+
+**Saving game state on a server while reusing the board component**
+- chess.com must work this way, since it cannot run purely on the client.
+- The `@click` function, instead of only updating the local display, makes an asynchronous call (AJAX or fetch) telling the server to update the state, and the server's response is then reflected in the UI.
+- To update one specific board, pass a unique identifier (an id or game number) to each `board` instance as a prop so the server knows which game it is.
+- The demo is a toy example for component reuse; server communication comes in later weeks.
+
+**A separate "Play again" button for each game**
+- Yes, and the lecture recommends trying it as an exercise. Put the button and a reset method inside the `board` component so it works on `this.board` and `this.next` (the local data) and not on a global variable. Then resetting one board does not affect the other.
+
+**Why do two boards run independently, and what if `data` were a plain object?**
+- Each `board` tag creates a new component instance. Because `data` is a function returning a new object, each instance has its own data object. `this.update(i)` refers to that instance and changes only its own `board` and `next`.
+- If `data` were a plain object on a component (Vue prevents and warns against this), all instances would share a reference to the same data object.
+
+**Why is reactivity important in modern web development?**
+- Convenience: you focus on what the UI behaviour should be and not on how to update each part of the screen.
+- History (added by co-instructor Thejesh): the web was designed to deliver static documents. It then became an application platform, first adding cookies for sessions and now reactive frameworks to make rich applications that look and feel like desktop applications. With static documents no reactivity is needed; you need it when an application responds dynamically to user interaction.
+
+**One-way vs two-way binding**
+- One-way binding (double curly brackets such as `{{ message }}`, or `v-html`): when the JavaScript data changes, the displayed HTML changes. Data flows to the DOM only.
+- Two-way binding (`v-model` on form elements such as an `input` text box or a `select` dropdown): the connection goes both ways. If the user types or selects, the variable in Vue's data updates. If your code (or the browser console) changes the variable, the text box or selection updates.
+- Useful example: after an error, to reset a form input or dropdown, just reset the variable in `data` and all matching inputs update.
+- This is a client-side JavaScript feature running in the user's browser. Server-side templating such as Jinja and Flask renders HTML once on the server before sending it, so it has no live two-way binding.
+
+</TopicSection>
