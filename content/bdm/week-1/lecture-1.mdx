@@ -2,189 +2,276 @@
 subject: "bdm"
 week: 1
 lecture: 1
-title: "Foundations of Relational Data Systems & Business Integrity Constraints"
-duration: "46 mins"
-overviewSummary: "Explores enterprise data architecture, the formal relational model vs document stores, transactional integrity guarantees (ACID), domain constraints, foreign key referential cascades, and business data flow patterns."
+title: "Overview of Economics: Needs, Wants, Scarcity and Factors of Production"
+duration: "[check: duration not in transcript]"
+overviewSummary: "Introduces economics through needs, wants and desire, the idea of infinite (insatiable) wants, and scarce resources with constraints. Defines economics as the science of constrained choices, separates economic goods from free goods, and covers the four factors of production (land, labor, capital, enterprise). Explains the economic problem, two common myths, and the split between microeconomics and macroeconomics."
 topics:
-  - id: "enterprise-data"
-    title: "1. Data as an Enterprise Asset & OLTP vs OLAP"
-    keyIdea: "Modern businesses separate high-throughput operational transaction recording (OLTP) from historical multi-dimensional analytical processing (OLAP)."
-  - id: "relational-model"
-    title: "2. The Formal Relational Model & Codd's Rules"
-    keyIdea: "A relation is a mathematical set of tuples over attribute domains, governed by predicate logic rather than physical storage offsets."
-  - id: "integrity-constraints"
-    title: "3. Integrity Constraints: Entity, Referential, & Domain"
-    keyIdea: "Integrity constraints enforce business domain rules at the database engine tier, preventing corrupt data states regardless of application bugs."
-  - id: "acid-guarantees"
-    title: "4. The ACID Framework in Enterprise Transactions"
-    keyIdea: "ACID properties ensure financial and logistical transactions complete reliably or abort entirely without leaving phantom states."
-formulas:
-  - name: "Relational Cardinality & Degree"
-    latex: "|R| = \\text{Cardinality (Number of Tuples)}, \\quad \\text{deg}(R) = \\text{Degree (Number of Attributes)}"
-    description: "Fundamental metrics quantifying relation volume and schema dimensionality."
-    symbols:
-      - symbol: "|R|"
-        meaning: "Count of rows/records currently present in relation table R"
-      - symbol: "\\text{deg}(R)"
-        meaning: "Count of columns/attributes comprising the schema definition"
-  - name: "Referential Integrity Constraint"
-    latex: "\\forall t_1 \\in R_1, \\quad t_1[FK] \\neq \\text{NULL} \\implies \\exists t_2 \\in R_2 \\text{ such that } t_2[PK] = t_1[FK]"
-    description: "Ensures every non-null foreign key references an existing, valid primary key in the parent relation."
-    symbols:
-      - symbol: "R_1, R_2"
-        meaning: "Child relation (referencing) and Parent relation (referenced)"
-      - symbol: "PK, FK"
-        meaning: "Primary Key and Foreign Key attribute sets"
+  - id: "needs-wants-desire"
+    title: "1. Needs, wants and desire"
+    keyIdea: "Needs are essential for survival, wants improve quality of life once needs are met, and desire is a want you cannot afford."
+  - id: "infinite-wants"
+    title: "2. Infinite (insatiable) wants"
+    keyIdea: "Human beings are never satisfied with what they have and always want more."
+  - id: "selfish"
+    title: "3. Are human beings selfish?"
+    keyIdea: "Infinite wants do not make people selfish, because people also wish others to have more."
+  - id: "goods-services"
+    title: "4. Wants as goods and services"
+    keyIdea: "Wants are the goods and services that individuals desire, and they are produced using resources."
+  - id: "scarcity"
+    title: "5. Scarce resources and constraints"
+    keyIdea: "Resources are scarce, so there are limits on what can be produced and which wants can be satisfied."
+  - id: "definition"
+    title: "6. Definition of economics"
+    keyIdea: "Economics is the science of constrained choices: allocating scarce resources to meet unlimited human wants."
+  - id: "economic-free-goods"
+    title: "7. Economic goods and free goods"
+    keyIdea: "Economic goods are scarce, free goods have enough supply; not paying for something does not make it a free good."
+  - id: "factors-of-production"
+    title: "8. Resources and the four factors of production"
+    keyIdea: "Land, labor, capital and enterprise combine to produce goods and services."
+  - id: "economic-problem"
+    title: "9. The economic problem"
+    keyIdea: "Wants are infinite but resources are finite, so scarce resources must be carefully allocated."
+  - id: "myths"
+    title: "10. Myths: what economics is not"
+    keyIdea: "Economics is not just money, and knowing it does not guarantee business success."
+  - id: "micro-macro"
+    title: "11. Microeconomics and macroeconomics"
+    keyIdea: "Macro studies the entire economy top-down, micro studies individuals and firms bottom-up, and both rest on constrained choice."
 selfTest:
-  - question: "What is the key difference between OLTP and OLAP workloads?"
-    answer: "OLTP systems process millions of small, real-time read/write transactions optimized for sub-second latency and row-level ACID updates. OLAP systems process historical aggregate queries scanning millions of rows across star/snowflake schemas for business intelligence."
-    explanation: "Mixing OLAP analytical queries on an active OLTP database causes catastrophic table locks and latency degradation for end users."
-  - question: "What does 'Atomicity' guarantee in an e-commerce checkout transaction?"
-    answer: "Atomicity ensures that either all steps of the transaction succeed (inventory deducted, payment captured, order logged), or if any single step fails, the entire transaction rolls back cleanly with zero changes persisted."
-    explanation: "Without atomicity, a network crash after deducting money from a customer's bank account would leave the database without a corresponding order record."
-  - question: "Explain the difference between ON DELETE CASCADE and ON DELETE RESTRICT."
-    answer: "CASCADE automatically deletes all child rows when the referenced parent row is deleted. RESTRICT halts and rejects the deletion of the parent row if any child rows still reference it."
-    explanation: "For critical financial ledgers, RESTRICT is preferred to prevent accidental cascading destruction of historical line items."
-  - question: "What is a 'Candidate Key' and how does it relate to the 'Primary Key'?"
-    answer: "A candidate key is a minimal superkey that uniquely identifies every tuple in a relation without redundant attributes. The primary key is the specific candidate key selected by the database designer as the principal identifier."
-    explanation: "All remaining candidate keys not chosen as the primary key are designated as alternate keys (often indexed with UNIQUE constraints)."
-  - question: "Why are NULL values problematic in relational comparisons?"
-    answer: "NULL represents missing, unknown, or inapplicable information and operates under three-valued logic (True, False, Unknown). Expressions like NULL = NULL evaluate to Unknown rather than True."
-    explanation: "Because WHERE clauses only return rows evaluating strictly to True, queries checking WHERE column = NULL will return zero rows. SQL requires WHERE column IS NULL."
+  - question: "Distinguish between needs, wants and desire."
+    answer: "Needs are essential for survival and well-being (food, clothing, shelter, healthcare). Wants appear once basic needs are met and enhance the quality of life (entertainment, travel). Desire differs from a want only by affordability: we wish to buy something but may not have enough funds."
+    explanation: "Wants are thought of only after the basic needs are fulfilled."
+  - question: "What are infinite (insatiable) wants, and does it make human beings selfish?"
+    answer: "Infinite wants mean that all human beings are never satisfied with what they have and always want more. It does not make people selfish, because people also think of others and wish others to have more."
+    explanation: "The belief is universal among economists and people, but it is not based on evidence or scientific testing; people assert it."
+  - question: "Give the first definition of economics and say why scarcity matters to it."
+    answer: "Economics is the science of constrained choices: it deals with allocating scarce resources to meet unlimited human wants. Resources are scarce, which creates constraints on the goods and services that can be produced."
+    explanation: "Goods and services are produced by resources, so limited resources limit which wants can be satisfied."
+  - question: "What is the difference between an economic good and a free good? Is free hospitalization for poor people a free good?"
+    answer: "Economic goods are scarce in nature; free goods have enough supply to meet human wants (air). Free hospitalization is not a free good: it is an economic good, because scarce resources are allocated to provide the healthcare."
+    explanation: "People not paying for a good does not make it a free good."
+  - question: "Name the four factors of production and say what each one is."
+    answer: "Land: scarce resources, such as oil or sea. Labor: people available to work who have the knowledge and intelligence. Capital: goods used to produce other goods, such as buildings and machinery. Enterprise: entrepreneurs who combine land, labor and capital to produce goods and services."
+    explanation: "Production is any activity that satisfies a human want."
+  - question: "Explain microeconomics and macroeconomics using the tariff example."
+    answer: "Macroeconomics studies the larger, entire economy top-down, such as the impact of Trump tariffs on India's employment rate and GDP. Microeconomics studies the impact on consumer behavior, individuals, businesses and workers, a bottom-up approach. They are interconnected, and constrained choice (optimization) is present in both."
+    explanation: "A macro example is a government giving more budget to education and less to infrastructure; a micro example is a consumer who works more and has less leisure."
 resources:
-  - title: "PostgreSQL 16 Official Documentation"
-    url: "https://www.postgresql.org/docs/16/ddl-constraints.html"
-    type: "Official Docs"
-    description: "Authoritative reference on primary keys, foreign key referential actions, and check constraints."
-    verified: true
-  - title: "Database System Concepts (Silberschatz, Korth, Sudarshan)"
-    url: "https://www.db-book.com/"
-    type: "Standard Course Textbook"
-    description: "The official standard textbook for IIT Madras database coursework, detailing relational algebra and transaction management."
-    verified: true
-  - title: "CMU Database Group: Intro to Database Systems"
-    url: "https://15445.courses.cs.cmu.edu/"
+  - title: "OpenStax: Principles of Economics 3e"
+    url: "https://openstax.org/details/books/principles-economics-3e"
+    type: "Open Textbook"
+    description: "Free openly licensed textbook covering scarcity, choice, goods and the micro/macro split."
+    verified: false
+  - title: "Khan Academy: Economics"
+    url: "https://www.khanacademy.org/economics-finance-domain"
     type: "Open Course Portal"
-    description: "Carnegie Mellon's comprehensive open lectures on relational engines, buffer management, and concurrency control."
-    verified: true
+    description: "Free lessons on basic economic concepts."
+    verified: false
 ---
 
-<TopicSection id="enterprise-data" title="1. Data as an Enterprise Asset & OLTP vs OLAP">
+<TopicSection id="needs-wants-desire" title="1. Needs, wants and desire">
 
 <KeyIdea>
-Modern enterprise architectures decouple real-time transactional processing (OLTP) from multi-dimensional analytical intelligence (OLAP) to balance low-latency writes against compute-intensive aggregation.
+Needs are essential for survival, wants improve quality of life once needs are met, and desire is a want you cannot afford.
 </KeyIdea>
 
-In an enterprise such as a national supermarket chain handling **50,000 active SKUs** and **12,000 transactions per minute**, data serves two fundamentally different business functions:
+- This first video gives an overview of economics. It does not go into depth and covers only some key concepts.
 
-```
-Operational Pipeline:
-[ Point-of-Sale POS ] ──> [ OLTP: PostgreSQL / MySQL ] 
-                                  │ (Nightly ETL / CDC Stream)
-                                  ▼
-[ Executive Dashboard ] <── [ OLAP: Snowflake / ClickHouse / BigQuery ]
-```
+| Term | Lecture meaning | Examples |
+|---|---|---|
+| Need | Essential for survival and well-being; one cannot survive without these basic requirements | Food, clothing, shelter, healthcare |
+| Want | Appears once basic needs are fulfilled and our aspiration goes up; enhances the quality of life | Entertainment, travel |
+| Desire | The only difference from a want is affordability: we wish to buy something but may not have enough funds | Items we wish to buy but cannot afford |
 
-### Comparative Framework: OLTP vs. OLAP
+> **Plain language:** A need keeps you alive, a want makes life better, and a desire is a want you cannot afford yet.
 
-| Feature Dimension | OLTP (Online Transaction Processing) | OLAP (Online Analytical Processing) |
-| :--- | :--- | :--- |
-| **Primary Goal** | High concurrency, real-time data integrity | Long-term trend analysis, executive reporting |
-| **Query Pattern** | Simple point-reads and single-row writes (`INSERT`, `UPDATE`) | Heavy aggregations (`SUM`, `AVG`, `GROUP BY`) over millions of rows |
-| **Schema Design** | Highly normalized (3NF / BCNF) to eliminate redundancy | Denormalized Star or Snowflake dimensional schemas |
-| **Latency Benchmark** | Strict sub-second response ($< 15\text{ ms}$) | Seconds to minutes acceptable |
-| **Typical Example** | Recording a credit card charge of ₹1,499 | Calculating year-over-year revenue growth across regions |
+- The lecture also says a want can be thought of as a specific need, and that we think of wants only once our basic needs are fulfilled.
 
-<CheckBadge reason="Transcript mentioned 'OLAP handles customer login sessions'. Corrected: Login authentication is strictly an OLTP transactional workload." />
-
-<AddedByTutor>
-In modern data engineering, the transition from OLTP to OLAP is managed using **Change Data Capture (CDC)** tools like Debezium, streaming row-level WAL (Write-Ahead Log) mutations directly into analytical lakes.
-</AddedByTutor>
+<CheckBadge reason="Food, clothing and shelter are first given as needs, and later in topic 4 they appear again in the list of wants; both statements are kept as spoken." />
 
 </TopicSection>
 
 ---
 
-<TopicSection id="relational-model" title="2. The Formal Relational Model & Codd's Rules">
+<TopicSection id="infinite-wants" title="2. Infinite (insatiable) wants">
 
 <KeyIdea>
-Edgar F. Codd formulated the relational model in 1970 to liberate application software from the physical layout of disk storage through mathematical set theory and first-order predicate logic.
+Human beings are never satisfied with what they have and always want more.
 </KeyIdea>
 
-### Formal Academic Definition
-> **Relation**: Given domains $D_1, D_2, \dots, D_m$, a relation $R$ is a subset of the Cartesian product $D_1 \times D_2 \times \dots \times D_m$. A tuple $t \in R$ is an ordered list of values $\langle v_1, v_2, \dots, v_m \rangle$ such that $v_j \in D_j$.
+> **Definition (from the lecture):** Human beings have infinite wants, also called insatiable wants.
 
-### Plain-Language Breakdown
-> Think of a **relation** simply as a 2D spreadsheet or table where:
-> - Every column represents a typed attribute (e.g. `customer_id`, `email`).
-> - Every row represents an individual, unique record (a tuple).
-> - Duplicate rows are strictly forbidden.
-> - The physical order in which rows or columns appear has zero semantic meaning.
+> **Plain language:** However much we have, we always want more.
 
-### Relational Schema Diagram:
-The diagram below illustrates the relationship between `CUSTOMERS` and `ORDERS`:
-
-![Relational Integrity Schema](/images/bdm/relational_schema.svg)
+- Once our basic needs are fulfilled, we have wants, and all human beings have infinite wants.
+- This is a universal belief among economists (those who study economics) and among people in general.
+- It is not based on any evidence or scientific testing; people simply assert that it is true.
 
 </TopicSection>
 
 ---
 
-<TopicSection id="integrity-constraints" title="3. Integrity Constraints: Entity, Referential, & Domain">
+<TopicSection id="selfish" title="3. Are human beings selfish?">
 
 <KeyIdea>
-Integrity constraints act as automated database-level guardrails, ensuring that data stored within tables satisfies predefined business invariants at all times.
+Infinite wants do not make people selfish, because people also wish others to have more.
 </KeyIdea>
 
-Relational systems enforce three primary classes of constraints:
-
-1. **Entity Integrity**:
-   - The primary key cannot contain a `NULL` value.
-   - Every tuple must be uniquely distinguishable via its primary key attribute(s).
-
-2. **Referential Integrity**:
-   - A Foreign Key (FK) in a referencing table must either be completely `NULL` or match an existing Primary Key (PK) value in the referenced parent table.
-   - Enforces valid business relationships (e.g., an Order cannot belong to a non-existent Customer).
-
-3. **Domain Constraints**:
-   - Values in an attribute column must belong to the declared domain (e.g., `total_amount > 0.00`, `tier_level IN ('Bronze', 'Silver', 'Gold')`).
-
-### Referential Action Cascade Options:
-```sql
-ALTER TABLE orders
-  ADD CONSTRAINT fk_customer
-  FOREIGN KEY (customer_id) 
-  REFERENCES customers(customer_id)
-  ON UPDATE CASCADE
-  ON DELETE RESTRICT;
-```
-- `ON UPDATE CASCADE`: If a customer ID is updated, all associated order records update automatically.
-- `ON DELETE RESTRICT`: Prevents deletion of a customer who has existing historical orders in the system.
+- Question: does having infinite wants mean human beings are selfish? The answer is not necessarily.
+- Everybody has infinite wants, and human beings also think of others, are concerned about others, and wish others to have more.
+- The lecture says this shows the positive side of human beings.
 
 </TopicSection>
 
 ---
 
-<TopicSection id="acid-guarantees" title="4. The ACID Framework in Enterprise Transactions">
+<TopicSection id="goods-services" title="4. Wants as goods and services">
 
 <KeyIdea>
-ACID guarantees form the bedrock of database reliability, ensuring mission-critical financial and logistical operations retain consistency in the presence of failures and high concurrency.
+Wants are the goods and services that individuals desire, and they are produced using resources.
 </KeyIdea>
 
-Consider transferring **₹5,000** from Account A to Account B:
+> **Definition (from the lecture):** Wants are the goods and services that individuals desire, such as food, clothing, shelter and anything else that enhances the quality of life.
 
-$$\text{T1}: \quad \text{Read}(A) \implies A := A - 5000 \implies \text{Write}(A) \implies \text{Read}(B) \implies B := B + 5000 \implies \text{Write}(B)$$
+> **Plain language:** Wants are the things and services people would like to have.
 
-### The Four ACID Pillars:
-
-- **Atomicity (All-or-Nothing)**:
-  - If the server crashes after debiting $A$ but before crediting $B$, the database Write-Ahead Log (WAL) undoes the debit. Either the entire sequence commits, or none of it does.
-- **Consistency (Preserving Invariants)**:
-  - Total money across $(A + B)$ before the transaction must equal $(A + B)$ after the transaction.
-- **Isolation (Concurrency Shielding)**:
-  - An independent concurrent transaction T2 cannot view intermediate, uncommitted states where $A$ has been deducted but $B$ has not yet been credited.
-- **Durability (Fault Survival)**:
-  - Once the transaction manager returns a `COMMIT` acknowledgment to the application, the changes persist across power failures and system crashes.
+- The difference between product and service is covered in week 3.
+- The next question is how to produce these goods and services: for that we need **resources**.
 
 </TopicSection>
 
+---
+
+<TopicSection id="scarcity" title="5. Scarce resources and constraints">
+
+<KeyIdea>
+Resources are scarce, so there are limits on what can be produced and which wants can be satisfied.
+</KeyIdea>
+
+> **Definition (from the lecture):** Scarce means short in supply, which means there is a shortage.
+
+> **Plain language:** There is never enough of the resources to make everything people want.
+
+- Human wants are unlimited or infinite, but the resources to meet them are scarce (less).
+- Scarcity of resources implies **constraints**: limitations on the goods and services that can be produced.
+- Goods and services are produced by resources, so resource limitations also limit what can be produced and which human wants can finally be satisfied.
+
+</TopicSection>
+
+---
+
+<TopicSection id="definition" title="6. Definition of economics">
+
+<KeyIdea>
+Economics is the science of constrained choices: allocating scarce resources to meet unlimited human wants.
+</KeyIdea>
+
+> **Definition (from the lecture):** Economics is the science of constrained choices. It is the science that deals with the allocation of scarce resources to meet unlimited human wants. (This is the first definition given.)
+
+> **Plain language:** Economics is about choosing how to use limited resources when people want unlimited things.
+
+</TopicSection>
+
+---
+
+<TopicSection id="economic-free-goods" title="7. Economic goods and free goods">
+
+<KeyIdea>
+Economic goods are scarce, free goods have enough supply; not paying for something does not make it a free good.
+</KeyIdea>
+
+Economists classify goods into two types:
+
+| Type | Lecture meaning | Example |
+|---|---|---|
+| Economic goods | Goods that are scarce in nature; most of the resources used to produce goods are always scarce | Goods produced from scarce resources |
+| Free goods | Goods with enough supply to meet human wants | Air, available free in supply |
+
+- Question: if people do not pay for a good, is it a free good? Not necessarily.
+- Example: a government program of free hospitalization for poor people means they do not pay hospitalization charges or for medical facilities. It is not a free good. It is an **economic good**, because scarce resources are allocated to provide healthcare.
+
+</TopicSection>
+
+---
+
+<TopicSection id="factors-of-production" title="8. Resources and the four factors of production">
+
+<KeyIdea>
+Land, labor, capital and enterprise combine to produce goods and services.
+</KeyIdea>
+
+- Resources include land, labor, raw materials and so on. We get them from Mother Earth, where we live. They are always scarce, while human wants are infinite.
+- Economists divide the earth's scarce resources into **four factors of production**.
+
+| Factor | Lecture meaning |
+|---|---|
+| Land | Scarce resources, such as oil or sea |
+| Labor | People available to work, with knowledge, intelligence and so on |
+| Capital | Goods used to produce other goods, for example buildings and machinery |
+| Enterprise | Entrepreneurs who combine the other three factors (land, labor and capital) to produce goods and services |
+
+<CheckBadge reason="Land is described as scarce resources 'such as oil or sea' (as spoken); kept as stated." />
+
+> **Definition (from the lecture):** Production is any activity carried out that satisfies a human want.
+
+> **Plain language:** Whenever someone makes something or does something that meets a want, that is production.
+
+- Land plus labor plus capital plus enterprise, when combined, results in the production of goods and services that meet human wants. When those goods and services are supplied, production has taken place.
+
+</TopicSection>
+
+---
+
+<TopicSection id="economic-problem" title="9. The economic problem">
+
+<KeyIdea>
+Wants are infinite but resources are finite, so scarce resources must be carefully allocated.
+</KeyIdea>
+
+> **Definition (from the lecture):** The economic problem arises because human wants are infinite while the resources needed to meet them are finite (scarce), so we cannot get whatever we want and must carefully allocate scarce resources.
+
+> **Plain language:** We cannot have everything, so we must choose how to use what we have.
+
+- Economics is all about tackling this issue.
+
+</TopicSection>
+
+---
+
+<TopicSection id="myths" title="10. Myths: what economics is not">
+
+<KeyIdea>
+Economics is not just money, and knowing it does not guarantee business success.
+</KeyIdea>
+
+| Myth | What the lecture says |
+|---|---|
+| Economics is money | Economists do study money as a topic, but only because it addresses the economic problem |
+| Business success is guaranteed if you know economics | Knowing economics makes you a better salesperson, but success is not guaranteed. Studying it neither makes you rich nor poor. It helps you understand business scenarios and make decisions accordingly |
+
+</TopicSection>
+
+---
+
+<TopicSection id="micro-macro" title="11. Microeconomics and macroeconomics">
+
+<KeyIdea>
+Macro studies the entire economy top-down, micro studies individuals and firms bottom-up, and both rest on constrained choice.
+</KeyIdea>
+
+Economics has two branches.
+
+| | Macroeconomics | Microeconomics |
+|---|---|---|
+| Focus | The larger economy, the entire economy | Smaller parts of the economy |
+| Approach | Top-down | Bottom-up |
+| Tariff example | Impact of Trump tariffs on India, on the employment rate and on GDP | Impact of the tariffs on consumer behavior, individuals, businesses and workers |
+| Other example | A government allocates a lot of budget to education, so it may allocate less to infrastructure | A consumer who spends a lot of time working may spend less time on leisure |
+
+- They are not two different subjects; they are interconnected.
+- Constrained choice or optimization is present in both macro and micro, and it is up to the decision maker to make the best decision under the circumstances.
+- The next video discusses the difference between macroeconomics and microeconomics in more detail, with focus on microeconomic concepts relevant to the business data management project.
+
+</TopicSection>
