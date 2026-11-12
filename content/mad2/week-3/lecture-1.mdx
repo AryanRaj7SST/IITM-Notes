@@ -1,0 +1,178 @@
+---
+subject: "mad2"
+week: 3
+lecture: 1
+title: "Single Page Application (SPA) Architecture and Client-Side Routing"
+duration: "47 mins"
+overviewSummary: "Deconstructs the architectural shift from traditional Multi-Page Applications (MPAs) to Single Page Applications (SPAs), browser History API (pushState, popstate), client-side virtual routing, and performance trade-offs."
+topics:
+  - id: "mpa-vs-spa"
+    title: "1. Traditional MPAs vs Single Page Applications (SPAs)"
+    keyIdea: "MPAs reload full HTML pages from the server on every link click; SPAs load a single HTML shell and dynamically re-render views in the browser."
+  - id: "history-api"
+    title: "2. The HTML5 History API: pushState and popstate"
+    keyIdea: "HTML5 History methods change the browser URL bar and session history without triggering a full network page refresh."
+  - id: "client-side-routing"
+    title: "3. How Client-Side Routers Work Under the Hood"
+    keyIdea: "A client router intercepts URL changes, parses route parameters, and mounts the corresponding component into a viewport outlet."
+  - id: "tradeoffs"
+    title: "4. Trade-offs: Initial Load, SEO, and Server Fallback"
+    keyIdea: "SPAs deliver smooth desktop-like navigation but require larger initial JavaScript bundles and specialized server fallback configuration."
+projectTree: |
+  vanilla-spa/
+  ├── index.html
+  └── router.js
+codeSnippets:
+  - title: "Minimal Vanilla HTML5 History API Router"
+    filename: "vanilla-spa/router.js"
+    language: "javascript"
+    tested: true
+    code: |
+      "use strict";
+
+      // View definitions
+      const routes = {
+        "/": "<h2>Home Dashboard</h2><p>Welcome to IITM BS Degree Portal.</p>",
+        "/courses": "<h2>Courses</h2><p>List of enrolled courses: MLT, MAD 2, BDM.</p>",
+        "/profile": "<h2>User Profile</h2><p>Student Roll No: 21F1000123</p>"
+      };
+
+      function navigateTo(url) {
+        // Push state without reloading the page
+        history.pushState(null, null, url);
+        renderView();
+      }
+
+      function renderView() {
+        const path = window.location.pathname;
+        const app = document.getElementById("content-outlet");
+        app.innerHTML = routes[path] || "<h2>404 Not Found</h2><p>Page does not exist.</p>";
+      }
+
+      // Handle browser Back / Forward buttons
+      window.addEventListener("popstate", renderView);
+
+      // Intercept anchor clicks
+      document.addEventListener("DOMContentLoaded", () => {
+        document.body.addEventListener("click", e => {
+          if (e.target.matches("[data-link]")) {
+            e.preventDefault();
+            navigateTo(e.target.getAttribute("href"));
+          }
+        });
+        renderView();
+      });
+    explanations:
+      - lines: "11-15"
+        explanation: "history.pushState() pushes a new URL into the browser history stack without making an HTTP request to the server."
+      - lines: "24"
+        explanation: "popstate listener ensures clicking browser Back/Forward arrows updates the rendered view automatically."
+      - lines: "28-33"
+        explanation: "Delegated click listener intercepts links marked with data-link, preventing default browser page reloads."
+    output: |
+      Clicking links changes the browser URL to /courses or /profile and instantly swaps view content without any white screen flash.
+selfTest:
+  - question: "Why does refreshing a client-side route like 'myapp.com/profile' cause a 404 error on standard static servers without special configuration?"
+    answer: "Because standard servers look for a physical file at /profile/index.html on the disk. Since an SPA has only a single index.html at root, the server returns 404 Not Found."
+    explanation: "Web servers (Nginx, Netlify, Vercel) must be configured with a fallback rewrite rule redirecting all unknown requests back to index.html."
+  - question: "What is the primary SEO drawback of client-rendered SPAs compared to server-rendered MPAs?"
+    answer: "Search engine web crawlers that do not execute JavaScript see only an empty <div id=\"app\"></div> shell, hindering indexing of page content."
+    explanation: "Server-Side Rendering (SSR) frameworks like Nuxt.js or Next.js resolve this by pre-rendering HTML on the server before serving it."
+  - question: "What does window.history.replaceState() do compared to pushState()?"
+    answer: "replaceState() updates the current URL without adding a new entry to the browser's history stack. pushState() adds a new history entry."
+    explanation: "replaceState is useful when updating query filters or redirecting after a login so the back button doesn't loop."
+  - question: "What is 'Code Splitting' and why is it essential for large SPAs?"
+    answer: "Code splitting divides the application's compiled JavaScript into smaller asynchronous chunks loaded on-demand per route, rather than downloading the entire application bundle on first page load."
+    explanation: "In Vue Router, code splitting is achieved using dynamic imports: component: () => import('./views/Dashboard.vue')."
+resources:
+  - title: "MDN Web Docs: Manipulating the browser history"
+    url: "https://developer.mozilla.org/en-US/docs/Web/API/History_API"
+    type: "Official Reference"
+    description: "Detailed documentation on pushState, replaceState, and the popstate event."
+    verified: true
+  - title: "web.dev: Single-page applications vs multi-page applications"
+    url: "https://web.dev/articles/rendering-on-the-web"
+    type: "Architectural Guide"
+    description: "Google Developers guide on client rendering, SSR, static generation, and Core Web Vitals."
+    verified: true
+---
+
+<TopicSection id="mpa-vs-spa" title="1. Traditional MPAs vs Single Page Applications (SPAs)">
+
+<KeyIdea>
+SPAs replace the traditional cycle of full-page server reloads with instant in-browser component swapping, delivering desktop-like fluid user experiences.
+</KeyIdea>
+
+In traditional Multi-Page Applications (MPAs) built with Django, Flask, or PHP:
+1. User clicks a link.
+2. The browser requests an entirely new HTML document from the server.
+3. The screen flashes white while old assets are discarded and new assets are fetched and parsed.
+
+In a Single Page Application (SPA):
+1. The initial request fetches one minimal `index.html` file along with the JavaScript bundle.
+2. Clicking a link updates the URL locally and dynamically fetches only raw JSON data from API endpoints.
+3. The existing DOM is patched in place with zero screen flicker.
+
+</TopicSection>
+
+---
+
+<TopicSection id="history-api" title="2. The HTML5 History API: pushState and popstate">
+
+<KeyIdea>
+The HTML5 History API allows JavaScript to manipulate the browser address bar and travel through session history programmatically.
+</KeyIdea>
+
+Before HTML5, single-page navigation relied on URL hashes (`example.com/#/courses`). The History API modernized this:
+
+```javascript
+// Adds a new entry to the history stack
+history.pushState({ pageId: "courses" }, "Courses", "/courses");
+
+// Overwrites current entry without adding to history
+history.replaceState({ pageId: "courses" }, "Courses", "/courses");
+
+// Listens to user clicking browser Back or Forward buttons
+window.addEventListener("popstate", (event) => {
+  console.log("Navigated to:", window.location.pathname);
+});
+```
+
+`pushState` alters the URL displayed in the address bar without issuing an HTTP `GET` request to the web server.
+
+</TopicSection>
+
+---
+
+<TopicSection id="client-side-routing" title="3. How Client-Side Routers Work Under the Hood">
+
+<KeyIdea>
+A client-side router acts as an event-driven dispatcher mapping URL patterns to specific component views.
+</KeyIdea>
+
+The operational flow of a client router:
+1. Intercepts anchor tag click events globally (`preventDefault()`).
+2. Calls `history.pushState()` with the target URI.
+3. Matches the URI against an internal route table (e.g. `/students/:id`).
+4. Extracts dynamic route parameters (`id = 42`).
+5. Destroys the current view component and mounts the matching component into the router viewport.
+
+</TopicSection>
+
+---
+
+<TopicSection id="tradeoffs" title="4. Trade-offs: Initial Load, SEO, and Server Fallback">
+
+<KeyIdea>
+While SPAs deliver unmatched runtime speed, they introduce architectural trade-offs in initial bundle size, search crawler indexing, and server routing.
+</KeyIdea>
+
+### Key Architectural Trade-offs:
+- **First Contentful Paint (FCP)**: SPAs can feel slower on first load over cellular networks because the browser must download and execute the entire framework bundle before rendering.
+- **Server Fallback Requirement**: Refreshing a deep link requires the web server to rewrite all requests back to `/index.html`, allowing the client router to boot and read `window.location.pathname`.
+- **Search Engine Optimization (SEO)**: Traditional search bots may not wait for asynchronous API calls to populate templates before indexing text.
+
+Modern applications address bundle size through route-level lazy loading (dynamic `import()`).
+
+</TopicSection>
+

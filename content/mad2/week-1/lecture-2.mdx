@@ -1,0 +1,525 @@
+---
+subject: "mad2"
+week: 1
+lecture: 2
+title: "JavaScript Syntax Basics: Statements, Expressions, Types, and a First Demo"
+duration: "[check: duration not given in transcript]"
+overviewSummary: "A fast, Python-linked introduction to working JavaScript syntax: how front-end scripts are invoked from HTML, reserved words and literals, statements versus expressions, primitive data types, objects and functions as values, followed by a first Replit demo that prints to the console from script.js."
+topics:
+  - id: "approach"
+    title: "1. Approach of This Part: Working Knowledge, Python as Anchor"
+    keyIdea: "Learn enough syntax to start, link it to Python, and learn the rest by programming."
+  - id: "html-invocation"
+    title: "2. Front-End JavaScript Runs From an HTML Page"
+    keyIdea: "Without a document there is nothing useful for front-end JavaScript to do; the language is a loosely structured script."
+  - id: "reserved-words"
+    title: "3. Identifiers and Reserved Words"
+    keyIdea: "Never use a reserved word, or a word you suspect is used by the language, as a variable name."
+  - id: "literals-avoid"
+    title: "4. Literals and Other Words to Avoid"
+    keyIdea: "true, false and null are literal values; avoid a few more words that are not strictly forbidden."
+  - id: "statements-expressions"
+    title: "5. Statements and Expressions"
+    keyIdea: "A statement is executed; an expression produces a value and can be used wherever a value is needed."
+  - id: "primitive-types"
+    title: "6. Primitive Data Types"
+    keyIdea: "JavaScript has one number type, plus bigint, string and Boolean, and the non-values undefined and null."
+  - id: "objects-functions"
+    title: "7. Objects and Functions as Values"
+    keyIdea: "Objects bundle data; functions can be stored in variables and inside objects."
+  - id: "replit-project"
+    title: "8. Demo: A Basic Replit Project"
+    keyIdea: "An HTML, CSS and JavaScript Repl gives index.html, script.js and style.css."
+  - id: "index-html"
+    title: "9. Demo: Walking Through index.html"
+    keyIdea: "The script tag loads script.js; the rest is default Replit HTML plus a few added items."
+  - id: "running-script"
+    title: "10. Demo: script.js, Run, Console and Shell"
+    keyIdea: "HTML output appears in the page pane; console.log output appears in the Console."
+  - id: "syntax-demo"
+    title: "11. Syntax Demo (Tutor Addition)"
+    keyIdea: "A small tested script that shows each idea from this lecture."
+projectTree: |
+  my-repl/
+  ├── index.html     # HTML page that loads script.js
+  ├── script.js      # JavaScript (empty by default in Replit)
+  └── style.css      # styles (empty in this demo)
+codeSnippets:
+  - title: "First script: Hello console"
+    filename: "my-repl/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      console.log("Hello console!")
+    explanations:
+      - lines: "1"
+        explanation: "Prints Hello console! to the JavaScript console. It is the equivalent of a Hello World program for this lecture."
+    output: |
+      Hello console!
+  - title: "Minimal index.html that loads the script (reconstruction)"
+    filename: "my-repl/index.html"
+    language: "html"
+    tested: false
+    code: |
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>replit</title>
+        <link href="style.css" rel="stylesheet" type="text/css" />
+      </head>
+      <body>
+        <div></div>
+        Hello world
+        <div></div>
+        <script src="script.js"></script>
+      </body>
+      </html>
+    explanations:
+      - lines: "1"
+        explanation: "DOCTYPE declaration at the very start of the file."
+      - lines: "2-15"
+        explanation: "html element containing head (lines 3-8) and body (lines 9-14)."
+      - lines: "7"
+        explanation: "Default Replit link to the style sheet."
+      - lines: "10-12"
+        explanation: "Two empty div elements around the visible text Hello world."
+      - lines: "13"
+        explanation: "Loads script.js and executes it when the page runs."
+    output: |
+      [untested] The page pane shows: Hello world
+  - title: "Syntax demo: statements, expressions, types, functions, objects"
+    filename: "my-repl/demo.js"
+    language: "javascript"
+    tested: true
+    code: |
+      "use strict";
+
+      // expression: produces a value
+      let x = 10;
+      console.log(x);
+      console.log("Hello world");
+
+      // function arguments must be expressions
+      function add(a, b) {
+        return a + b;
+      }
+      console.log(add(x, 5));
+
+      // non-values and primitive types
+      let nothing = null;
+      let notSet;
+      console.log(nothing, notSet);
+      console.log(typeof 42, typeof 3.14, typeof 10n, typeof "text", typeof true);
+
+      // functions are values
+      const addAgain = function (a, b) {
+        return a + b;
+      };
+      console.log(addAgain(2, 3));
+
+      // an object can hold a function (a method)
+      const calc = {
+        name: "calc",
+        add: addAgain
+      };
+      console.log(calc.add(4, 6));
+
+      // console.log is a call expression that returns undefined
+      console.log(console.log("side effect"));
+    explanations:
+      - lines: "4-6"
+        explanation: "Assignment is an expression with a value; a bare string is also an expression."
+      - lines: "9-12"
+        explanation: "A function whose arguments (x, 5) are expressions."
+      - lines: "15-18"
+        explanation: "null and undefined as non-values; typeof shows that integers and decimals are both number, with bigint separate."
+      - lines: "21-24"
+        explanation: "An anonymous function stored in a variable and then called through it."
+      - lines: "27-31"
+        explanation: "An object with a property that holds a function, which makes it a method."
+      - lines: "34"
+        explanation: "The inner call prints and returns undefined, which the outer call then prints."
+    output: |
+      10
+      Hello world
+      15
+      null undefined
+      number number bigint string boolean
+      5
+      10
+      side effect
+      undefined
+selfTest:
+  - question: "Why can front-end JavaScript do nothing useful if it is not invoked from an HTML page?"
+    answer: "Front-end JavaScript is tied to the DOM (Document Object Model). Without an HTML page there is no document, so it cannot execute anything useful."
+    explanation: "This is why the demo needs index.html with a script tag that loads script.js."
+  - question: "Give two reasons JavaScript is described as closer to Python than to C."
+    answer: "It is a scripting language with no compilation step, and it is loosely structured: a script can be a series of statements without #include lines or a required main function."
+    explanation: "A C program needs a main function with braces and a more rigid structure."
+  - question: "What is the difference between a statement and an expression? Why can an if not be a function argument?"
+    answer: "A statement is code that is executed, possibly with side effects such as printing. An expression is evaluated to a value. Function arguments must be expressions, and an if statement does not return a value to pass in."
+    explanation: "x = 10 is an expression, and even a bare string such as Hello world is an expression that evaluates to itself."
+  - question: "Which primitive types does JavaScript have for numbers, and how does this differ from C?"
+    answer: "A single number type, with no separate int and float, plus bigint for large integers. The other types are Boolean and string."
+    explanation: "Python has int and float, and NumPy adds float32 and float64, but JavaScript calls every ordinary numeric value a number."
+  - question: "How can a function be treated like an object in JavaScript?"
+    answer: "You can assign a function (often an anonymous one) to a variable and call it through the variable, and an object can contain functions, which are its methods."
+    explanation: "This is possible in Python too, but it is used much more in JavaScript."
+  - question: "In the demo, where do Hello world and Hello console! each appear, and why?"
+    answer: "Hello world appears in the page pane because it is plain HTML. Hello console! appears in the Console pane because script.js runs console.log."
+    explanation: "The Shell is a different pane: it is a real Linux terminal, not the JavaScript console."
+resources:
+  - title: "MDN: Grammar and types"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Grammar_and_types"
+    type: "Official Docs"
+    description: "Variables, literals and data types in JavaScript."
+    verified: false
+  - title: "MDN: Expressions and operators"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Expressions_and_operators"
+    type: "Official Docs"
+    description: "What expressions are and how operators produce values."
+    verified: false
+  - title: "MDN: Lexical grammar"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar"
+    type: "Developer Reference"
+    description: "Reserved words, literals and identifier rules."
+    verified: false
+  - title: "Exploring JS (JavaScript for Impatient Programmers)"
+    url: "https://exploringjs.com/"
+    type: "Developer Reference"
+    description: "Detailed free language reference, mentioned in Lecture 1."
+    verified: false
+---
+
+<TopicSection id="approach" title="1. Approach of This Part: Working Knowledge, Python as Anchor">
+
+<KeyIdea>
+Learn enough syntax to get started, tie it to Python, and fill gaps as needed.
+</KeyIdea>
+
+- This part goes into the syntax of JavaScript, and fairly quickly.
+- Method: a rough presentation of concepts, then a demonstration in Replit.
+- It is quick because most learners already know a language like Python, and connections to Python are made wherever possible.
+- Knowing C or Java makes learning JavaScript even easier. The basic syntax is straightforward.
+- The aim is **working knowledge**, not complete detail. When you wonder how to implement something, you come back and learn a bit more syntax.
+- As with any language, the only way to learn it is to work with it and program.
+
+</TopicSection>
+
+---
+
+<TopicSection id="html-invocation" title="2. Front-End JavaScript Runs From an HTML Page">
+
+<KeyIdea>
+Front-end JavaScript must be invoked as a script from an HTML page, and is loosely structured like Python.
+</KeyIdea>
+
+- For basic front-end use you do not write a program and run it directly. JavaScript is invoked as a script from an HTML page, and only then does it have a document associated with it.
+- Front-end JavaScript is closely tied to the DOM (Document Object Model). If it is not invoked from an HTML page there is no document, so it cannot do anything useful.
+- It is a **scripting language with no compilation step**: what you type is what runs, as in Python.
+- It is **loosely structured**, like Python. C is more structured: `#include` lines (usually at the top), then a main function (`int main`) with open and close braces and a sequence of statements inside.
+- A Python script can be a bunch of statements executed one after another. In this sense JavaScript is closer to Python than to C.
+
+<AddedByTutor>
+Modern JavaScript engines compile code internally for speed (just-in-time compilation). What the lecture means is that there is no separate compile step that you run yourself.
+</AddedByTutor>
+
+</TopicSection>
+
+---
+
+<TopicSection id="reserved-words" title="3. Identifiers and Reserved Words">
+
+<KeyIdea>
+Know the reserved words, and never use one, or a word you suspect is special, as a variable name.
+</KeyIdea>
+
+- **Identifiers** are the words used in the language. You need to be aware of them but need not memorise the list.
+- There are a number of **reserved words**. Examples from the lecture, with Python comparisons:
+
+| Word | Meaning | Python comparison |
+| :--- | :--- | :--- |
+| `if` | Conditional (an obvious reserved word) | Same idea |
+| `function` | Defines a new function | Equivalent of `def` |
+| `let`, `const` | Declare variables (covered later) | No direct equivalent |
+| `while` | Implements while loops | Same idea |
+| `with` | Exists in both languages | Slightly different meaning in JavaScript |
+
+- It is not a one-to-one translation of everything seen in Python.
+- Key rule: if something is a reserved word, do not use it as a variable name.
+- Good general advice: avoid any name you even suspect is used by the language. Do not call a variable `delete` or `del`. `del` is not a reserved word here, but it could be used for something you do not know about.
+- If in doubt, modify the name slightly so it is unlikely to be reserved. You can always choose another name.
+
+<AddedByTutor>
+In JavaScript, `with` is a statement that adds an object to the scope chain. It is discouraged and not allowed in strict mode. `delete` is an operator and is a reserved word.
+</AddedByTutor>
+
+</TopicSection>
+
+---
+
+<TopicSection id="literals-avoid" title="4. Literals and Other Words to Avoid">
+
+<KeyIdea>
+true, false and null are literal values; a few more words should be avoided even though the language does not forbid them.
+</KeyIdea>
+
+- **Literals** include `true`, `false` and `null`.
+- `null` appears a lot in JavaScript. It is the equivalent of `None` in Python, "sort of the undefined state" in the lecturer's words.
+- Literals are not keywords in the sense of starting or ending a statement. They are values used in comparisons and assignments.
+- Other words to avoid: `package`, `private`, `public`, `undefined`, `async`. You will see them later in code.
+- It says "avoid" rather than "forbidden" because in principle the language does not stop you from redefining these words with different meanings. It is better to avoid them than rely on a ban.
+
+<CheckBadge reason="Transcript describes null as 'the undefined state'. In JavaScript, null (an intentional empty value) and undefined (a value not set) are different; both are covered in section 6." />
+
+<AddedByTutor>
+Strictly, `package`, `private` and `public` are reserved only in strict mode, while `undefined` is a global property and `async` is a contextual keyword. The advice to avoid all five still holds.
+</AddedByTutor>
+
+</TopicSection>
+
+---
+
+<TopicSection id="statements-expressions" title="5. Statements and Expressions">
+
+<KeyIdea>
+A statement is executed; an expression is evaluated to a value and can be used wherever a value is needed.
+</KeyIdea>
+
+- The language can be seen broadly as **statements** and **expressions**.
+- **Statement:** a piece of code that can be executed. Example: `if (something) { do something }`, with the body in the curly brackets. It can be a standalone operation or have side effects.
+- **Side effect:** for example `console.log`, which prints something in the console but does not directly affect any variables or data in the program.
+- **Expression:** something executed to obtain a value that is returned. Example: `x = 10` takes the value 10 and assigns it to `x`, and there is a value being returned.
+- Even a bare `"Hello world"` is an expression: it is a value that can be used anywhere a value is needed, and it returns itself.
+- Function arguments must be expressions. For a function `add(x, y)`, `x` and `y` must evaluate to values. An `if` statement cannot be an argument because it does not return a value to pass into the function.
+
+<CheckBadge reason="At the end of the demo the lecturer calls console.log a statement with no return value. In JavaScript, console.log(...) is a call expression that returns undefined (shown in the tested demo, section 11). It is used as a statement for its side effect." />
+
+</TopicSection>
+
+---
+
+<TopicSection id="primitive-types" title="6. Primitive Data Types">
+
+<KeyIdea>
+There is one number type, plus bigint, string and Boolean; undefined and null are special non-values.
+</KeyIdea>
+
+- Primitive types are built into the language.
+- `undefined` and `null` are important to keep in mind but, in the lecturer's words, are "not really data types". They are special cases called **non-values**.
+- The primitive types listed:
+
+| Type | Notes |
+| :--- | :--- |
+| Boolean | `true`, `false` |
+| `number` | No separate `int` and `float`, unlike C |
+| `bigint` | Stores large integers |
+| `string` | Stores and manipulates text |
+
+- Comparison: Python itself does not distinguish `int` and `float` in the same way the question arises, but NumPy distinguishes `int`, `float32` and `float64`. JavaScript natively calls everything a `number`.
+
+<CheckBadge reason="Transcript says undefined and null are not really data types. The ECMAScript specification lists Undefined and Null as primitive types (together with Symbol, which the lecture does not mention) [check: confirm which convention the course uses]." />
+
+</TopicSection>
+
+---
+
+<TopicSection id="objects-functions" title="7. Objects and Functions as Values">
+
+<KeyIdea>
+An object is compound data; functions can be assigned to variables and stored inside objects.
+</KeyIdea>
+
+- **Object:** a compound piece of data with multiple things put together inside it. Objects need more time later because they are the basis of how classes are implemented in JavaScript.
+- **Function:** for example `add(x, y)` takes two arguments and returns a value.
+- A function can be handled like an object. You can take a function name, assign it to a variable, and use the variable as the function. This is possible in Python too but is used more in JavaScript.
+- A common pattern: define a function as an **anonymous** object and assign it to a variable.
+- Objects can themselves have functions inside them. In object-oriented terms this is a **method** of the object or class.
+- In JavaScript, "a function can have an object associated with it".
+
+</TopicSection>
+
+---
+
+<TopicSection id="replit-project" title="8. Demo: A Basic Replit Project">
+
+<KeyIdea>
+Choosing HTML, CSS, JavaScript in Replit creates index.html, script.js and style.css.
+</KeyIdea>
+
+- The demo is a basic project in Replit. In Replit, choose "Create Repl", select HTML, CSS, JavaScript, and give it any name. [check: Replit's interface may have changed since the lecture.]
+- By default it creates `index.html`, `script.js` (empty by default; in the demo it has added material) and `style.css` (empty in this demo).
+- The left-hand side shows the files you have created. You can add your own files, put in images and create subfolders.
+- The lecturer expects familiarity with this from Flask applications or other contexts.
+
+```
+my-repl/
+├── index.html     # HTML page that loads script.js
+├── script.js      # JavaScript (empty by default in Replit)
+└── style.css      # styles (empty in this demo)
+```
+
+</TopicSection>
+
+---
+
+<TopicSection id="index-html" title="9. Demo: Walking Through index.html">
+
+<KeyIdea>
+The script tag at line 13 loads script.js; the rest is default Replit HTML plus items added for the demo.
+</KeyIdea>
+
+- `index.html` is a well-defined HTML file: a `DOCTYPE` at the beginning, then `html`, `head` and `body` elements with opening and closing tags.
+- In the `head`, the meta material and the link to the style sheet are provided by Replit and were not touched.
+- Added for the demo, and not in a default Repl: one `div` in one place, another `div` in another, and lines 14 and 15, which are two more scripts. They are ready in advance for later demonstrations.
+- The page contains empty `div`s, the text "Hello world" inside the body, and a script. Line 13 is `<script src="script.js"></script>`.
+- That line loads the script when the program runs, executes what is inside it, and generates output if needed.
+
+<AddedByTutor>
+The transcript never shows the full file. The reconstruction below is [untested] and is placed so that the script tag is on line 13, as in the lecture. It leaves out the two extra scripts mentioned for lines 14 and 15, whose names are not given.
+</AddedByTutor>
+
+```html
+<!-- my-repl/index.html (reconstruction) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>replit</title>
+  <link href="style.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+  <div></div>
+  Hello world
+  <div></div>
+  <script src="script.js"></script>
+</body>
+</html>
+```
+
+### What Each Part Does:
+- **Line 1**: DOCTYPE declaration.
+- **Lines 2-15**: the `html` element containing `head` (3-8) and `body` (9-14).
+- **Line 7**: default link to the style sheet.
+- **Lines 10-12**: two empty `div`s around the visible text.
+- **Line 13**: loads `script.js`.
+
+#### Expected Execution Output:
+```
+[untested]
+Page pane: Hello world
+```
+
+</TopicSection>
+
+---
+
+<TopicSection id="running-script" title="10. Demo: script.js, Run, Console and Shell">
+
+<KeyIdea>
+HTML output appears in the page pane, while console.log output appears in the Console.
+</KeyIdea>
+
+- `script.js` has one line (the other examples are commented out, and a couple of other scripts are also commented out; they come later):
+
+```javascript
+// my-repl/script.js
+console.log("Hello console!")
+```
+
+- This is the equivalent of the "Hello World" program: the first thing we output from our script.
+- Before running, nothing appears in the page pane on the right, because the program has not been run.
+- Below the page pane are two tabs. The **Console** is the actual JavaScript console for the running application. The **Shell** is a real Linux terminal where you can type commands such as `ls` to see files.
+- Click **Run**. After a moment, the page pane shows "Hello world". This came directly from the HTML, with no JavaScript involved.
+- The Console shows `Hello console!`, which came from `script.js`.
+- The lecturer describes `console.log("Hello console!")` as a statement: just "do this", with no return value associated with it. See the CheckBadge in section 5.
+
+### What Each Part Does:
+- **script.js, line 1**: prints `Hello console!` to the JavaScript console.
+
+#### Expected Execution Output:
+```
+Hello console!
+```
+
+<AddedByTutor>
+The line above is written without a semicolon, exactly as in the lecture. Lecture 1 recommended ending every statement with a semicolon, so `console.log("Hello console!");` is the safer style. The output was checked in Node.js, not in Replit.
+</AddedByTutor>
+
+</TopicSection>
+
+---
+
+<TopicSection id="syntax-demo" title="11. Syntax Demo (Tutor Addition)">
+
+<KeyIdea>
+A short script that shows expressions, primitive types, functions as values and objects with methods.
+</KeyIdea>
+
+<AddedByTutor>
+Everything in this topic is added by the tutor. The script was run with Node.js v22, and the output below is real. It was not run in Replit or a browser. Because it uses strict mode, it declares `x` with `let`. The lecture's `x = 10` without a declaration would be an error in strict mode.
+</AddedByTutor>
+
+```javascript
+// my-repl/demo.js
+"use strict";
+
+// expression: produces a value
+let x = 10;
+console.log(x);
+console.log("Hello world");
+
+// function arguments must be expressions
+function add(a, b) {
+  return a + b;
+}
+console.log(add(x, 5));
+
+// non-values and primitive types
+let nothing = null;
+let notSet;
+console.log(nothing, notSet);
+console.log(typeof 42, typeof 3.14, typeof 10n, typeof "text", typeof true);
+
+// functions are values
+const addAgain = function (a, b) {
+  return a + b;
+};
+console.log(addAgain(2, 3));
+
+// an object can hold a function (a method)
+const calc = {
+  name: "calc",
+  add: addAgain
+};
+console.log(calc.add(4, 6));
+
+// console.log is a call expression that returns undefined
+console.log(console.log("side effect"));
+```
+
+### What Each Part Does:
+- **Lines 4-6**: an assignment is an expression with a value, and a bare string is also an expression.
+- **Lines 9-12**: a function whose arguments `x` and `5` are expressions.
+- **Lines 15-18**: `null` and `undefined` as non-values; `typeof` shows that `42` and `3.14` are both `number`, and `10n` is `bigint`.
+- **Lines 21-24**: an anonymous function stored in a variable, then called through it.
+- **Lines 27-31**: an object holding a function (a method).
+- **Line 34**: the inner call prints and returns `undefined`, which the outer call prints.
+
+#### Expected Execution Output:
+```
+10
+Hello world
+15
+null undefined
+number number bigint string boolean
+5
+10
+side effect
+undefined
+```
+
+</TopicSection>

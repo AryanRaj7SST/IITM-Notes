@@ -1,0 +1,647 @@
+---
+subject: "mad2"
+week: 1
+lecture: 4
+title: "JavaScript Control Flow, const vs let, and Function Notations"
+duration: "[check: not stated in transcript]"
+overviewSummary: "Recaps strings, operators and equality, then covers undefined versus null, const and let semantics, conditions, for loops with for-in and for-of, other control-flow statements, the three function notations, IIFEs, and typeof with properties on functions."
+topics:
+  - id: "recap"
+    title: "1. Recap: Strings, Operators and Equality"
+    keyIdea: "String length is predictable but depends on UTF-16, coercion is problematic, and strict equality is preferred."
+  - id: "undefined-vs-null"
+    title: "2. undefined versus null"
+    keyIdea: "undefined means no value has been given yet, while null is a value you explicitly set to mean nothing."
+  - id: "scope-let-const"
+    title: "3. let and const Revisited"
+    keyIdea: "const prevents reassigning the variable but does not freeze the contents of an object; let can be reassigned."
+  - id: "conditions"
+    title: "4. Conditions"
+    keyIdea: "An if statement runs one branch or the other depending on a comparison."
+  - id: "for-loop"
+    title: "5. The C-style for Loop and const"
+    keyIdea: "A loop counter that is incremented with x++ must be declared with let, not const."
+  - id: "for-in-vs-of"
+    title: "6. for-in versus for-of"
+    keyIdea: "for-in gives the indices of an array, while for-of gives its values; for-of is the safer default."
+  - id: "other-control-flow"
+    title: "7. Other Control-Flow Statements"
+    keyIdea: "JavaScript also has while loops, break, continue and switch, similar to Python, C and Java."
+  - id: "function-notations"
+    title: "8. Function Notations"
+    keyIdea: "A function can be written as a declaration, a function expression assigned to a variable, or an arrow function."
+  - id: "iife"
+    title: "9. Immediately Invoked Function Expressions (IIFE)"
+    keyIdea: "An IIFE declares an anonymous function and invokes it at once, but it is no longer needed now that let and const exist."
+  - id: "typeof-and-function-properties"
+    title: "10. typeof and Properties on Functions"
+    keyIdea: "Every function notation gives typeof equal to function, and functions can even hold properties, though this is best avoided."
+projectTree: |
+  js-basics-demo/
+  ├── index.html
+  └── script.js
+codeSnippets:
+  - title: "undefined versus null in arrays"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let a = new Array(3);
+      let b = [null, null, null];
+      console.log(a[0]);
+      console.log(b[0]);
+    explanations:
+      - lines: "1"
+        explanation: "An array with three elements that were never given a value."
+      - lines: "2"
+        explanation: "An array where null was put explicitly into each element."
+      - lines: "3-4"
+        explanation: "The unset element reads as undefined; the explicit one reads as null."
+    output: |
+      undefined
+      null
+  - title: "const with an object (illustration of the lecturer's point)"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      const obj = { a: 1 };
+      obj.a = 2;
+      console.log(obj.a);
+      obj = { a: 3 };
+    explanations:
+      - lines: "2"
+        explanation: "Changing something inside the object is allowed."
+      - lines: "4"
+        explanation: "Reassigning the variable itself throws a TypeError."
+    output: |
+      2
+      TypeError: Assignment to constant variable.
+  - title: "Conditions"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let x = 3;
+      if (x == 5) {
+        console.log("x is 5");
+      } else {
+        console.log("x is not 5");
+      }
+      x = 5;
+      if (x == 5) {
+        console.log("x is 5");
+      } else {
+        console.log("x is not 5");
+      }
+    explanations:
+      - lines: "1-6"
+        explanation: "With x equal to 3 the comparison with 5 is false, so the else branch runs."
+      - lines: "7-12"
+        explanation: "After changing the value to 5, the first branch runs instead."
+    output: |
+      x is not 5
+      x is 5
+  - title: "for loop with const (fails)"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      for (const x = 0; x < 5; x++) {
+        console.log(x);
+      }
+    explanations:
+      - lines: "1"
+        explanation: "x is declared const but x++ tries to change it."
+    output: |
+      0
+      TypeError: Assignment to constant variable.
+  - title: "for loop with let"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      for (let x = 0; x < 5; x++) {
+        console.log(x);
+      }
+    explanations:
+      - lines: "1"
+        explanation: "x starts at 0, is incremented each time, and the loop stops when x is no longer below 5. This is the same shape as a C or Java for loop."
+    output: |
+      0
+      1
+      2
+      3
+      4
+  - title: "for-in versus for-of"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      const v = [1, 2, 3, 4];
+      for (const x in v) {
+        console.log(x);
+      }
+      for (const x in v) {
+        console.log(v[x]);
+      }
+      for (const x of v) {
+        console.log(x);
+      }
+    explanations:
+      - lines: "1"
+        explanation: "v is an array, a collection of values (arrays are covered later)."
+      - lines: "2-4"
+        explanation: "With in, x takes the indices 0 to 3, not the values."
+      - lines: "5-7"
+        explanation: "Using v[x] recovers the values."
+      - lines: "8-10"
+        explanation: "With of, x takes the values directly."
+    output: |
+      0
+      1
+      2
+      3
+      1
+      2
+      3
+      4
+      1
+      2
+      3
+      4
+  - title: "Three ways to write a function, typeof, and function properties"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      function add(x, y) {
+        return x + y;
+      }
+      let add1 = (x, y) => x + y;
+      let add2 = function (x, y) {
+        return x + y;
+      };
+      console.log(typeof add);
+      console.log(typeof add1);
+      console.log(typeof add2);
+      console.log(add(2, 3));
+      add.v = { 'a': 3 };
+      console.log(add.v);
+      console.log(add.v.a);
+    explanations:
+      - lines: "1-3"
+        explanation: "Function declaration, like def in Python."
+      - lines: "4"
+        explanation: "Arrow notation for a short function."
+      - lines: "5-7"
+        explanation: "An anonymous function expression bound to the variable add2."
+      - lines: "8-10"
+        explanation: "typeof reports function for all three."
+      - lines: "11"
+        explanation: "Calling add with 2 and 3 gives 5."
+      - lines: "12-14"
+        explanation: "A function can hold an object as a property; add.v is the object and add.v.a is 3."
+    output: |
+      function
+      function
+      function
+      5
+      { a: 3 }
+      3
+  - title: "Anonymous function and IIFE"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let x = function () {
+        return "hello";
+      };
+      console.log(x());
+      (function () {
+        console.log("hello");
+      })();
+      console.log(((x, y) => { return x + y; })(2, 3));
+    explanations:
+      - lines: "1-3"
+        explanation: "An anonymous function is bound to the variable x."
+      - lines: "4"
+        explanation: "Calling x() returns hello."
+      - lines: "5-7"
+        explanation: "The final pair of parentheses invokes the function immediately; it has no name and cannot be reused."
+      - lines: "8"
+        explanation: "An arrow function invoked immediately with 2 and 3 logs 5."
+    output: |
+      hello
+      hello
+      5
+selfTest:
+  - question: "What is the difference between undefined and null?"
+    answer: "undefined usually means no initial value has been given yet; null is explicitly assigned to say there is no value."
+    explanation: "They can often be used interchangeably, but keeping the distinction makes code clearer."
+  - question: "Why does for (const x = 0; x < 5; x++) fail, while for (const x of v) works?"
+    answer: "x++ changes the same variable in the loop, which const forbids. In for-of, x is a fresh variable for each iteration and is not changed inside the loop body."
+    explanation: "In the first case use let."
+  - question: "What does for (const x in v) give when v is the array 1, 2, 3, 4, and how do you get the values?"
+    answer: "It gives the indices 0, 1, 2, 3. Use v[x] for the values, or use for-of, which gives the values directly."
+    explanation: "for-of is the safe default for iteration."
+  - question: "Does const make an object immutable?"
+    answer: "No. The variable cannot be reassigned, but something inside the object can still be changed."
+    explanation: "let variables can be reassigned."
+  - question: "Name the three function notations covered and what typeof reports for each."
+    answer: "A function declaration, a function expression bound to a variable (anonymous function), and the arrow notation. typeof reports function for all three."
+    explanation: "They are different ways to declare the same kind of thing."
+  - question: "What is an IIFE and why should you avoid it today?"
+    answer: "An Immediately Invoked Function Expression declares an anonymous function and invokes it at once. It was used to get function-level scope when var was the only option; with let and const there is no good reason, and it hurts readability."
+    explanation: "Declare a named function and call it explicitly instead."
+resources:
+  - title: "MDN Web Docs: Control flow and error handling"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Control_flow_and_error_handling"
+    type: "Official Reference"
+    description: "if statements, switch and related control flow."
+    verified: false
+  - title: "MDN Web Docs: Loops and iteration"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Loops_and_iteration"
+    type: "Official Reference"
+    description: "for, while, break, continue, for-in and for-of."
+    verified: false
+  - title: "MDN Web Docs: Functions"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions"
+    type: "Official Reference"
+    description: "Declarations, expressions and arrow functions."
+    verified: false
+  - title: "MDN Web Docs: IIFE"
+    url: "https://developer.mozilla.org/en-US/docs/Glossary/IIFE"
+    type: "Official Reference"
+    description: "Definition and history of immediately invoked function expressions."
+    verified: false
+---
+
+<TopicSection id="recap" title="1. Recap: Strings, Operators and Equality">
+
+<KeyIdea>
+String length is predictable but must be computed with UTF-16 in mind, coercion is problematic, and strict equality is preferred.
+</KeyIdea>
+
+- Most strings expect UTF-16 encoding, and `length` can give surprising results. They are not random: you just need to compute them knowing the text is Unicode in UTF-16.
+- Variables may be in other languages, but keep readability in mind and avoid it unless absolutely necessary.
+- Operators such as addition and subtraction can coerce types, which is problematic. For comparison, prefer strict equality (`===`) wherever possible.
+- All of this matters when implementing iterations and conditions.
+
+</TopicSection>
+
+---
+
+<TopicSection id="undefined-vs-null" title="2. undefined versus null">
+
+<KeyIdea>
+undefined means a value has not yet been given, while null is a value you set on purpose.
+</KeyIdea>
+
+- Both are the so-called non-values.
+- An array of three elements that were never initialised holds `undefined`. If you put `null` into the elements, they are `null`.
+- With null you explicitly say there is no value, instead of leaving it unknown.
+- They can often be used interchangeably, for example comparing undefined against null, but keep context in mind so your code is clear.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let a = new Array(3);
+let b = [null, null, null];
+console.log(a[0]);
+console.log(b[0]);
+```
+
+**What each part does:** line 1 makes an array with unset elements, line 2 an array with explicit nulls, and lines 3 and 4 print one element of each.
+
+**Expected output:**
+
+```text
+undefined
+null
+```
+
+[check: the lecturer does not show the code; this is a reconstruction.]
+
+> **Added by tutor:** `new Array(3)` creates empty slots rather than stored undefined values. Reading one gives undefined, so the lecturer's description holds for reads.
+
+</TopicSection>
+
+---
+
+<TopicSection id="scope-let-const" title="3. let and const Revisited">
+
+<KeyIdea>
+const blocks reassigning the variable but not changes inside an object; let can be reassigned.
+</KeyIdea>
+
+- Any non-reserved identifier can be used as a variable name.
+- Be careful with scope so you do not reuse a name that exists in a library. Using `let` inside a function or block keeps your variables from disturbing ones declared elsewhere.
+- `let` and `const` are the two mechanisms for declaring variables.
+- The idea of const is that what you assigned cannot be changed. It is tricky: if you assign an object, something inside the object can still change. The variable itself cannot be reassigned.
+- let can be reassigned, so a loop from 0 to 10 needs its counter declared with let.
+
+**File:** `js-basics-demo/script.js` (illustration)
+
+```javascript
+const obj = { a: 1 };
+obj.a = 2;
+console.log(obj.a);
+obj = { a: 3 };
+```
+
+**What each part does:** line 2 changes the contents (allowed), and line 4 reassigns the variable (error).
+
+**Expected output:**
+
+```text
+2
+TypeError: Assignment to constant variable.
+```
+
+> **Added by tutor:** this code is my illustration of the lecturer's verbal point, not shown in the lecture.
+
+</TopicSection>
+
+---
+
+<TopicSection id="conditions" title="4. Conditions">
+
+<KeyIdea>
+An if statement compares a value and runs one branch or the other.
+</KeyIdea>
+
+- Declare a variable and check whether it equals something else.
+- With the value 3, the comparison with 5 is false, so the else branch runs.
+- After changing the value and running again, the other branch runs.
+- The lecturer says the exact output text does not matter, since it is only a demo.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let x = 3;
+if (x == 5) {
+  console.log("x is 5");
+} else {
+  console.log("x is not 5");
+}
+x = 5;
+if (x == 5) {
+  console.log("x is 5");
+} else {
+  console.log("x is not 5");
+}
+```
+
+**What each part does:** lines 2 to 6 test x equal to 3, and lines 7 to 12 repeat the test after changing x to 5.
+
+**Expected output:**
+
+```text
+x is not 5
+x is 5
+```
+
+[check: the lecturer's demo code and messages are not stated; this is a minimal reconstruction. Per the earlier lecture, `===` is preferable to `==`.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="for-loop" title="5. The C-style for Loop and const">
+
+<KeyIdea>
+A counter incremented with x++ must be declared with let.
+</KeyIdea>
+
+- This is the same style of iteration as in C.
+- With `const x = 0` and `x++`, the loop fails because it changes x.
+- With `let`, it prints 0 1 2 3 4, exactly like a C or Java for loop.
+
+**File:** `js-basics-demo/script.js` (const, fails)
+
+```javascript
+for (const x = 0; x < 5; x++) {
+  console.log(x);
+}
+```
+
+**Expected output:**
+
+```text
+0
+TypeError: Assignment to constant variable.
+```
+
+**File:** `js-basics-demo/script.js` (let, works)
+
+```javascript
+for (let x = 0; x < 5; x++) {
+  console.log(x);
+}
+```
+
+**What each part does:** line 1 sets x to 0, tests the bound, and increments after each pass; line 2 prints x.
+
+**Expected output:**
+
+```text
+0
+1
+2
+3
+4
+```
+
+> **Added by tutor:** with const, the first value 0 prints before the error, because the TypeError occurs at the first increment (checked in Node). The lecturer only says it runs into a problem.
+
+</TopicSection>
+
+---
+
+<TopicSection id="for-in-vs-of" title="6. for-in versus for-of">
+
+<KeyIdea>
+for-in gives indices and for-of gives values, and const works in both.
+</KeyIdea>
+
+- `for (const x in v)` with `const v = [1, 2, 3, 4]` works with const, even though x changes between iterations.
+- The reason: x changes only from one iteration to the next. Within the block, its value is not changed.
+- In the classic loop, `x++` has to run in the loop scope to increment and check the bound, which is why const fails there.
+- With `in`, x gets the indices 0, 1, 2, 3, not the values. Printing `v[x]` gives 1, 2, 3, 4.
+- With `of`, x takes the values of v directly. This is the one to use in most cases, though there are subtle differences to know about.
+- Arrays are covered later; for now think of one as a collection of values.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+const v = [1, 2, 3, 4];
+for (const x in v) {
+  console.log(x);
+}
+for (const x in v) {
+  console.log(v[x]);
+}
+for (const x of v) {
+  console.log(x);
+}
+```
+
+**What each part does:** lines 2 to 4 print indices, lines 5 to 7 print values through the index, and lines 8 to 10 print values directly.
+
+**Expected output:**
+
+```text
+0
+1
+2
+3
+1
+2
+3
+4
+1
+2
+3
+4
+```
+
+</TopicSection>
+
+---
+
+<TopicSection id="other-control-flow" title="7. Other Control-Flow Statements">
+
+<KeyIdea>
+JavaScript also has while, break, continue and switch.
+</KeyIdea>
+
+- `while` loops exist.
+- `break` and `continue` are very similar to Python.
+- `switch` compares against different options, familiar from C or Java, and replaces a long chain of if, else if.
+- The lecturer does not go into detail and recommends the language reference for examples.
+
+</TopicSection>
+
+---
+
+<TopicSection id="function-notations" title="8. Function Notations">
+
+<KeyIdea>
+A function is a reusable block of code that is itself an object, and it can be written in three ways.
+</KeyIdea>
+
+- A function can take parameters and perform computations. Functions are objects that can be assigned.
+- **Declaration:** like `def` in Python. `function add(x, y) { return x + y; }` is a statement; afterwards use `add(x, y)` as usual.
+- **Function expression:** `let add = function(x, y) { return x + y; }`. The function part is an expression with a value and no name (an anonymous function), which is assigned to a variable.
+- **Arrow notation:** `let add = (x, y) => x + y;`. Best for very small functions, though front-end code often uses it for large ones.
+- `function add(x, y)` is a statement that does not return a value; the anonymous form returns the function itself.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+function add(x, y) {
+  return x + y;
+}
+let add1 = (x, y) => x + y;
+let add2 = function (x, y) {
+  return x + y;
+};
+```
+
+**What each part does:** lines 1 to 3 are a declaration, line 4 an arrow function, and lines 5 to 7 an anonymous function bound to add2.
+
+[check: the lecturer calls the function-expression form a "named expression" but then describes it as anonymous; I used "function expression".]
+
+</TopicSection>
+
+---
+
+<TopicSection id="iife" title="9. Immediately Invoked Function Expressions (IIFE)">
+
+<KeyIdea>
+An IIFE declares an anonymous function and calls it at once; avoid it today.
+</KeyIdea>
+
+- `function() { return "hello"; }` bound to x is an anonymous function; any kind of function can be declared this way.
+- Adding `()` at the end invokes it immediately. Without those parentheses, the text beginning with function would be read as a statement and not evaluated.
+- It has no name, so it cannot be reused. It is much like a block, except that a block cannot use return.
+- The pattern is called an Immediately Invoked Function Expression (or Execution).
+- It was needed in older JavaScript without let and const, because var had function-level scope.
+- Today there is no good reason to use it. It makes code harder for newcomers; declare a function and call it.
+- Example: the arrow function invoked at once with 2 and 3 gives 5, but writing `2 + 3` would do the same.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let x = function () {
+  return "hello";
+};
+console.log(x());
+(function () {
+  console.log("hello");
+})();
+console.log(((x, y) => { return x + y; })(2, 3));
+```
+
+**What each part does:** lines 1 to 3 bind an anonymous function, line 4 calls it, lines 5 to 7 are an IIFE, and line 8 is an arrow IIFE.
+
+**Expected output:**
+
+```text
+hello
+hello
+5
+```
+
+[check: the lecturer does not show a call of x or the exact body of the first IIFE; these are reconstructions.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="typeof-and-function-properties" title="10. typeof and Properties on Functions">
+
+<KeyIdea>
+typeof reports function for every notation, and a function can hold properties, which is best avoided.
+</KeyIdea>
+
+- `typeof` is a built-in operator that gives information about an identifier.
+- `typeof add` gives function, and `add(2, 3)` gives 5.
+- You can write `add.v = {'a': 3}`. Then `add.v` is the object and `add.v.a` is 3.
+- An object with functions inside is a normal idea (methods). A function with an object inside is unclear; the language allows it but there is no obvious reason to do it, so avoid it.
+- `typeof add`, `typeof add1` and `typeof add2` all give function, however they were declared.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+function add(x, y) {
+  return x + y;
+}
+let add1 = (x, y) => x + y;
+let add2 = function (x, y) {
+  return x + y;
+};
+console.log(typeof add);
+console.log(typeof add1);
+console.log(typeof add2);
+console.log(add(2, 3));
+add.v = { 'a': 3 };
+console.log(add.v);
+console.log(add.v.a);
+```
+
+**What each part does:** lines 8 to 10 print the types, line 11 calls add, line 12 attaches an object, and lines 13 and 14 read it back.
+
+**Expected output:**
+
+```text
+function
+function
+function
+5
+{ a: 3 }
+3
+```
+
+</TopicSection>

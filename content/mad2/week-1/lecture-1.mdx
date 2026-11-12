@@ -1,0 +1,485 @@
+---
+subject: "mad2"
+week: 1
+lecture: 1
+title: "History and Origins of JavaScript"
+duration: "[check: duration not given in transcript]"
+overviewSummary: "Traces JavaScript from Java applets and Netscape (1995) through AJAX (2005) to ECMAScript and modern versions. Covers how its origins explain its quirks (silent failures, ambiguous syntax, limited I/O), its strengths (DOM, async), where it runs (browser, Node.js), how to run it, and useful references."
+topics:
+  - id: "applets-and-java"
+    title: "1. Java Applets and the Problem JavaScript Solved"
+    keyIdea: "Applets were isolated, powerful, but separate from the rest of the web page."
+  - id: "netscape-origin"
+    title: "2. Netscape, the Glue Language, and the Name"
+    keyIdea: "JavaScript began in 1995 as a simple, forgiving glue language, not a language for large programs."
+  - id: "ajax"
+    title: "3. AJAX and the 2005 Turning Point"
+    keyIdea: "Fetching data in the background made web apps behave like desktop apps."
+  - id: "ecmascript"
+    title: "4. ECMAScript, ES Versions, and Feature Readiness"
+    keyIdea: "ECMAScript is the standard behind JavaScript, now released yearly and adopted feature by feature."
+  - id: "old-browsers"
+    title: "5. Supporting Old Browsers: Upgrade, Electron, Polyfills"
+    keyIdea: "Compilers and polyfills let modern code run on legacy browsers."
+  - id: "beyond-browser"
+    title: "6. JavaScript Beyond the Browser"
+    keyIdea: "Node.js and Deno run JavaScript on the back end, but without the DOM."
+  - id: "performance"
+    title: "7. Performance: Ease of Use First"
+    keyIdea: "Early JavaScript was slow by design priorities, but modern engines are fast."
+  - id: "silent-failure"
+    title: "8. Silent Failure and Strict Mode"
+    keyIdea: "JavaScript inherited HTML's forgiveness, which makes debugging hard; use strict mode."
+  - id: "ambiguous-syntax"
+    title: "9. Ambiguous Syntax, Semicolons, and Linters"
+    keyIdea: "Automatic semicolon insertion is vague, so always write semicolons and use a linter."
+  - id: "limited-io"
+    title: "10. Limited Input/Output and the Console"
+    keyIdea: "The language has no direct way to talk to the user, so errors go to the console."
+  - id: "strengths"
+    title: "11. Strengths: DOM Integration and Asynchronous Processing"
+    keyIdea: "Direct DOM access plus the event loop make JavaScript suited to interactive apps."
+  - id: "running-js"
+    title: "12. How We Run JavaScript in This Course"
+    keyIdea: "On the front end, an HTML file loads the script, which needs a server and a browser."
+  - id: "dom-io"
+    title: "13. The DOM as the Interaction Layer"
+    keyIdea: "The DOM lets JavaScript read input, change content and structure, and draw."
+  - id: "references"
+    title: "14. References and Utilities"
+    keyIdea: "Use a language reference, MDN, Babel, the browser console and Replit; be critical of tutorials."
+  - id: "starter-example"
+    title: "15. Starter Example (Tutor Addition)"
+    keyIdea: "A minimal HTML plus JS project that shows script loading, the DOM, the console and a semicolon pitfall."
+projectTree: |
+  js-starter/
+  ├── index.html     # page that loads the script
+  ├── style.css      # styles (part of the Replit starter)
+  └── script.js      # your JavaScript
+codeSnippets:
+  - title: "Starter HTML page that loads a script"
+    filename: "js-starter/index.html"
+    language: "html"
+    tested: false
+    code: |
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <title>JS Starter</title>
+        <link rel="stylesheet" href="style.css">
+      </head>
+      <body>
+        <h1 id="title">Hello</h1>
+        <script src="script.js"></script>
+      </body>
+      </html>
+    explanations:
+      - lines: "6"
+        explanation: "Links the CSS file."
+      - lines: "10"
+        explanation: "Heading element that the script will change through the DOM."
+      - lines: "11"
+        explanation: "Loads script.js. The browser makes a separate request for this file, which is why a server is preferred over opening the file directly."
+    output: |
+      [untested] Shows a heading that first reads "Hello", then "Hello from JavaScript" once the script runs.
+  - title: "script.js: strict mode, DOM, console, semicolon pitfall"
+    filename: "js-starter/script.js"
+    language: "javascript"
+    tested: false
+    code: |
+      "use strict";
+
+      // DOM: change what the page shows
+      document.getElementById("title").textContent = "Hello from JavaScript";
+
+      // Console: where logs and errors go
+      console.log("Script loaded");
+
+      // Semicolon pitfall: return followed by a newline
+      function bad() {
+        return
+        {
+          ok: true
+        };
+      }
+      console.log(bad());
+    explanations:
+      - lines: "1"
+        explanation: "Turns on strict mode so more mistakes are flagged during development."
+      - lines: "4"
+        explanation: "Uses the DOM API to change the text of the heading."
+      - lines: "7"
+        explanation: "Writes to the console, since JavaScript has no direct user output."
+      - lines: "10-15"
+        explanation: "Automatic semicolon insertion ends the return statement at the line break, so the object is never returned."
+      - lines: "16"
+        explanation: "Prints the return value of bad()."
+    output: |
+      [untested] Console shows:
+      Script loaded
+      undefined
+selfTest:
+  - question: "Why was JavaScript designed to be forgiving and to work as a glue language?"
+    answer: "It was created in 1995 for Netscape Navigator to bind together applets and other page components, and HTML itself is forgiving. A language that crashed pages on small errors would have annoyed users."
+    explanation: "Ease of use was prioritised over strictness and performance, which explains many later quirks."
+  - question: "What is AJAX and why did it matter around 2005?"
+    answer: "AJAX (Asynchronous JavaScript and XML) is loading data in the background with JavaScript instead of loading a whole new page. Google Maps and Google Suggest showed it off."
+    explanation: "Pages load only what an interaction needs, so web apps behave much like desktop apps."
+  - question: "What is ECMAScript and how are versions released today?"
+    answer: "ECMAScript is the language standard (ECMA Standard 262) behind JavaScript. ES6 arrived in 2015 and releases are now yearly (ES2020, ES2021 and so on), with features adopted once a technical committee judges them ready."
+    explanation: "Because of feature readiness, the practical question is whether a given browser implements a given feature."
+  - question: "Name two ways to run modern JavaScript on older browsers."
+    answer: "Use a compiler or transpiler such as Babel, which turns newer JavaScript into older-compatible JavaScript, or use polyfills, libraries that emulate newer functionality."
+    explanation: "Other options are asking users to upgrade or packaging a browser with the app (Electron, as in VS Code), which makes software heavy."
+  - question: "Give two problems caused by JavaScript's origins and how to deal with them."
+    answer: "Silent failure, handled with the use strict mode; ambiguous syntax such as automatic semicolon insertion, handled by always writing semicolons and using a linter."
+    explanation: "Both come from the language being put together quickly and made forgiving like HTML."
+  - question: "Why is the DOM central to JavaScript's usefulness?"
+    answer: "It is the structure of the page, and JavaScript APIs can change both the content and the structure of the document, read input and produce output."
+    explanation: "This direct manipulation of what the user sees is what makes interactive applications possible."
+resources:
+  - title: "MDN Web Docs: JavaScript"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript"
+    type: "Developer Reference"
+    description: "Reference, guides and compatibility information for JavaScript."
+    verified: false
+  - title: "Exploring JS (JavaScript for Impatient Programmers)"
+    url: "https://exploringjs.com/"
+    type: "Developer Reference"
+    description: "Detailed free language reference by Axel Rauschmayer; language only, no DOM coverage."
+    verified: false
+  - title: "Babel"
+    url: "https://babeljs.io/"
+    type: "Official Docs"
+    description: "The JavaScript compiler (transpiler) mentioned in the lecture."
+    verified: false
+  - title: "ECMAScript Language Specification (ECMA-262)"
+    url: "https://tc39.es/ecma262/"
+    type: "Official Docs"
+    description: "The language standard itself."
+    verified: false
+  - title: "Node.js"
+    url: "https://nodejs.org/"
+    type: "Official Docs"
+    description: "The most popular back-end JavaScript runtime."
+    verified: false
+---
+
+<TopicSection id="applets-and-java" title="1. Java Applets and the Problem JavaScript Solved">
+
+<KeyIdea>
+Applets were powerful but isolated from the web page; JavaScript arose in that context.
+</KeyIdea>
+
+- This course relies heavily on JavaScript, so its history helps explain how it works. Knowing the restrictions lets us work around them or use modern versions that avoid them.
+- Around 1995, Sun Microsystems created Java, designed to implement **applets**.
+- An applet runs inside a web browser and allows rich interactivity, like a full native application in the browser.
+- It runs in its own virtual machine to limit security risks, since a downloaded page must not read files or send sensitive data elsewhere. Java was therefore heavily restricted.
+- An applet occupies one area of the page (the Java plugin). Inside it, everything differs from the rest of the page, including cursors and click handling, which the applet handles and the browser does not. This is powerful but completely separates the browser from the applet.
+
+</TopicSection>
+
+---
+
+<TopicSection id="netscape-origin" title="2. Netscape, the Glue Language, and the Name">
+
+<KeyIdea>
+JavaScript began in 1995 as an easy scripting language to bind page components together.
+</KeyIdea>
+
+- Netscape Navigator was one of the best and most popular browsers of the time; it eventually evolved into Mozilla Firefox.
+- A person at Netscape created a scripting language for it in 1995. The main advantage of a scripting language, as with Python, is simplicity: write code, run it through the interpreter, done.
+- Purpose: a **glue language** to bind together applets and other systems assembled in a web page. It was not designed much for large-scale coding.
+- Because HTML is forgiving (errors mostly pass without complaint), the language also had to be forgiving. If it kept crashing pages, users would reject it and ask for normal pages.
+- Since it was designed to assist Java applets, it was called JavaScript. This led to trademark complaints (accusations of riding on Java's popularity) and a couple of other name changes, but "JavaScript" stuck. It is now as well known as Java although they have little in common except part of the name.
+
+<AddedByTutor>
+The transcript does not name the creator or the intermediate names. The language was created by Brendan Eich at Netscape in 1995.
+</AddedByTutor>
+
+<CheckBadge reason="Transcript says people complained about 'trying to ride off the popularity of Java'. Corrected to the idiom 'ride on'." />
+
+</TopicSection>
+
+---
+
+<TopicSection id="ajax" title="3. AJAX and the 2005 Turning Point">
+
+<KeyIdea>
+Background data fetching with JavaScript made web apps behave like desktop apps.
+</KeyIdea>
+
+- Early JavaScript was slow and limited, having been hastily built as a glue language to run in a browser.
+- Around 2005 things changed dramatically, more through a new way of thinking than through changes to the language or browsers.
+- **Google Maps** was a key demonstration, and Google also had **Suggest**, which gives suggestions as you type.
+- Maps problem: data for the whole earth in fine detail cannot be loaded onto a phone or computer. So as you scroll or zoom, the browser keeps requesting new pieces of data from the server to fill the gaps, seamlessly in the background, using JavaScript.
+- The process was described in 2005 by James Garrett and named **AJAX** (Asynchronous JavaScript and XML). The idea took off and changed how JavaScript is used.
+- Result: web applications that behave like desktop applications. Compared with a static application, the user experience is nicer because only what an interaction needs is loaded, instead of a new page each time.
+- This "spark that started the fire" led JavaScript to spread and evolve, and people began fixing its deficiencies. We will study background, asynchronous loading further; it is a main reason JavaScript suits modern web apps.
+
+<CheckBadge reason="Transcript says 'James Garrett'. The AJAX term is credited to Jesse James Garrett [check: confirm name]." />
+
+</TopicSection>
+
+---
+
+<TopicSection id="ecmascript" title="4. ECMAScript, ES Versions, and Feature Readiness">
+
+<KeyIdea>
+ECMAScript is the standard behind JavaScript; features are adopted as they become ready.
+</KeyIdea>
+
+- JavaScript became too popular to be tied to one browser or one company. ECMA (European Computer Manufacturers Association) developed **Standard Number 262**, which became **ECMAScript**.
+- The name ECMAScript also helped avoid trademark issues with Java. ECMA is sometimes written as "Ecmascript", which is used as another name for JavaScript.
+- Versions are called ES versions: ES4, ES5, ES6. **ES6 was established in 2015**, a major change that added many features.
+- After ES6, there are yearly releases (around June) rather than ES7, ES8. Some features are standardised and frozen, for example ES2020, ES2021.
+- **Feature readiness:** instead of asking whether a browser supports a whole release, a technical committee decides when each feature is ready. A feature then becomes part of the standard, and the only question is whether a given browser implements it.
+- In this course we use a reasonably advanced, fairly new JavaScript (even features from 2020 or 2021), because compilers can convert new features so older browsers can still run them. This avoids workarounds.
+
+</TopicSection>
+
+---
+
+<TopicSection id="old-browsers" title="5. Supporting Old Browsers: Upgrade, Electron, Polyfills">
+
+<KeyIdea>
+There are several ways to deal with browsers that lack modern features.
+</KeyIdea>
+
+- ES6 has most modern-language features: modules, good variable scoping, and class syntax (the syntax for classes is there).
+- Older browsers may not support all of this. Options:
+  1. Ignore old browsers and ask everyone to upgrade their OS and browser.
+  2. Package a browser with the app, as Electron-based apps do. Visual Studio Code (VS Code, from Microsoft) is the example: it runs a Chrome browser in the background that is packaged with it, not your installed one. This works for real apps but makes systems heavy and can exhaust RAM if everyone does it.
+  3. Use a **polyfill**: libraries that emulate newer functionality so it runs on older browsers.
+- A polyfill is related to what a **compiler** does: it takes newer language constructs and modifies them so older JavaScript engines can run them.
+- Because of these workarounds, the course sticks to fairly modern features, which are easier to understand and use.
+
+<AddedByTutor>
+Electron apps bundle Chromium, the open-source browser engine underlying Chrome.
+</AddedByTutor>
+
+</TopicSection>
+
+---
+
+<TopicSection id="beyond-browser" title="6. JavaScript Beyond the Browser">
+
+<KeyIdea>
+JavaScript can run on the back end with Node.js or Deno, without the DOM.
+</KeyIdea>
+
+- The language grew powerful enough to build the back end, so you could replace a Python Flask application with one written in JavaScript.
+- It runs on the **Node.js** interpreter, currently the most popular back-end mechanism for JavaScript.
+- **Deno** is another interpreter, with somewhat more restrictive features but also meant to be more secure.
+- You are no longer limited to a browser. In Node.js, things like the **DOM** may not be directly available, because you are not always running in the context of a document. Keep this in mind.
+
+</TopicSection>
+
+---
+
+<TopicSection id="performance" title="7. Performance: Ease of Use First">
+
+<KeyIdea>
+Ease of use was prioritised over speed, but modern engines are fast.
+</KeyIdea>
+
+- Because of its origins, ease of use took priority over performance, so JavaScript was not always the fastest.
+- After years of optimisation, engines in modern browsers such as Chrome are very good, giving fairly good performance.
+- JavaScript can also interface with graphics libraries and the GPU (graphics processing unit) in your system.
+
+</TopicSection>
+
+---
+
+<TopicSection id="silent-failure" title="8. Silent Failure and Strict Mode">
+
+<KeyIdea>
+JavaScript could fail silently, which made debugging hard; strict mode helps.
+</KeyIdea>
+
+- HTML is forgiving: an error in the source is ignored and the browser displays what it can. JavaScript copied this tolerance.
+- The problem: you do not know that something went wrong, and you can hardly find where, because the browser tolerates everything it can.
+- Today this has changed. **`use strict`** mode is possible and strongly encouraged when writing scripts.
+- Strict mode flags many such constructs during development. The code may still run best-effort in a browser, but you get many more debugging errors to understand.
+
+</TopicSection>
+
+---
+
+<TopicSection id="ambiguous-syntax" title="9. Ambiguous Syntax, Semicolons, and Linters">
+
+<KeyIdea>
+Always put a semicolon after every statement and use a linter.
+</KeyIdea>
+
+- The language was put together quickly, so some syntax is ambiguous.
+- **Automatic semicolon insertion:** you need not end every line with a semicolon, but in a couple of cases problems occur if you omit one.
+- Comparison:
+
+| Language | Rule |
+| :--- | :--- |
+| C | A semicolon is required after every statement. |
+| Python | Semicolons are not part of the language (if used they just end a statement); indentation matters. |
+| JavaScript | Semicolons are optional; if omitted, the interpreter works out where to put them. |
+
+- Recommendation: be consistent, and in JavaScript put a semicolon after every statement to remove ambiguity.
+- Other ambiguities: object literals and code blocks both use braces, and it is unclear whether a function declaration is a statement or an expression with a return value. These matter because they affect how a JavaScript file is parsed.
+- Ambiguous variants are being deprecated and discouraged. When learning fresh, avoid sources of ambiguity and know what they are.
+- **Linters** go through your source and suggest improvements for readability and maintainability. Get used to using them.
+
+</TopicSection>
+
+---
+
+<TopicSection id="limited-io" title="10. Limited Input/Output and the Console">
+
+<KeyIdea>
+Running inside a browser means the language has no direct way to talk to the user.
+</KeyIdea>
+
+- JavaScript has very limited input/output support. Forms and similar elements exist, but the language itself has no straightforward way to communicate with the user.
+- All errors are therefore logged to the **console**, which the developer reads and which is not directly visible to an end user.
+
+</TopicSection>
+
+---
+
+<TopicSection id="strengths" title="11. Strengths: DOM Integration and Asynchronous Processing">
+
+<KeyIdea>
+Direct control of the page and asynchronous processing make JavaScript powerful.
+</KeyIdea>
+
+- **Close integration with the presentation layer**: the DOM (Document Object Model) and its APIs. JavaScript can directly manipulate what is seen on a page, which leads to interactive applications.
+- **Asynchronous processing and the event loop** (covered in more detail later) let programs be expressed in useful ways and ultimately led to its use on the back end.
+
+</TopicSection>
+
+---
+
+<TopicSection id="running-js" title="12. How We Run JavaScript in This Course">
+
+<KeyIdea>
+On the front end an HTML file loads the script, which needs a server and a browser.
+</KeyIdea>
+
+- JavaScript was not meant for direct scripting: unlike Python (python plus file name), there was originally no interpreter you could call that way. Node.js now exists, but we will not spend much time on it, since our focus is the front end.
+- On the front end you need an HTML file that loads the JavaScript file as a script, and you embed it using HTML link notation.
+- You need a server to serve the files and a browser to open them and request them.
+- Depending on the browser, loading directly from the file system may not work. It depends on whether the browser can access the script as a file; if it must make a separate request, it probably will not.
+- Demos use **Replit**, whose starter code gives an HTML file, a CSS file and a JavaScript script file to begin with.
+
+</TopicSection>
+
+---
+
+<TopicSection id="dom-io" title="13. The DOM as the Interaction Layer">
+
+<KeyIdea>
+The DOM is the page structure, and JavaScript APIs can change both its content and structure.
+</KeyIdea>
+
+- The DOM is the structure of the document shown in the browser, manipulated through JS APIs.
+- You can change displayed text and also the structure of the document itself, one of JavaScript's most powerful aspects.
+- **Input:** clicking, text boxes where you enter data, even moving the mouse.
+- **Output:** displaying text, changing colour or style, even drawing on screen.
+- HTML5 has a `canvas` tag that lets you draw arbitrary things on screen.
+
+</TopicSection>
+
+---
+
+<TopicSection id="references" title="14. References and Utilities">
+
+<KeyIdea>
+Use good references, test code in the browser console, and judge tutorials critically.
+</KeyIdea>
+
+| Resource | What the lecture says |
+| :--- | :--- |
+| exploringjs.com, book "JavaScript for Impatient Programmers" | Very detailed language reference. Does not cover manipulating the front end or the DOM. |
+| Mozilla Developer Network (MDN) | Seen in App Dev 1. Has examples, compatibility hints, and examples of how to use features. |
+| "Learn JavaScript Online" | Interactive tutorial. First several chapters free, advanced topics paid. [check: exact site not identifiable from the transcript] |
+| Online tutorials | Quality varies; some encourage bad practices from before good features existed. Apply your own judgement. |
+| Babel JS | A compiler (also called a transpiler, a translating compiler). JavaScript in, JavaScript out; the output runs even on older browsers that lack ES2021 features. The lecturer says it is more relevant for implementation than for learning. |
+| jsconsole.com | Interactive console to try code, but your browser already has one. |
+| Browser Developer Tools (Chrome) | Opens a console where you type JavaScript and see results. Chrome keeps up with the latest JavaScript, so it is a good way to test features. |
+| Replit | Used for demos; good support for JavaScript applications. |
+
+- Which resource is best is up to you.
+
+</TopicSection>
+
+---
+
+<TopicSection id="starter-example" title="15. Starter Example (Tutor Addition)">
+
+<KeyIdea>
+A minimal project showing how HTML loads JavaScript, plus the DOM, the console, strict mode and a semicolon pitfall.
+</KeyIdea>
+
+<AddedByTutor>
+The lecture contains no code. Everything in this topic is added by the tutor and is [untested]. Serve the folder with a local server (for example, the Replit starter) rather than opening the file directly.
+</AddedByTutor>
+
+```
+js-starter/
+├── index.html     # page that loads the script
+├── style.css      # styles (part of the Replit starter)
+└── script.js      # your JavaScript
+```
+
+```html
+<!-- js-starter/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>JS Starter</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1 id="title">Hello</h1>
+  <script src="script.js"></script>
+</body>
+</html>
+```
+
+```javascript
+// js-starter/script.js
+"use strict";
+
+// DOM: change what the page shows
+document.getElementById("title").textContent = "Hello from JavaScript";
+
+// Console: where logs and errors go
+console.log("Script loaded");
+
+// Semicolon pitfall: return followed by a newline
+function bad() {
+  return
+  {
+    ok: true
+  };
+}
+console.log(bad());
+```
+
+### What Each Part Does:
+- **index.html, line 6**: links the CSS file.
+- **index.html, line 10**: heading that the script changes through the DOM.
+- **index.html, line 11**: loads script.js with a separate request, which is why a server is preferred.
+- **script.js, line 1**: turns on strict mode.
+- **script.js, line 4**: DOM API call that changes the heading text.
+- **script.js, line 7**: writes to the console.
+- **script.js, lines 10-15**: automatic semicolon insertion ends `return` at the line break, so the object is never returned.
+- **script.js, line 16**: prints the return value of `bad()`.
+
+#### Expected Execution Output:
+```text
+Script loaded
+undefined
+```
+
+</TopicSection>

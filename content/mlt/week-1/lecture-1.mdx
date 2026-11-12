@@ -1,0 +1,248 @@
+---
+subject: "mlt"
+week: 1
+lecture: 1
+title: "Linear Regression, Loss Functions & Ordinary Least Squares"
+duration: "48 mins"
+overviewSummary: "Explores the mathematical formulation of supervised regression, Ordinary Least Squares (OLS), convex cost functions, the matrix derivation of the Normal Equation, and convergence properties of Batch Gradient Descent."
+topics:
+  - id: "supervised-framing"
+    title: "1. Supervised Learning Formulation & Notations"
+    keyIdea: "Supervised regression learns a mapping function from input vectors to continuous target scalars by minimizing an empirical risk objective."
+  - id: "loss-and-cost"
+    title: "2. The Mean Squared Error (MSE) Cost Surface"
+    keyIdea: "The squared error objective is strictly convex with respect to parameters, ensuring a unique global minimum when the design matrix is full rank."
+  - id: "ols-derivation"
+    title: "3. Step-by-Step Derivation of the Normal Equation"
+    keyIdea: "Setting the gradient of the matrix-vector residual sum of squares to zero yields the closed-form analytical solution."
+  - id: "gradient-descent"
+    title: "4. Batch Gradient Descent & Hyperparameter Tuning"
+    keyIdea: "When matrix inversion is computationally prohibitive (O(d^3)), iterative first-order gradient descent scales efficiently to millions of features."
+formulas:
+  - name: "Linear Hypothesis Function"
+    latex: "\\hat{y} = h_{\\mathbf{w}}(\\mathbf{x}) = \\mathbf{w}^T \\mathbf{x} = \\sum_{j=0}^{d} w_j x_j"
+    description: "Computes the predicted continuous scalar label for an input feature vector."
+    symbols:
+      - symbol: "\\mathbf{x} \\in \\mathbb{R}^{d+1}"
+        meaning: "Input vector with dummy feature x_0 = 1 for the bias intercept"
+      - symbol: "\\mathbf{w} \\in \\mathbb{R}^{d+1}"
+        meaning: "Learnable weight/parameter vector [w_0, w_1, ..., w_d]^T"
+      - symbol: "\\hat{y} \\in \\mathbb{R}"
+        meaning: "Scalar continuous predicted target"
+  - name: "Mean Squared Error (MSE) Cost"
+    latex: "J(\\mathbf{w}) = \\frac{1}{2n} \\sum_{i=1}^{n} \\left( h_{\\mathbf{w}}(\\mathbf{x}^{(i)}) - y^{(i)} \\right)^2 = \\frac{1}{2n} \\| \\mathbf{X}\\mathbf{w} - \\mathbf{y} \\|_2^2"
+    description: "Measures average squared residual distance over n training observations."
+    symbols:
+      - symbol: "n"
+        meaning: "Total number of training instances"
+      - symbol: "\\mathbf{X} \\in \\mathbb{R}^{n \\times (d+1)}"
+        meaning: "Design matrix containing all sample feature vectors as rows"
+      - symbol: "\\mathbf{y} \\in \\mathbb{R}^n"
+        meaning: "Vector of true continuous target values"
+  - name: "The Normal Equation"
+    latex: "\\mathbf{w}^* = (\\mathbf{X}^T \\mathbf{X})^{-1} \\mathbf{X}^T \\mathbf{y}"
+    description: "Analytical closed-form solution giving the exact optimal parameter vector minimizing J(w)."
+    symbols:
+      - symbol: "\\mathbf{X}^T \\mathbf{X}"
+        meaning: "Gram matrix of dimension (d+1) x (d+1); must be non-singular (invertible)"
+      - symbol: "\\mathbf{w}^*"
+        meaning: "The global optimal weight vector"
+  - name: "Gradient Descent Update Rule"
+    latex: "\\mathbf{w}^{(t+1)} = \\mathbf{w}^{(t)} - \\eta \\nabla_{\\mathbf{w}} J(\\mathbf{w}^{(t)}) = \\mathbf{w}^{(t)} - \\frac{\\eta}{n} \\mathbf{X}^T (\\mathbf{X}\\mathbf{w}^{(t)} - \\mathbf{y})"
+    description: "Iterative parameter update rule stepping in the direction of steepest descent."
+    symbols:
+      - symbol: "\\eta > 0"
+        meaning: "Learning rate step size hyperparameter"
+      - symbol: "t"
+        meaning: "Iteration / epoch counter"
+selfTest:
+  - question: "Under what specific condition will the Gram matrix (X^T X) fail to be invertible?"
+    answer: "(X^T X) fails to be invertible when it is singular (determinant = 0), which occurs when features are collinear (linear dependence) or when the number of features d exceeds the number of observations n (d > n)."
+    explanation: "Because rank(X) <= min(n, d+1), if d + 1 > n, the maximum possible rank of (X^T X) is at most n, which is less than d+1. Hence the (d+1) x (d+1) matrix cannot have full rank and possesses no unique inverse. L2 regularization (Ridge) adds lambda * I to restore invertibility."
+  - question: "Why do we introduce the factor 1/2 in the MSE objective J(w) = (1/2n) * sum((y_hat - y)^2)?"
+    answer: "The factor 1/2 is purely mathematical convenience to cancel the exponent 2 when taking the first-order partial derivative with respect to w."
+    explanation: "d/dw [ (1/2) * (w*x - y)^2 ] = (1/2) * 2 * (w*x - y) * x = (w*x - y)*x. It does not alter the location of the argmin w*."
+  - question: "What is the computational complexity of the Normal Equation compared to Batch Gradient Descent?"
+    answer: "The Normal Equation scales as O(n*d^2 + d^3) due to matrix multiplication and inversion. Gradient Descent scales as O(k*n*d) for k iterations."
+    explanation: "When d is small (e.g. d < 10,000), the Normal Equation is instantaneous. When d is very large (e.g. text/image features where d > 100,000), inverting a d x d matrix is prohibitive, making iterative gradient descent the superior choice."
+  - question: "What happens if the learning rate eta is chosen too large in gradient descent?"
+    answer: "The updates can overshoot the minimum, causing the cost J(w) to oscillate or diverge to infinity."
+    explanation: "Because the gradient step is proportional to the slope, an excessive step size launches the parameters outside the convex basin, leading to numerical overflow (NaN)."
+  - question: "What geometric shape do the level curves of J(w) form when features have drastically different scales?"
+    answer: "They form elongated, eccentric ellipses, causing gradient descent to oscillate inefficiently perpendicular to the valley instead of moving directly toward the center."
+    explanation: "Feature standardization (zero mean, unit variance) transforms the contours into concentric hyperspheres, allowing gradient descent to point directly toward the minimum."
+resources:
+  - title: "NPTEL: Machine Learning (Prof. Carl Gustaf Jansson, IIT Madras)"
+    url: "https://nptel.ac.in/courses/106106139"
+    type: "Official Course Portal"
+    description: "IIT Madras official lecture series covering supervised regression, cost surfaces, and convex optimization."
+    verified: true
+  - title: "Stanford CS229: Linear Regression & Gradient Descent Notes"
+    url: "https://see.stanford.edu/materials/aimlcs229/cs229-notes1.pdf"
+    type: "Open Course Notes"
+    description: "Rigorous mathematical treatment of OLS derivation, normal equations, and probabilistic interpretations."
+    verified: true
+  - title: "Scikit-Learn: Linear Models Documentation"
+    url: "https://scikit-learn.org/stable/modules/linear_model.html"
+    type: "Official Documentation"
+    description: "Production guide for LinearRegression, Ridge regularization, and solver comparisons."
+    verified: true
+---
+
+<TopicSection id="supervised-framing" title="1. Supervised Learning Formulation & Notations">
+
+<KeyIdea>
+Supervised regression seeks a parameterized hypothesis $h_{\mathbf{w}}(\mathbf{x})$ that maps $d$-dimensional feature vectors to real-valued scalar targets $y \in \mathbb{R}$ by minimizing prediction discrepancy.
+</KeyIdea>
+
+In supervised regression, our training dataset consists of $n$ independent and identically distributed (i.i.d.) observations:
+
+$$\mathcal{D} = \{ (\mathbf{x}^{(1)}, y^{(1)}), (\mathbf{x}^{(2)}, y^{(2)}), \dots, (\mathbf{x}^{(n)}, y^{(n)}) \}$$
+
+Where each input instance $\mathbf{x}^{(i)}$ is a column vector in $\mathbb{R}^d$:
+
+$$\mathbf{x}^{(i)} = \begin{bmatrix} x_1^{(i)} \\ x_2^{(i)} \\ \vdots \\ x_d^{(i)} \end{bmatrix} \in \mathbb{R}^d, \quad y^{(i)} \in \mathbb{R}$$
+
+To account for the intercept (bias term $w_0$) seamlessly without writing separate terms, we append an auxiliary constant feature $x_0 = 1$ to every vector. This is known as the **augmented feature vector**:
+
+$$\mathbf{x}^{(i)} = \begin{bmatrix} 1 \\ x_1^{(i)} \\ \vdots \\ x_d^{(i)} \end{bmatrix} \in \mathbb{R}^{d+1}, \quad \mathbf{w} = \begin{bmatrix} w_0 \\ w_1 \\ \vdots \\ w_d \end{bmatrix} \in \mathbb{R}^{d+1}$$
+
+Our hypothesis function is therefore a linear dot product:
+
+$$h_{\mathbf{w}}(\mathbf{x}) = \mathbf{w}^T \mathbf{x} = w_0 + w_1 x_1 + \dots + w_d x_d$$
+
+<CheckBadge reason="The transcript stated 'rank of feature space must equal n samples'. Corrected to state that rank depends on min(n, d+1) and features must be linearly independent." />
+
+<AddedByTutor>
+Notice the convention: in modern linear algebra literature, vectors are column vectors by default unless transposed. Thus $\mathbf{w}^T \mathbf{x}$ produces an inner product resulting in a scalar.
+</AddedByTutor>
+
+</TopicSection>
+
+---
+
+<TopicSection id="loss-and-cost" title="2. The Mean Squared Error (MSE) Cost Surface">
+
+<KeyIdea>
+The Mean Squared Error cost function computes the average squared euclidean distance between predictions and ground truth, forming an unconstrained convex paraboloid.
+</KeyIdea>
+
+For an individual observation $i$, the residual (error) is defined as:
+
+$$e^{(i)} = h_{\mathbf{w}}(\mathbf{x}^{(i)}) - y^{(i)}$$
+
+Squaring this residual penalizes larger deviations quadratically while ensuring non-negativity. Summing over all $n$ samples gives our cost objective:
+
+$$J(\mathbf{w}) = \frac{1}{2n} \sum_{i=1}^{n} \left( h_{\mathbf{w}}(\mathbf{x}^{(i)}) - y^{(i)} \right)^2$$
+
+### Vectorized Matrix Formulation
+
+Rather than iterating with summations, high-performance implementations construct the **Design Matrix** $\mathbf{X} \in \mathbb{R}^{n \times (d+1)}$:
+
+$$\mathbf{X} = \begin{bmatrix} - & (\mathbf{x}^{(1)})^T & - \\ - & (\mathbf{x}^{(2)})^T & - \\ & \vdots & \\ - & (\mathbf{x}^{(n)})^T & - \end{bmatrix} = \begin{bmatrix} 1 & x_1^{(1)} & \dots & x_d^{(1)} \\ 1 & x_1^{(2)} & \dots & x_d^{(2)} \\ \vdots & \vdots & \ddots & \vdots \\ 1 & x_1^{(n)} & \dots & x_d^{(n)} \end{bmatrix}, \quad \mathbf{y} = \begin{bmatrix} y^{(1)} \\ y^{(2)} \\ \vdots \\ y^{(n)} \end{bmatrix}$$
+
+The entire prediction vector across all $n$ examples is simply $\hat{\mathbf{y}} = \mathbf{X}\mathbf{w}$. Hence, the residual vector is:
+
+$$\mathbf{e} = \mathbf{X}\mathbf{w} - \mathbf{y} \in \mathbb{R}^n$$
+
+The cost function $J(\mathbf{w})$ can now be written in clean Euclidean norm format:
+
+$$J(\mathbf{w}) = \frac{1}{2n} \| \mathbf{X}\mathbf{w} - \mathbf{y} \|_2^2 = \frac{1}{2n} (\mathbf{X}\mathbf{w} - \mathbf{y})^T (\mathbf{X}\mathbf{w} - \mathbf{y})$$
+
+</TopicSection>
+
+---
+
+<TopicSection id="ols-derivation" title="3. Step-by-Step Derivation of the Normal Equation">
+
+<KeyIdea>
+Because $J(\mathbf{w})$ is quadratic and convex, the global minimum occurs precisely where the gradient vector $\nabla_{\mathbf{w}} J(\mathbf{w})$ equals the zero vector $\mathbf{0}$.
+</KeyIdea>
+
+<Collapsible title="Full Matrix Calculus Derivation (Step-by-Step)" defaultOpen={true}>
+
+Let us expand the quadratic form step by step:
+
+$$
+\begin{aligned}
+J(\mathbf{w}) &= \frac{1}{2n} (\mathbf{X}\mathbf{w} - \mathbf{y})^T (\mathbf{X}\mathbf{w} - \mathbf{y}) \\
+&= \frac{1}{2n} \left( (\mathbf{X}\mathbf{w})^T - \mathbf{y}^T \right) (\mathbf{X}\mathbf{w} - \mathbf{y}) \quad &&\text{[Transpose of difference: } (A - B)^T = A^T - B^T\text{]} \\
+&= \frac{1}{2n} \left( \mathbf{w}^T \mathbf{X}^T \mathbf{X} \mathbf{w} - \mathbf{w}^T \mathbf{X}^T \mathbf{y} - \mathbf{y}^T \mathbf{X} \mathbf{w} + \mathbf{y}^T \mathbf{y} \right) \quad &&\text{[Distributive property of matrix multiplication]}
+\end{aligned}
+$$
+
+Note that $\mathbf{w}^T \mathbf{X}^T \mathbf{y}$ is a $1 \times 1$ scalar. For any scalar $s$, $s^T = s$. Therefore:
+
+$$
+(\mathbf{w}^T \mathbf{X}^T \mathbf{y})^T = \mathbf{y}^T (\mathbf{X}^T)^T (\mathbf{w}^T)^T = \mathbf{y}^T \mathbf{X} \mathbf{w}
+$$
+
+The two middle terms are identical! Combining them gives:
+
+$$
+J(\mathbf{w}) = \frac{1}{2n} \left( \mathbf{w}^T \mathbf{X}^T \mathbf{X} \mathbf{w} - 2 \mathbf{y}^T \mathbf{X} \mathbf{w} + \mathbf{y}^T \mathbf{y} \right)
+$$
+
+Now, we take the gradient with respect to $\mathbf{w}$ using matrix calculus identities:
+
+1. $\nabla_{\mathbf{w}} (\mathbf{w}^T \mathbf{A} \mathbf{w}) = 2 \mathbf{A} \mathbf{w}$ when $\mathbf{A} = \mathbf{X}^T \mathbf{X}$ is symmetric.
+2. $\nabla_{\mathbf{w}} (\mathbf{b}^T \mathbf{w}) = \mathbf{b}$ where $\mathbf{b} = \mathbf{X}^T \mathbf{y}$.
+3. $\nabla_{\mathbf{w}} (\mathbf{y}^T \mathbf{y}) = \mathbf{0}$ because it does not depend on $\mathbf{w}$.
+
+Applying these identities:
+
+$$
+\nabla_{\mathbf{w}} J(\mathbf{w}) = \frac{1}{2n} \left( 2 \mathbf{X}^T \mathbf{X} \mathbf{w} - 2 \mathbf{X}^T \mathbf{y} \right) = \frac{1}{n} \left( \mathbf{X}^T \mathbf{X} \mathbf{w} - \mathbf{X}^T \mathbf{y} \right)
+$$
+
+Setting $\nabla_{\mathbf{w}} J(\mathbf{w}) = \mathbf{0}$:
+
+$$
+\mathbf{X}^T \mathbf{X} \mathbf{w} - \mathbf{X}^T \mathbf{y} = \mathbf{0} \implies \mathbf{X}^T \mathbf{X} \mathbf{w} = \mathbf{X}^T \mathbf{y}
+$$
+
+Assuming $\mathbf{X}^T \mathbf{X}$ is invertible (full column rank), multiply both sides from the left by $(\mathbf{X}^T \mathbf{X})^{-1}$:
+
+$$
+\mathbf{w}^* = (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{y}
+$$
+
+</Collapsible>
+
+<AddedByTutor>
+**SymPy Verification**: We verified this symbolic differentiation in Python (`sympy.MatrixSymbol`). The Hessian matrix is $\nabla^2_{\mathbf{w}} J(\mathbf{w}) = \frac{1}{n} \mathbf{X}^T \mathbf{X}$. Since $\mathbf{X}^T \mathbf{X}$ is positive semi-definite (and strictly positive definite when $\mathbf{X}$ has full column rank), the second derivative test confirms $\mathbf{w}^*$ is a strict global minimum.
+</AddedByTutor>
+
+</TopicSection>
+
+---
+
+<TopicSection id="gradient-descent" title="4. Batch Gradient Descent & Hyperparameter Tuning">
+
+<KeyIdea>
+Batch Gradient Descent iteratively adjusts parameters in the opposite direction of the gradient vector, guaranteed to converge to the global minimum on convex surfaces with an appropriate step size.
+</KeyIdea>
+
+While the Normal Equation provides an exact analytical solution, computing $(\mathbf{X}^T \mathbf{X})^{-1}$ requires $\mathcal{O}(d^3)$ operations. When $d > 10,000$, matrix inversion becomes impractical.
+
+Gradient Descent starts with an initial guess $\mathbf{w}^{(0)}$ (typically zeros or small random values) and updates iteratively:
+
+$$\mathbf{w}^{(t+1)} = \mathbf{w}^{(t)} - \eta \nabla_{\mathbf{w}} J(\mathbf{w}^{(t)})$$
+
+Substituting our gradient:
+
+$$\mathbf{w}^{(t+1)} = \mathbf{w}^{(t)} - \frac{\eta}{n} \mathbf{X}^T (\mathbf{X} \mathbf{w}^{(t)} - \mathbf{y})$$
+
+### Geometric Intuition & Contour Surface
+
+The plot below illustrates the trajectory of Batch Gradient Descent navigating the elliptical cost contours toward the global optimum $\mathbf{w}^* = (2.0, 3.0)$:
+
+![Gradient Descent Loss Contours](/images/mlt/gradient_descent_contour.svg)
+
+### Learning Rate ($\eta$) Dynamics:
+- **$\eta$ too small**: Convergence is agonizingly slow, requiring thousands of unnecessary epochs.
+- **$\eta$ optimal**: Smooth, exponential convergence toward $\mathbf{w}^*$.
+- **$\eta$ too large**: Overshoots the basin, oscillating wildly or diverging to numerical infinity.
+
+</TopicSection>
+

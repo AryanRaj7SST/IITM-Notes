@@ -1,0 +1,190 @@
+---
+subject: "bdm"
+week: 1
+lecture: 1
+title: "Foundations of Relational Data Systems & Business Integrity Constraints"
+duration: "46 mins"
+overviewSummary: "Explores enterprise data architecture, the formal relational model vs document stores, transactional integrity guarantees (ACID), domain constraints, foreign key referential cascades, and business data flow patterns."
+topics:
+  - id: "enterprise-data"
+    title: "1. Data as an Enterprise Asset & OLTP vs OLAP"
+    keyIdea: "Modern businesses separate high-throughput operational transaction recording (OLTP) from historical multi-dimensional analytical processing (OLAP)."
+  - id: "relational-model"
+    title: "2. The Formal Relational Model & Codd's Rules"
+    keyIdea: "A relation is a mathematical set of tuples over attribute domains, governed by predicate logic rather than physical storage offsets."
+  - id: "integrity-constraints"
+    title: "3. Integrity Constraints: Entity, Referential, & Domain"
+    keyIdea: "Integrity constraints enforce business domain rules at the database engine tier, preventing corrupt data states regardless of application bugs."
+  - id: "acid-guarantees"
+    title: "4. The ACID Framework in Enterprise Transactions"
+    keyIdea: "ACID properties ensure financial and logistical transactions complete reliably or abort entirely without leaving phantom states."
+formulas:
+  - name: "Relational Cardinality & Degree"
+    latex: "|R| = \\text{Cardinality (Number of Tuples)}, \\quad \\text{deg}(R) = \\text{Degree (Number of Attributes)}"
+    description: "Fundamental metrics quantifying relation volume and schema dimensionality."
+    symbols:
+      - symbol: "|R|"
+        meaning: "Count of rows/records currently present in relation table R"
+      - symbol: "\\text{deg}(R)"
+        meaning: "Count of columns/attributes comprising the schema definition"
+  - name: "Referential Integrity Constraint"
+    latex: "\\forall t_1 \\in R_1, \\quad t_1[FK] \\neq \\text{NULL} \\implies \\exists t_2 \\in R_2 \\text{ such that } t_2[PK] = t_1[FK]"
+    description: "Ensures every non-null foreign key references an existing, valid primary key in the parent relation."
+    symbols:
+      - symbol: "R_1, R_2"
+        meaning: "Child relation (referencing) and Parent relation (referenced)"
+      - symbol: "PK, FK"
+        meaning: "Primary Key and Foreign Key attribute sets"
+selfTest:
+  - question: "What is the key difference between OLTP and OLAP workloads?"
+    answer: "OLTP systems process millions of small, real-time read/write transactions optimized for sub-second latency and row-level ACID updates. OLAP systems process historical aggregate queries scanning millions of rows across star/snowflake schemas for business intelligence."
+    explanation: "Mixing OLAP analytical queries on an active OLTP database causes catastrophic table locks and latency degradation for end users."
+  - question: "What does 'Atomicity' guarantee in an e-commerce checkout transaction?"
+    answer: "Atomicity ensures that either all steps of the transaction succeed (inventory deducted, payment captured, order logged), or if any single step fails, the entire transaction rolls back cleanly with zero changes persisted."
+    explanation: "Without atomicity, a network crash after deducting money from a customer's bank account would leave the database without a corresponding order record."
+  - question: "Explain the difference between ON DELETE CASCADE and ON DELETE RESTRICT."
+    answer: "CASCADE automatically deletes all child rows when the referenced parent row is deleted. RESTRICT halts and rejects the deletion of the parent row if any child rows still reference it."
+    explanation: "For critical financial ledgers, RESTRICT is preferred to prevent accidental cascading destruction of historical line items."
+  - question: "What is a 'Candidate Key' and how does it relate to the 'Primary Key'?"
+    answer: "A candidate key is a minimal superkey that uniquely identifies every tuple in a relation without redundant attributes. The primary key is the specific candidate key selected by the database designer as the principal identifier."
+    explanation: "All remaining candidate keys not chosen as the primary key are designated as alternate keys (often indexed with UNIQUE constraints)."
+  - question: "Why are NULL values problematic in relational comparisons?"
+    answer: "NULL represents missing, unknown, or inapplicable information and operates under three-valued logic (True, False, Unknown). Expressions like NULL = NULL evaluate to Unknown rather than True."
+    explanation: "Because WHERE clauses only return rows evaluating strictly to True, queries checking WHERE column = NULL will return zero rows. SQL requires WHERE column IS NULL."
+resources:
+  - title: "PostgreSQL 16 Official Documentation"
+    url: "https://www.postgresql.org/docs/16/ddl-constraints.html"
+    type: "Official Docs"
+    description: "Authoritative reference on primary keys, foreign key referential actions, and check constraints."
+    verified: true
+  - title: "Database System Concepts (Silberschatz, Korth, Sudarshan)"
+    url: "https://www.db-book.com/"
+    type: "Standard Course Textbook"
+    description: "The official standard textbook for IIT Madras database coursework, detailing relational algebra and transaction management."
+    verified: true
+  - title: "CMU Database Group: Intro to Database Systems"
+    url: "https://15445.courses.cs.cmu.edu/"
+    type: "Open Course Portal"
+    description: "Carnegie Mellon's comprehensive open lectures on relational engines, buffer management, and concurrency control."
+    verified: true
+---
+
+<TopicSection id="enterprise-data" title="1. Data as an Enterprise Asset & OLTP vs OLAP">
+
+<KeyIdea>
+Modern enterprise architectures decouple real-time transactional processing (OLTP) from multi-dimensional analytical intelligence (OLAP) to balance low-latency writes against compute-intensive aggregation.
+</KeyIdea>
+
+In an enterprise such as a national supermarket chain handling **50,000 active SKUs** and **12,000 transactions per minute**, data serves two fundamentally different business functions:
+
+```
+Operational Pipeline:
+[ Point-of-Sale POS ] ──> [ OLTP: PostgreSQL / MySQL ] 
+                                  │ (Nightly ETL / CDC Stream)
+                                  ▼
+[ Executive Dashboard ] <── [ OLAP: Snowflake / ClickHouse / BigQuery ]
+```
+
+### Comparative Framework: OLTP vs. OLAP
+
+| Feature Dimension | OLTP (Online Transaction Processing) | OLAP (Online Analytical Processing) |
+| :--- | :--- | :--- |
+| **Primary Goal** | High concurrency, real-time data integrity | Long-term trend analysis, executive reporting |
+| **Query Pattern** | Simple point-reads and single-row writes (`INSERT`, `UPDATE`) | Heavy aggregations (`SUM`, `AVG`, `GROUP BY`) over millions of rows |
+| **Schema Design** | Highly normalized (3NF / BCNF) to eliminate redundancy | Denormalized Star or Snowflake dimensional schemas |
+| **Latency Benchmark** | Strict sub-second response ($< 15\text{ ms}$) | Seconds to minutes acceptable |
+| **Typical Example** | Recording a credit card charge of ₹1,499 | Calculating year-over-year revenue growth across regions |
+
+<CheckBadge reason="Transcript mentioned 'OLAP handles customer login sessions'. Corrected: Login authentication is strictly an OLTP transactional workload." />
+
+<AddedByTutor>
+In modern data engineering, the transition from OLTP to OLAP is managed using **Change Data Capture (CDC)** tools like Debezium, streaming row-level WAL (Write-Ahead Log) mutations directly into analytical lakes.
+</AddedByTutor>
+
+</TopicSection>
+
+---
+
+<TopicSection id="relational-model" title="2. The Formal Relational Model & Codd's Rules">
+
+<KeyIdea>
+Edgar F. Codd formulated the relational model in 1970 to liberate application software from the physical layout of disk storage through mathematical set theory and first-order predicate logic.
+</KeyIdea>
+
+### Formal Academic Definition
+> **Relation**: Given domains $D_1, D_2, \dots, D_m$, a relation $R$ is a subset of the Cartesian product $D_1 \times D_2 \times \dots \times D_m$. A tuple $t \in R$ is an ordered list of values $\langle v_1, v_2, \dots, v_m \rangle$ such that $v_j \in D_j$.
+
+### Plain-Language Breakdown
+> Think of a **relation** simply as a 2D spreadsheet or table where:
+> - Every column represents a typed attribute (e.g. `customer_id`, `email`).
+> - Every row represents an individual, unique record (a tuple).
+> - Duplicate rows are strictly forbidden.
+> - The physical order in which rows or columns appear has zero semantic meaning.
+
+### Relational Schema Diagram:
+The diagram below illustrates the relationship between `CUSTOMERS` and `ORDERS`:
+
+![Relational Integrity Schema](/images/bdm/relational_schema.svg)
+
+</TopicSection>
+
+---
+
+<TopicSection id="integrity-constraints" title="3. Integrity Constraints: Entity, Referential, & Domain">
+
+<KeyIdea>
+Integrity constraints act as automated database-level guardrails, ensuring that data stored within tables satisfies predefined business invariants at all times.
+</KeyIdea>
+
+Relational systems enforce three primary classes of constraints:
+
+1. **Entity Integrity**:
+   - The primary key cannot contain a `NULL` value.
+   - Every tuple must be uniquely distinguishable via its primary key attribute(s).
+
+2. **Referential Integrity**:
+   - A Foreign Key (FK) in a referencing table must either be completely `NULL` or match an existing Primary Key (PK) value in the referenced parent table.
+   - Enforces valid business relationships (e.g., an Order cannot belong to a non-existent Customer).
+
+3. **Domain Constraints**:
+   - Values in an attribute column must belong to the declared domain (e.g., `total_amount > 0.00`, `tier_level IN ('Bronze', 'Silver', 'Gold')`).
+
+### Referential Action Cascade Options:
+```sql
+ALTER TABLE orders
+  ADD CONSTRAINT fk_customer
+  FOREIGN KEY (customer_id) 
+  REFERENCES customers(customer_id)
+  ON UPDATE CASCADE
+  ON DELETE RESTRICT;
+```
+- `ON UPDATE CASCADE`: If a customer ID is updated, all associated order records update automatically.
+- `ON DELETE RESTRICT`: Prevents deletion of a customer who has existing historical orders in the system.
+
+</TopicSection>
+
+---
+
+<TopicSection id="acid-guarantees" title="4. The ACID Framework in Enterprise Transactions">
+
+<KeyIdea>
+ACID guarantees form the bedrock of database reliability, ensuring mission-critical financial and logistical operations retain consistency in the presence of failures and high concurrency.
+</KeyIdea>
+
+Consider transferring **₹5,000** from Account A to Account B:
+
+$$\text{T1}: \quad \text{Read}(A) \implies A := A - 5000 \implies \text{Write}(A) \implies \text{Read}(B) \implies B := B + 5000 \implies \text{Write}(B)$$
+
+### The Four ACID Pillars:
+
+- **Atomicity (All-or-Nothing)**:
+  - If the server crashes after debiting $A$ but before crediting $B$, the database Write-Ahead Log (WAL) undoes the debit. Either the entire sequence commits, or none of it does.
+- **Consistency (Preserving Invariants)**:
+  - Total money across $(A + B)$ before the transaction must equal $(A + B)$ after the transaction.
+- **Isolation (Concurrency Shielding)**:
+  - An independent concurrent transaction T2 cannot view intermediate, uncommitted states where $A$ has been deducted but $B$ has not yet been credited.
+- **Durability (Fault Survival)**:
+  - Once the transaction manager returns a `COMMIT` acknowledgment to the application, the changes persist across power failures and system crashes.
+
+</TopicSection>
+

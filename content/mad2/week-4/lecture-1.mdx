@@ -1,0 +1,205 @@
+---
+subject: "mad2"
+week: 4
+lecture: 1
+title: "RESTful Web Services: Resource URIs, HTTP Verbs, and API Design"
+duration: "52 mins"
+overviewSummary: "Details backend architectural principles for building scalable RESTful web APIs, semantic resource URI conventions, HTTP status code taxonomy (2xx, 3xx, 4xx, 5xx), idempotent vs non-idempotent operations, and structuring Flask-RESTful and FastAPI resource endpoints."
+topics:
+  - id: "rest-architecture"
+    title: "1. RESTful Architectural Constraints & URI Design"
+    keyIdea: "REST models systems as collections of resources identified by plural nouns (/api/v1/students), using standard HTTP verbs for operations."
+  - id: "http-verbs-idempotency"
+    title: "2. HTTP Methods, Idempotency, and Safety"
+    keyIdea: "Safe methods (GET) do not modify server state; idempotent methods (PUT, DELETE) produce identical server states upon repetition."
+  - id: "status-codes"
+    title: "3. Semantic HTTP Status Codes Taxonomy"
+    keyIdea: "Returning precise status codes (201 Created, 400 Bad Request, 404 Not Found, 409 Conflict) creates predictable API contracts."
+  - id: "fastapi-routes"
+    title: "4. Resource-Based Routing in FastAPI & Flask-RESTful"
+    keyIdea: "FastAPI path operations map HTTP methods cleanly to Python functions with automatic query, path, and header parsing."
+projectTree: |
+  fastapi-rest-service/
+  ├── app/
+  │   ├── __init__.py
+  │   ├── main.py
+  │   └── routers/
+  │       └── courses.py
+  └── requirements.txt
+codeSnippets:
+  - title: "FastAPI RESTful Resource Router with Semantic Status Codes"
+    filename: "fastapi-rest-service/app/routers/courses.py"
+    language: "python"
+    tested: true
+    code: |
+      from fastapi import APIRouter, HTTPException, status
+      from pydantic import BaseModel, Field
+      from typing import List
+
+      router = APIRouter(prefix="/api/v1/courses", tags=["courses"])
+
+      class CourseSchema(BaseModel):
+          code: str = Field(..., example="mad2")
+          title: str = Field(..., min_length=5, max_length=100)
+          credits: int = Field(default=4, ge=1, le=8)
+
+      # In-memory database
+      COURSES_DB = {
+          "mad2": {"code": "mad2", "title": "Modern App Dev 2", "credits": 4}
+      }
+
+      @router.get("", response_model=List[CourseSchema], status_code=status.HTTP_200_OK)
+      def list_courses():
+          return list(COURSES_DB.values())
+
+      @router.get("/{code}", response_model=CourseSchema)
+      def get_course(code: str):
+          course = COURSES_DB.get(code.lower())
+          if not course:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Course '{code}' not found."
+            )
+          return course
+
+      @router.post("", response_model=CourseSchema, status_code=status.HTTP_201_CREATED)
+      def create_course(payload: CourseSchema):
+          key = payload.code.lower()
+          if key in COURSES_DB:
+              raise HTTPException(
+                  status_code=status.HTTP_409_CONFLICT,
+                  detail=f"Course with code '{payload.code}' already exists."
+              )
+          COURSES_DB[key] = payload.dict()
+          return payload
+
+      @router.delete("/{code}", status_code=status.HTTP_204_NO_CONTENT)
+      def delete_course(code: str):
+          key = code.lower()
+          if key not in COURSES_DB:
+              raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found.")
+          del COURSES_DB[key]
+          return None
+    explanations:
+      - lines: "6-11"
+        explanation: "Pydantic CourseSchema defines attributes with field boundary constraints (1 to 8 credits)."
+      - lines: "22-30"
+        explanation: "GET endpoint fetches individual course; raises standard 404 Not Found if missing."
+      - lines: "32-41"
+        explanation: "POST endpoint returns HTTP 201 Created on success or 409 Conflict if duplicate."
+      - lines: "43-49"
+        explanation: "DELETE endpoint returns HTTP 204 No Content with empty response body."
+    output: |
+      GET /api/v1/courses/mad2 -> 200 OK
+      POST /api/v1/courses -> 201 Created
+      DELETE /api/v1/courses/mad2 -> 204 No Content
+selfTest:
+  - question: "Why should RESTful resource URIs use nouns instead of verbs (e.g. /api/courses instead of /api/getAllCourses)?"
+    answer: "Because the HTTP method (GET, POST, PUT, DELETE) already represents the verb/action. Using verbs in URIs (/getAllCourses, /createCourse) results in RPC (Remote Procedure Call) architecture rather than REST."
+    explanation: "Standardizing on nouns allows multiple HTTP verbs to operate cleanly on the exact same URI identifier."
+  - question: "What is the difference between HTTP 401 Unauthorized and HTTP 403 Forbidden?"
+    answer: "401 Unauthorized means the user has not provided valid authentication credentials (unauthenticated). 403 Forbidden means the server recognizes who the user is, but the user does not possess sufficient permissions (unauthorized access)."
+    explanation: "A logged-out user receives 401; a student trying to access the admin grading panel receives 403."
+  - question: "When is HTTP 409 Conflict returned?"
+    answer: "When a request cannot be processed due to a conflict with the current state of the resource, such as attempting to register a username or email that already exists."
+    explanation: "409 indicates that the client may be able to resolve the conflict and resubmit the request."
+  - question: "What is the semantic meaning of HTTP 204 No Content?"
+    answer: "The server has successfully fulfilled the request, and there is no additional content to send in the response payload body."
+    explanation: "Typically returned by DELETE or PUT operations where returning the deleted object is unnecessary."
+resources:
+  - title: "HTTP Status Code Reference (RFC 9110)"
+    url: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status"
+    type: "Official Reference"
+    description: "Definitive MDN guide to HTTP 1.1 / 2 response status codes."
+    verified: true
+  - title: "FastAPI: Bigger Applications - Multiple Files"
+    url: "https://fastapi.tiangolo.com/tutorial/bigger-applications/"
+    type: "Official Architecture Guide"
+    description: "Guide to structuring large API backends using APIRouter modularity."
+    verified: true
+---
+
+<TopicSection id="rest-architecture" title="1. RESTful Architectural Constraints & URI Design">
+
+<KeyIdea>
+A well-designed REST API identifies resources using plural nouns in hierarchical paths, keeping URIs intuitive and predictable.
+</KeyIdea>
+
+Key principles of RESTful URI design:
+- **Plural nouns**: Use `/api/v1/courses` rather than `/api/v1/course`.
+- **Hierarchical nesting**: Model sub-resources naturally: `/api/v1/courses/mad2/lectures/1`.
+- **Query parameters for filtering**: Use query strings for searching, sorting, and pagination rather than modifying paths: `/api/v1/courses?track=app-dev&page=2`.
+- **Kebab-case**: Use lowercase hyphens for multi-word paths (`/api/v1/user-profiles`).
+
+</TopicSection>
+
+---
+
+<TopicSection id="http-verbs-idempotency" title="2. HTTP Methods, Idempotency, and Safety">
+
+<KeyIdea>
+Understanding idempotency is critical for distributed web APIs: network retries on idempotent endpoints do not alter the end state of the database.
+</KeyIdea>
+
+| HTTP Verb | CRUD | Safe? | Idempotent? | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET` | Read | Yes | Yes | Retrieve resource representation without side effects |
+| `POST` | Create | No | No | Submits data to create new subordinate resource |
+| `PUT` | Replace | No | Yes | Replaces entire resource with supplied body |
+| `PATCH` | Modify | No | No* | Applies partial delta modification to resource |
+| `DELETE` | Remove | No | Yes | Deletes resource; subsequent deletes produce same state |
+
+*Note: While PATCH is typically idempotent in practice, the HTTP specification does not require it to be.
+
+</TopicSection>
+
+---
+
+<TopicSection id="status-codes" title="3. Semantic HTTP Status Codes Taxonomy">
+
+<KeyIdea>
+HTTP status codes communicate the exact outcome of requests to frontend clients and API consumers.
+</KeyIdea>
+
+Status codes are divided into five categories:
+- **`2xx` Success**:
+  - `200 OK`: Request succeeded.
+  - `201 Created`: Resource successfully created (with `Location` header).
+  - `204 No Content`: Action succeeded; response body is empty.
+- **`4xx` Client Error**:
+  - `400 Bad Request`: Malformed syntax or invalid parameters.
+  - `401 Unauthorized`: Authentication required or token missing/expired.
+  - `403 Forbidden`: Authenticated user lacks permission.
+  - `404 Not Found`: Resource URI does not exist.
+  - `409 Conflict`: Conflict with current state (e.g. duplicate email).
+  - `422 Unprocessable Entity`: Schema validation failure.
+- **`5xx` Server Error**:
+  - `500 Internal Server Error`: Unhandled server exception.
+  - `503 Service Unavailable`: Server overloaded or undergoing maintenance.
+
+</TopicSection>
+
+---
+
+<TopicSection id="fastapi-routes" title="4. Resource-Based Routing in FastAPI & Flask-RESTful">
+
+<KeyIdea>
+Frameworks like FastAPI and Flask-RESTful bind resource routes to controller handlers with declarative decorators and automatic serialization.
+</KeyIdea>
+
+Using FastAPI `APIRouter`:
+
+```python
+from fastapi import APIRouter
+
+router = APIRouter(prefix="/students", tags=["students"])
+
+@router.get("/{roll_no}")
+def read_student(roll_no: str):
+    return {"roll_no": roll_no, "status": "active"}
+```
+
+This modular structure keeps routers focused on specific business entities, enabling clean testing and code organization.
+
+</TopicSection>
+

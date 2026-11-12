@@ -1,0 +1,592 @@
+---
+subject: "mad2"
+week: 1
+lecture: 3
+title: "JavaScript Basics: Comments, Unicode, Scope, Strings, Operators and Equality"
+duration: "[check: not stated in transcript]"
+overviewSummary: "Covers JavaScript comments, identifiers and reserved words, Unicode and UTF-16, mixed-script variable names, scope with var, let and const, string basics and length, template strings, operator coercion, and loose versus strict equality."
+topics:
+  - id: "comments-and-identifiers"
+    title: "1. Comments, Identifiers and Reserved Words"
+    keyIdea: "JavaScript uses // for single-line and /* */ for multi-line comments, and reserved words like let cannot be used as identifiers."
+  - id: "unicode-and-utf16"
+    title: "2. Unicode and UTF-16"
+    keyIdea: "Unicode assigns code points to characters, and most JavaScript engines represent them internally as UTF-16."
+  - id: "mixed-script-identifiers"
+    title: "3. Mixed-Script Variables"
+    keyIdea: "JavaScript accepts identifiers and string values in any script, but neutral Latin identifiers are the better convention."
+  - id: "scope-var-let-const"
+    title: "4. Scope: var, let and const"
+    keyIdea: "var leaks out of blocks, while let and const are block-scoped; prefer const, then let, and avoid var."
+  - id: "strings-basics"
+    title: "5. String Basics"
+    keyIdea: "Strings have a length property, zero-based indexing and a substring method whose end index is excluded."
+  - id: "string-length-unicode"
+    title: "6. String Length with Non-Latin Scripts"
+    keyIdea: "The length of a string depends on its internal representation, so it need not match the number of visible characters."
+  - id: "template-strings"
+    title: "7. Template Strings"
+    keyIdea: "Strings in backticks can interpolate any JavaScript expression written inside a dollar-brace placeholder."
+  - id: "operators-and-coercion"
+    title: "8. Operators and Type Coercion"
+    keyIdea: "JavaScript silently converts types around operators, so plus may join strings while star converts to numbers."
+  - id: "equality"
+    title: "9. Equality: == versus ==="
+    keyIdea: "Double equals coerces types before comparing; triple equals does not, and is the safer default."
+projectTree: |
+  js-basics-demo/
+  ├── index.html
+  └── script.js
+codeSnippets:
+  - title: "Comments"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      // This is a single-line comment
+      /*
+         This is a
+         multi-line comment
+      */
+    explanations:
+      - lines: "1"
+        explanation: "Two slashes start a single-line comment that runs to the end of the line."
+      - lines: "2-5"
+        explanation: "Slash-star opens and star-slash closes a multi-line comment; the extra stars and the line breaks inside are irrelevant."
+    output: |
+      (no output)
+  - title: "Devanagari identifier with Tamil value"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      console.log("Hello console!");
+
+      let शहर = "சென்னை";
+      console.log(शहर);
+    explanations:
+      - lines: "1"
+        explanation: "Prints a fixed message; the lecturer leaves this line in permanently."
+      - lines: "3"
+        explanation: "let is in Latin script, the variable name शहर (shehar, city) is Devanagari, and the string value சென்னை (Chennai) is Tamil."
+      - lines: "4"
+        explanation: "Only console.log produces console output; the declaration on line 3 prints nothing."
+    output: |
+      Hello console!
+      சென்னை
+  - title: "var leaks out of a block"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      var x1 = 10;
+      {
+        console.log(x1);
+        var x2 = 30;
+      }
+      console.log(x2);
+    explanations:
+      - lines: "1"
+        explanation: "x1 is declared with var outside any block."
+      - lines: "2-5"
+        explanation: "A bare pair of braces is a block, not a function; x1 is visible inside it and x2 is declared inside it with var."
+      - lines: "6"
+        explanation: "x2 is still visible outside the block because var is not block-scoped."
+    output: |
+      10
+      30
+  - title: "let is block-scoped"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let x1 = 10;
+      {
+        console.log(x1);
+        let x2 = 30;
+      }
+      console.log(x2);
+    explanations:
+      - lines: "4"
+        explanation: "With let, x2 exists only inside the braces."
+      - lines: "6"
+        explanation: "x2 is not defined here, so this line throws a ReferenceError. Using const in place of let gives the same result."
+    output: |
+      10
+      ReferenceError: x2 is not defined
+  - title: "String length, indexing and substring"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let s = "hello";
+      console.log(s);
+      console.log(s.length);
+      console.log(s[0]);
+      console.log(s[1]);
+      console.log(s.substring(2, 4));
+    explanations:
+      - lines: "2"
+        explanation: "Prints the string itself."
+      - lines: "3"
+        explanation: "length is a property, not a method call, and gives 5."
+      - lines: "4-5"
+        explanation: "Indexing is zero-based as in Python: s[0] is h and s[1] is e."
+      - lines: "6"
+        explanation: "substring(2, 4) starts at index 2 and stops before index 4, giving ll."
+    output: |
+      hello
+      5
+      h
+      e
+      ll
+  - title: "Length of a Tamil string"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let शहर = "சென்னை";
+      console.log(शहर.length);
+    explanations:
+      - lines: "2"
+        explanation: "The string looks like three characters on screen, but its length is 6."
+    output: |
+      6
+  - title: "Template strings"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let s = "hello";
+      let शहर = "சென்னை";
+      console.log(`${s} world`);
+      console.log(`Length of ${शहर} is ${शहर.length}`);
+    explanations:
+      - lines: "3"
+        explanation: "The backtick string interpolates the value of s."
+      - lines: "4"
+        explanation: "Both a variable and an expression (the length) are interpolated into the string."
+    output: |
+      hello world
+      Length of சென்னை is 6
+  - title: "Operators and coercion"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      console.log(3 + 4);
+      console.log("3" + "4");
+      console.log("3" + 4);
+      console.log("3" * "4");
+    explanations:
+      - lines: "1"
+        explanation: "Numeric addition gives 7."
+      - lines: "2"
+        explanation: "Plus on two strings concatenates them into the string 34."
+      - lines: "3"
+        explanation: "The number is coerced to a string, then concatenated, giving the string 34."
+      - lines: "4"
+        explanation: "Star is not defined for strings, so both are coerced to numbers, giving 12."
+    output: |
+      7
+      34
+      34
+      12
+  - title: "Equality"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      console.log(3 == 4);
+      console.log(3 == 3);
+      console.log("3" == 3);
+      console.log("3" === 3);
+      console.log(undefined === null);
+    explanations:
+      - lines: "1-2"
+        explanation: "Ordinary numeric comparisons give false and true."
+      - lines: "3"
+        explanation: "Loose equality coerces the string to a number, so the result is true."
+      - lines: "4"
+        explanation: "Strict equality does not coerce, so a string and a number are never equal."
+      - lines: "5"
+        explanation: "undefined and null are different types, so strict equality gives false."
+    output: |
+      false
+      true
+      true
+      false
+      false
+selfTest:
+  - question: "How do you write single-line and multi-line comments in JavaScript, and how does this differ from Python?"
+    answer: "A single-line comment starts with two slashes. A multi-line comment starts with slash-star and ends with star-slash. Python uses the hash symbol and has no multi-line comment syntax."
+    explanation: "JavaScript comments resemble those in C++ and Java."
+  - question: "Why does console.log(x2) outside the block print 30 with var but throw a ReferenceError with let?"
+    answer: "var is not block-scoped, so x2 is visible to everything in the same function scope, here the whole top-level script. let and const are block-scoped, so x2 exists only inside the braces."
+    explanation: "Limiting scope reduces the chance of clashing with names from other code or libraries."
+  - question: "What does s.substring(2, 4) return for s equal to hello, and why?"
+    answer: "ll. It starts at index 2 and stops before index 4, so the character at index 4 (o) is excluded."
+    explanation: "Indexing is zero-based, as in Python."
+  - question: "Why does the Tamil string சென்னை have length 6 even though it shows as three characters?"
+    answer: "Length depends on how the string is represented internally, and the visible characters are made of more than one stored unit."
+    explanation: "So length cannot be treated as the number of visible characters for non-Latin scripts."
+  - question: "What do 3 plus 4 quoted as strings, a string plus a number, and a star between two strings each give, and what is the lecturer's advice?"
+    answer: "String plus string gives the string 34. String plus number also gives the string 34 because the number is converted to a string. Star between two strings converts both to numbers and gives 12. Avoid relying on this in production code."
+    explanation: "Plus prefers strings, while star only works on numbers, so coercion goes in opposite directions."
+  - question: "Why is === usually preferred over ==, and what does undefined === null give?"
+    answer: "=== does not coerce types, so you control conversions. undefined === null gives false."
+    explanation: "Use == only for a specific need and be aware of its pitfalls."
+resources:
+  - title: "MDN Web Docs: Lexical grammar"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar"
+    type: "Official Reference"
+    description: "Comments, identifiers, reserved words and Unicode in JavaScript source text."
+    verified: false
+  - title: "MDN Web Docs: let"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let"
+    type: "Official Reference"
+    description: "Block scope and how let differs from var."
+    verified: false
+  - title: "MDN Web Docs: Template literals"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals"
+    type: "Official Reference"
+    description: "Backtick strings and interpolation."
+    verified: false
+  - title: "MDN Web Docs: Equality comparisons and sameness"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Equality_comparisons_and_sameness"
+    type: "Official Reference"
+    description: "Loose versus strict equality and the coercion rules."
+    verified: false
+---
+
+<TopicSection id="comments-and-identifiers" title="1. Comments, Identifiers and Reserved Words">
+
+<KeyIdea>
+JavaScript uses two slashes for single-line comments and slash-star to star-slash for multi-line comments, and reserved words such as let cannot be identifiers.
+</KeyIdea>
+
+- Two or more slashes start a single-line comment.
+- A multi-line comment starts with slash-star and ends with star-slash. Extra stars or line breaks inside are irrelevant; only the opening and closing markers matter.
+- Python has only the hash symbol and no multi-line comment. JavaScript is closer to C++ and Java.
+- In `let x = 0`, x is an identifier and let is a reserved word, so it cannot be used as a variable name.
+- The meaning of let, const and var is covered under scope below.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+// This is a single-line comment
+/*
+   This is a
+   multi-line comment
+*/
+```
+
+**What each part does:** line 1 is a single-line comment. Lines 2 to 5 are one multi-line comment.
+
+**Expected output:** none.
+
+> **Added by tutor:** none for this topic.
+
+</TopicSection>
+
+---
+
+<TopicSection id="unicode-and-utf16" title="2. Unicode and UTF-16">
+
+<KeyIdea>
+Unicode assigns numbers (code points) to characters, and most JavaScript engines store them as UTF-16.
+</KeyIdea>
+
+- ASCII (basic Latin) fits in single-byte values. Unicode allows multiple bytes so that many languages can be represented.
+- Unicode itself only defines code points, the number for each character.
+- A separate format decides how those numbers are stored: UTF-8 (probably the most popular), UTF-16 (16-bit values for most characters), and a few others.
+- Most JavaScript engines use UTF-16 internally.
+
+</TopicSection>
+
+---
+
+<TopicSection id="mixed-script-identifiers" title="3. Mixed-Script Variables">
+
+<KeyIdea>
+JavaScript allows identifiers and values in any script, but a neutral Latin set is the better convention.
+</KeyIdea>
+
+- Example: let is Latin, the name शहर (shehar, "city") is Devanagari, and the value சென்னை (Chennai) is Tamil.
+- let, const and var declarations print nothing; only console.log produces output.
+- Running it shows the first line, Hello console!, and then the Tamil value.
+- Assigning strings in any script is easy, and you may also declare variables in another language.
+- The lecturer strongly recommends against non-Latin identifiers, because the code may be read by someone who cannot read that script.
+- Keywords already require Latin script, so use that same minimal set for identifiers. This is a convention, not a rule.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+console.log("Hello console!");
+
+let शहर = "சென்னை";
+console.log(शहर);
+```
+
+**What each part does:** line 1 prints a fixed message, line 3 declares a Devanagari-named variable holding a Tamil string, and line 4 prints it.
+
+**Expected output:**
+
+```text
+Hello console!
+சென்னை
+```
+
+</TopicSection>
+
+---
+
+<TopicSection id="scope-var-let-const" title="4. Scope: var, let and const">
+
+<KeyIdea>
+Scope says where a variable is visible; var ignores blocks, while let and const respect them.
+</KeyIdea>
+
+- Scope means where a variable is visible: the whole program, or other scripts from the same HTML file.
+- Poor scoping can make your variable overlap with one declared in another library, and library authors cannot guarantee that nobody else uses a name.
+- Namespaces and modules restrict how names are seen, but you still want to restrict scope within your own code.
+- A bare pair of braces is a block, not a function.
+- With var, x2 declared inside the block is still visible outside it, giving 10 and then 30.
+- Correction by the lecturer: other libraries do not see it directly, but everything in the same function scope does, which here means the entire top-level script.
+- With let, the same code throws a ReferenceError on the last line, because x2 exists only within the braces. This lets you create something inside a for loop that the rest of the code cannot see.
+- const has the same block-level scope as let, so it gives the same error.
+- Rule of thumb: avoid var unless you have a specific reason. Prefer const, because reassignment is flagged. Use let only when the value must change.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+var x1 = 10;
+{
+  console.log(x1);
+  var x2 = 30;
+}
+console.log(x2);
+```
+
+**What each part does:** line 1 declares x1, lines 2 to 5 form a block that logs x1 and declares x2, and line 6 logs x2 outside the block.
+
+**Expected output:**
+
+```text
+10
+30
+```
+
+**File:** `js-basics-demo/script.js` (var replaced by let)
+
+```javascript
+let x1 = 10;
+{
+  console.log(x1);
+  let x2 = 30;
+}
+console.log(x2);
+```
+
+**What each part does:** line 4 limits x2 to the block, and line 6 fails because x2 is not defined there.
+
+**Expected output:**
+
+```text
+10
+ReferenceError: x2 is not defined
+```
+
+> **Added by tutor:** reassigning a const variable throws `TypeError: Assignment to constant variable.` (checked in Node). The lecturer only says it is flagged.
+
+</TopicSection>
+
+---
+
+<TopicSection id="strings-basics" title="5. String Basics">
+
+<KeyIdea>
+A string has a length property, zero-based indexing and methods such as substring, whose end index is excluded.
+</KeyIdea>
+
+- `let s = "hello"` then `console.log(s)` prints hello.
+- `s.length` is 5.
+- `s[0]` is h and `s[1]` is e, because indexing starts at 0 as in Python.
+- `s.substring(2, 4)` is a method call. It starts at character 2 and stops before character 4, giving ll (the o is excluded).
+- The Replit editor shows details of such methods automatically.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let s = "hello";
+console.log(s);
+console.log(s.length);
+console.log(s[0]);
+console.log(s[1]);
+console.log(s.substring(2, 4));
+```
+
+**What each part does:** line 3 prints the length, lines 4 and 5 print single characters, and line 6 prints a substring.
+
+**Expected output:**
+
+```text
+hello
+5
+h
+e
+ll
+```
+
+</TopicSection>
+
+---
+
+<TopicSection id="string-length-unicode" title="6. String Length with Non-Latin Scripts">
+
+<KeyIdea>
+The length of a string depends on its internal representation, not on how many characters you see.
+</KeyIdea>
+
+- For the Tamil value சென்னை, the lecturer counts three visible characters: the che part, the in part and the nai part.
+- Each is shown and selectable as a single character, yet `शहर.length` prints 6.
+- So length is not clearly defined for different languages. It can be derived from Unicode, but the number depends on how the string is represented internally.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let शहर = "சென்னை";
+console.log(शहर.length);
+```
+
+**What each part does:** line 2 prints the length of the Tamil string.
+
+**Expected output:**
+
+```text
+6
+```
+
+> **Added by tutor:** length counts UTF-16 code units. சென்னை is made of six code points (U+0B9A, U+0BC6, U+0BA9, U+0BCD, U+0BA9, U+0BC8), each one unit, so the length is 6 (checked in Node). This ties back to the UTF-16 point above.
+
+</TopicSection>
+
+---
+
+<TopicSection id="template-strings" title="7. Template Strings">
+
+<KeyIdea>
+A string in backticks can embed JavaScript expressions inside a dollar-brace placeholder, giving simple formatted output.
+</KeyIdea>
+
+- A string starting and ending with the backtick (backward quote) is a template string.
+- Inside it, a dollar sign followed by braces around JavaScript is interpolated when the string is logged.
+- This needs the variables s and शहर to be defined and uncommented.
+- The first line prints hello world, and the second prints the Tamil value and its length.
+- It is similar to Python f-strings. It is not a full templating language, but useful for simple outputs.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let s = "hello";
+let शहर = "சென்னை";
+console.log(`${s} world`);
+console.log(`Length of ${शहर} is ${शहर.length}`);
+```
+
+**What each part does:** line 3 interpolates a variable, and line 4 interpolates a variable and an expression.
+
+**Expected output:**
+
+```text
+hello world
+Length of சென்னை is 6
+```
+
+[check: the transcript text shows the Devanagari word चेन्नई in this output, but the variable holds the Tamil value, so I used the Tamil form.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="operators-and-coercion" title="8. Operators and Type Coercion">
+
+<KeyIdea>
+JavaScript converts types automatically around operators, which can give surprising results.
+</KeyIdea>
+
+| Expression | Result | Reason |
+| --- | --- | --- |
+| `3 + 4` | 7 | Numeric addition |
+| `"3" + "4"` | "34" | Plus on strings concatenates |
+| `"3" + 4` | "34" | Coercion: the number becomes a string |
+| `"3" * "4"` | 12 | Star is not defined for strings, so both become numbers |
+
+- The lecturer calls this a recipe for confusion, since values go to strings in one case and back to numbers in another.
+- Avoid it in production code, because it confuses readers.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+console.log(3 + 4);
+console.log("3" + "4");
+console.log("3" + 4);
+console.log("3" * "4");
+```
+
+**What each part does:** each line prints the result of one expression from the table.
+
+**Expected output:**
+
+```text
+7
+34
+34
+12
+```
+
+</TopicSection>
+
+---
+
+<TopicSection id="equality" title="9. Equality: == versus ===">
+
+<KeyIdea>
+Double equals coerces types before comparing; triple equals compares without coercion and is the safer default.
+</KeyIdea>
+
+| Expression | Result | Reason |
+| --- | --- | --- |
+| `3 == 4` | false | Different numbers |
+| `3 == 3` | true | Same number |
+| `"3" == 3` | true | Coercion converts the string |
+| `"3" === 3` | false | Strict: different types |
+| `undefined === null` | false | Different types |
+
+- You do not want strings and numbers converted automatically; you want to control when conversion happens.
+- undefined and null both resemble Python None, but they are not strictly equal.
+- Use `===` unless a specific need requires `==`, and then know the pitfalls.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+console.log(3 == 4);
+console.log(3 == 3);
+console.log("3" == 3);
+console.log("3" === 3);
+console.log(undefined === null);
+```
+
+**What each part does:** each line prints the result of one comparison from the table.
+
+**Expected output:**
+
+```text
+false
+true
+true
+false
+false
+```
+
+</TopicSection>

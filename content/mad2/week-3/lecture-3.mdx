@@ -1,0 +1,221 @@
+---
+subject: "mad2"
+week: 3
+lecture: 3
+title: "Centralized State Management with Pinia & Vuex"
+duration: "48 mins"
+overviewSummary: "Covers the necessity of global state management in complex component trees, prop drilling vs event bus anti-patterns, the architecture of Pinia (the modern Vue standard) and legacy Vuex, and organizing State, Getters, and Actions."
+topics:
+  - id: "why-global-state"
+    title: "1. The State Management Problem & Prop Drilling"
+    keyIdea: "Passing props down 5 levels (prop drilling) and bubbling events up across sibling components leads to brittle, spaghetti architectures."
+  - id: "pinia-architecture"
+    title: "2. Pinia Core Architecture: State, Getters, Actions"
+    keyIdea: "Pinia defines stores with state (data), getters (computed properties), and actions (methods supporting both sync and async mutations)."
+  - id: "vuex-comparison"
+    title: "3. Pinia vs Vuex: Why Mutations Were Dropped"
+    keyIdea: "Pinia dropped Vuex's verbose mutations in favor of direct actions and full TypeScript inference with zero boilerplate."
+  - id: "store-composition"
+    title: "4. Modular Store Organization and Persistence"
+    keyIdea: "Decomposing global state into specialized domain stores (auth, cart, courses) improves code splitting and isolation."
+projectTree: |
+  pinia-store-app/
+  ├── src/
+  │   ├── main.js
+  │   ├── stores/
+  │   │   ├── auth.js
+  │   │   └── courses.js
+  │   └── components/
+  │       └── CourseList.vue
+  └── package.json
+codeSnippets:
+  - title: "Modular Pinia Store with Async Actions and Getters"
+    filename: "pinia-store-app/src/stores/courses.js"
+    language: "javascript"
+    tested: true
+    code: |
+      import { defineStore } from 'pinia';
+
+      export const useCourseStore = defineStore('courses', {
+        state: () => ({
+          enrolledCourses: [],
+          isLoading: false,
+          error: null
+        }),
+
+        getters: {
+          totalCredits: (state) => {
+            return state.enrolledCourses.reduce((sum, c) => sum + c.credits, 0);
+          },
+          courseCount: (state) => state.enrolledCourses.length,
+          hasMaxCredits: (state) => {
+            // Student max credit limit is 16
+            return state.totalCredits >= 16;
+          }
+        },
+
+        actions: {
+          async fetchEnrolledCourses() {
+            this.isLoading = true;
+            this.error = null;
+            try {
+              // Simulated remote backend API call
+              const response = await new Promise((resolve) => {
+                setTimeout(() => {
+                  resolve([
+                    { id: "mlt", name: "Machine Learning Techniques", credits: 4 },
+                    { id: "mad2", name: "Modern App Development 2", credits: 4 }
+                  ]);
+                }, 300);
+              });
+              this.enrolledCourses = response;
+            } catch (err) {
+              this.error = "Failed to load courses from server.";
+            } finally {
+              this.isLoading = false;
+            }
+          },
+
+          enrollCourse(course) {
+            if (this.hasMaxCredits) {
+              throw new Error("Credit limit exceeded (max 16 credits).");
+            }
+            this.enrolledCourses.push(course);
+          }
+        }
+      });
+    explanations:
+      - lines: "3-8"
+        explanation: "defineStore creates 'courses' store; state returns fresh reactive state object."
+      - lines: "10-18"
+        explanation: "getters compute derived values (totalCredits, hasMaxCredits) with automatic caching."
+      - lines: "21-46"
+        explanation: "actions handle async network calls and business rule validation, mutating this.enrolledCourses directly."
+    output: |
+      Store initializes with empty array, fetches courses asynchronously, and calculates totalCredits (8) when mounted in components.
+selfTest:
+  - question: "What is 'Prop Drilling' and how does centralized state management solve it?"
+    answer: "Prop drilling is passing data through multiple intermediate components that do not need the data themselves, solely to reach a deeply nested child. Centralized state allows any component in the tree to read or update the store directly without passing props."
+    explanation: "This eliminates boilerplate and prevents changes in intermediate components from breaking data delivery."
+  - question: "Why did Pinia eliminate Vuex's 'mutations'?"
+    answer: "Mutations required excessive boilerplate (defining types, writing mutations, dispatching actions to commit mutations) and offered poor TypeScript inference. Pinia allows actions to mutate state directly while still providing full Vue DevTools time-travel debugging."
+    explanation: "Pinia is now the official recommended state management library for Vue 3."
+  - question: "Can getters in Pinia accept custom arguments?"
+    answer: "Yes. By returning a function from the getter (e.g. getCourseById: (state) => (id) => state.courses.find(c => c.id === id))."
+    explanation: "Note that getters returning functions are not cached by default since arguments vary per call."
+  - question: "How do you reset a store's state back to its initial values in Pinia?"
+    answer: "Call store.$reset()."
+    explanation: "Pinia re-evaluates the state() function and restores all state variables to their initial declarations."
+resources:
+  - title: "Pinia Official Documentation"
+    url: "https://pinia.vuejs.org/introduction.html"
+    type: "Official Reference"
+    description: "The complete guide to Pinia stores, composition stores, and Vue Devtools integration."
+    verified: true
+  - title: "Vue.js Docs: State Management"
+    url: "https://vuejs.org/guide/scaling-up/state-management.html"
+    type: "Official Architectural Guide"
+    description: "Architectural overview comparing simple reactive objects vs dedicated store libraries."
+    verified: true
+---
+
+<TopicSection id="why-global-state" title="1. The State Management Problem & Prop Drilling">
+
+<KeyIdea>
+Global state management provides a single source of truth for application data that must be shared across disparate, deeply nested component branches.
+</KeyIdea>
+
+In an application like the IIT Madras Student Portal, user session state, notifications, and enrolled courses are needed across:
+- The top Navbar
+- The Course Dashboard
+- The Exam Registration View
+
+Passing this information down through dozens of nested components via props is fragile and unmaintainable. Centralized state stores hold shared data outside the component tree.
+
+</TopicSection>
+
+---
+
+<TopicSection id="pinia-architecture" title="2. Pinia Core Architecture: State, Getters, Actions">
+
+<KeyIdea>
+Pinia organizes global domain state into three clear concepts: State (data), Getters (computed values), and Actions (business logic and mutations).
+</KeyIdea>
+
+Inside any component, using a Pinia store is as simple as calling a composable hook:
+
+```html
+<script setup>
+import { useCourseStore } from '@/stores/courses';
+import { storeToRefs } from 'pinia';
+
+const courseStore = useCourseStore();
+
+// storeToRefs preserves reactivity when destructuring state and getters
+const { enrolledCourses, totalCredits, isLoading } = storeToRefs(courseStore);
+// Actions can be destructured directly
+const { enrollCourse } = courseStore;
+</script>
+
+<template>
+  <div v-if="isLoading">Loading course credits...</div>
+  <div v-else>
+    <h2>Total Credits: {{ totalCredits }}</h2>
+  </div>
+</template>
+```
+
+Always use `storeToRefs()` when destructuring properties from a store to prevent breaking reactivity.
+
+</TopicSection>
+
+---
+
+<TopicSection id="vuex-comparison" title="3. Pinia vs Vuex: Why Mutations Were Dropped">
+
+<KeyIdea>
+Pinia simplifies Vue state management by eliminating mutations, supporting multi-store modularity, and delivering first-class TypeScript inference.
+</KeyIdea>
+
+| Dimension | Legacy Vuex (v3 / v4) | Modern Pinia |
+| :--- | :--- | :--- |
+| **Mutation Concept** | Mandatory synchronous `commit('MUTATION')` | Eliminated; actions mutate state directly |
+| **Store Structure** | Monolithic single tree with namespaced modules | Modular independent flat stores |
+| **TypeScript Support** | Complex manual typing required | Automatic full type inference |
+| **Boilerplate** | High (types, mutations, actions, getters) | Minimal |
+
+Pinia is lighter (around 1.5kb) and natively integrates with the Composition API.
+
+</TopicSection>
+
+---
+
+<TopicSection id="store-composition" title="4. Modular Store Organization and Persistence">
+
+<KeyIdea>
+Partitioning global state into dedicated domain stores (e.g. `authStore`, `courseStore`, `cartStore`) ensures clean separation of concerns and enables route-level code splitting.
+</KeyIdea>
+
+Stores can easily import and interact with one another:
+
+```javascript
+import { defineStore } from 'pinia';
+import { useAuthStore } from './auth';
+
+export const useCourseStore = defineStore('courses', {
+  actions: {
+    async register() {
+      const auth = useAuthStore();
+      if (!auth.isLoggedIn) {
+        throw new Error("Must be logged in to register.");
+      }
+      // Use auth.token in request header
+    }
+  }
+});
+```
+
+Third-party plugins like `pinia-plugin-persistedstate` automatically sync designated stores to browser `localStorage` or `sessionStorage`.
+
+</TopicSection>
+

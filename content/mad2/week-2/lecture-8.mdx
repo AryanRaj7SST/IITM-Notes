@@ -1,0 +1,247 @@
+---
+subject: "mad2"
+week: 2
+lecture: 6
+title: "JavaScript: The JSON API"
+duration: "[check: duration not in transcript]"
+overviewSummary: "Introduces JSON (JavaScript Object Notation) as a frozen, text-based format for moving objects between programs, and the global JSON object with its stringify and parse methods. Demonstrates a Cat/Animal round trip and why a static fromJSON method is needed to rebuild a real Cat object from a parsed string."
+topics:
+  - id: "what-is-json"
+    title: "1. What is JSON?"
+    keyIdea: "JSON is a text representation of an object that lets us move objects from one place to another; its specification is frozen."
+  - id: "json-api"
+    title: "2. The JSON API: stringify and parse"
+    keyIdea: "A global JSON object gives two main methods: JSON.stringify turns an object into a string, and JSON.parse turns a string back into a plain object."
+  - id: "why-stringify"
+    title: "3. Why is it called stringify?"
+    keyIdea: "The goal is a string that can be sent over a network, not necessarily written to a file."
+  - id: "stringify-demo"
+    title: "4. Stringify demo on the Cat example"
+    keyIdea: "Stringifying a Cat gives a standardised, compact string with quoted names and values and no extra white space."
+  - id: "parse-back"
+    title: "5. Getting back to an object"
+    keyIdea: "The JSON string carries no class information, so JSON.parse alone gives only a plain object, not a Cat."
+  - id: "from-json"
+    title: "6. The static fromJSON method"
+    keyIdea: "A class-level static method fromJSON builds a new object of the right class from a parsed JSON object."
+  - id: "json-beyond-js"
+    title: "7. JSON beyond JavaScript"
+    keyIdea: "JSON began in JavaScript but is used widely as a generic, easy-to-read data format."
+projectTree: |
+  json-demo/
+  └── cat.js
+codeSnippets:
+  - title: "Stringify a Cat and rebuild it with fromJSON [untested]"
+    filename: "json-demo/cat.js"
+    language: "javascript"
+    tested: false
+    code: |
+      class Animal {
+        constructor(name) {
+          this.name = name;
+        }
+        describe() {
+          return `${this.name} makes a sound ${this.sound}`;
+        }
+      }
+
+      class Cat extends Animal {
+        constructor(name) {
+          super(name);
+          this.sound = "meow";
+        }
+        static fromJSON(o) {
+          const c = new Cat(o.name);
+          c.sound = o.sound;
+          return c;
+        }
+      }
+
+      const c = new Cat("tom");
+      console.log(c.describe());
+      console.log(c);
+      const p = JSON.stringify(c);
+      console.log(p);
+
+      const cc = Cat.fromJSON(JSON.parse(p));
+      console.log(cc.describe());
+    explanations:
+      - lines: "1-8"
+        explanation: "Parent class Animal. The constructor stores the name; describe returns a sentence using the name and sound (this is the describe method the lecture says comes from Animal)."
+      - lines: "10-14"
+        explanation: "Cat extends Animal. Its constructor calls super (the parent constructor) and then sets the sound to meow."
+      - lines: "15-19"
+        explanation: "Static fromJSON is a class-level method, called as Cat.fromJSON and not on an individual cat. It creates a new Cat from the name in the object o and sets its sound from o.sound."
+      - lines: "22-24"
+        explanation: "Create a Cat named tom, log its description, then log the object itself."
+      - lines: "25-26"
+        explanation: "JSON.stringify(c) converts the Cat into a string stored in p, which is then logged."
+      - lines: "28-29"
+        explanation: "JSON.parse(p) turns the string into a plain object, which is passed to Cat.fromJSON. The new Cat goes into cc and its description is logged."
+    output: |
+      tom makes a sound meow
+      Cat { name: 'tom', sound: 'meow' }
+      {"name":"tom","sound":"meow"}
+      tom makes a sound meow
+selfTest:
+  - question: "What does JSON stand for, and what does the 'object notation' part mean?"
+    answer: "JavaScript Object Notation. It is a text format for representing an object so that the object can be moved from one place to another."
+    explanation: "It started as an informal text representation of what a JavaScript object looks like internally."
+  - question: "What does it mean that the JSON specification is 'frozen', and why was that decided?"
+    answer: "The creators decided not to change the notation, even if some parts are considered awkward. This way your use of the API can be sure it will never change."
+    explanation: "The lecture says that if it becomes a real problem, JSON may eventually be replaced by something else, but for most use cases it is good enough."
+  - question: "Name the two main methods of the JSON API and what each one does."
+    answer: "JSON.stringify takes an object and converts it into a string. JSON.parse takes a string and parses it into an object (a plain object) that can then be used to construct a real object."
+    explanation: "JSON is a global namespace object, so these can be used directly in any script."
+  - question: "Why is the method called stringify and not something like 'write to file'?"
+    answer: "Often the JSON string is created to be sent directly over a network and may never be written to a file on disk, so the method focuses only on producing a string."
+    explanation: "What we care about is the string itself, not where it ends up."
+  - question: "What changes in the string produced by stringify compared with how the object is printed by console.log?"
+    answer: "Property names and string values are enclosed in double quotes, and unnecessary white space is removed."
+    explanation: "This standardises the output and saves space when sending it to another machine or program."
+  - question: "After JSON.parse, why do we still need Cat.fromJSON?"
+    answer: "The JSON string holds only the property values (name and sound) and no class information, so parse gives a plain object, not a Cat. A static fromJSON method on the Cat class builds a new Cat from it."
+    explanation: "fromJSON is static because it works at class level; you call it as Cat.fromJSON without first creating a cat."
+resources:
+  - title: "MDN Web Docs: JSON"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON"
+    type: "Official Reference"
+    description: "Reference for the global JSON object, including stringify and parse."
+    verified: false
+  - title: "MDN Web Docs: JSON.stringify()"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify"
+    type: "Official Reference"
+    description: "Detailed documentation of JSON.stringify."
+    verified: false
+  - title: "MDN Web Docs: JSON.parse()"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse"
+    type: "Official Reference"
+    description: "Detailed documentation of JSON.parse."
+    verified: false
+  - title: "Introducing JSON (json.org)"
+    url: "https://www.json.org/"
+    type: "Format Specification Overview"
+    description: "Overview of the JSON syntax."
+    verified: false
+---
+
+<TopicSection id="what-is-json" title="1. What is JSON?">
+
+<KeyIdea>
+JSON is a text representation of an object that lets us move objects from one place to another.
+</KeyIdea>
+
+- JSON stands for JavaScript Object Notation. It is not really a JavaScript concept, but it is very useful for transferring data around (it was also met in MAD 1).
+- "Object notation" means we want to transfer an object in some text format from one place to another.
+- It began informally as a text-based representation of what a JavaScript object looks like internally, and it was used extensively.
+- The notation has now been declared **frozen**. Even if there are complaints (for example, that one notation should have been done differently), the creators will not change it.
+- If it ever becomes a real problem, JSON may be replaced with something else. For most use cases it is good enough, and freezing it means your API never changes.
+
+</TopicSection>
+
+---
+
+<TopicSection id="json-api" title="2. The JSON API: stringify and parse">
+
+<KeyIdea>
+A global JSON object gives two main methods: stringify (object to string) and parse (string to object).
+</KeyIdea>
+
+- In JavaScript, JSON is used through the JSON API.
+- The API makes one global namespace object called `JSON` available to your scripts, so you can use `JSON.` plus a method name straight away.
+- `JSON.stringify` takes an object and converts it into a string.
+- `JSON.parse` takes a string and converts it back, but not directly into your original object. It parses the string into something (a plain object) that can then be used to construct an object.
+
+</TopicSection>
+
+---
+
+<TopicSection id="why-stringify" title="3. Why is it called stringify?">
+
+<KeyIdea>
+The aim is a string to send out, not necessarily a file to save.
+</KeyIdea>
+
+- The method is not called "write to file" or "write to output" because a JSON string is very often created to be sent directly over a network.
+- In that case it may never reach a file on disk.
+- So `stringify` focuses only on making the object into a string.
+
+</TopicSection>
+
+---
+
+<TopicSection id="stringify-demo" title="4. Stringify demo on the Cat example">
+
+<KeyIdea>
+Stringifying a Cat gives a clean, standardised, compact string.
+</KeyIdea>
+
+The demo reuses the class example: class `Cat` extends `Animal`, its constructor calls `super` (the parent constructor) and sets the sound to meow. A new cat `c` was created and `c.describe()` was logged earlier.
+
+New in this lecture: `JSON.stringify(c)` converts the Cat `c` into a string stored in `p`. Both `c` and `p` are then logged. Other earlier `console.log` lines were removed for clarity.
+
+What the lecture observes in the output:
+- The first log is `c.describe()`, giving "tom makes a sound meow". This comes from the `describe` method of Animal.
+- Logging `c` shows the name Cat followed by name: tom and sound: meow.
+- Logging `p` shows the stringified version. The property names (name, sound), which were raw literals, are now enclosed in quotes. The values tom and meow are enclosed in double quotes.
+- Unnecessary white space has been removed. This is not essential, but there is no reason to waste space when the string is only going to another machine or program.
+
+> **Added by tutor:** the exact output of `p` is `{"name":"tom","sound":"meow"}`. See the code section for the reconstructed program.
+
+This gives a clean way to turn an object into a unique string that can be passed around.
+
+</TopicSection>
+
+---
+
+<TopicSection id="parse-back" title="5. Getting back to an object">
+
+<KeyIdea>
+The string has the values but no class information, so parse alone cannot give back a Cat.
+</KeyIdea>
+
+- The open question is how to get from the string `p` back to the object. This is not trivial.
+- `p` holds only the parameters (name is tom, sound is meow). It does not say whether the object was a dog, a cat or just a dictionary.
+- Nothing in the string says there is a class Cat associated with it.
+- So to go from the string back to a Cat, we need something in the class `Cat` itself.
+
+</TopicSection>
+
+---
+
+<TopicSection id="from-json" title="6. The static fromJSON method">
+
+<KeyIdea>
+A static, class-level method builds a Cat from the parsed object.
+</KeyIdea>
+
+- `fromJSON` is a **static** method: a class-level method, not one that exists for each individual object.
+- It is invoked directly as `Cat.fromJSON`. You do not need to create a new cat first.
+- In the lecture it is given the parsed JSON object, not the string. The speaker notes you could instead pass the string and call `JSON.parse` inside it, but chose to parse first and pass the object.
+- It creates a new cat using the object's name and then sets the sound to the object's sound.
+- **Design choice:** if you skipped the step of setting the sound from the object, it would still work. The new Cat gets meow from its own constructor anyway (cats can only say meow), and the sound in the JSON string would simply be ignored.
+- So how you write `fromJSON` (your JSON interpreter) leaves some choices to you.
+
+Using it in practice:
+- Create a variable `cc` and call `Cat.fromJSON` with `JSON.parse(p)` as its input.
+- `p` was created by stringifying `c`. Parsing gives just an object (a dictionary), which is fed into the static `fromJSON` of the Cat class.
+- The method returns a new Cat, assigned to `cc`.
+- Logging `cc.describe()` gives "tom makes a sound meow" again, so the round trip works.
+
+> **Added by tutor:** `JSON.stringify` only includes the object's own data properties. Methods and the class name are not part of the string, which is why the class has to supply the rebuilding logic.
+
+</TopicSection>
+
+---
+
+<TopicSection id="json-beyond-js" title="7. JSON beyond JavaScript">
+
+<KeyIdea>
+JSON has JavaScript roots but is used as a generic format everywhere.
+</KeyIdea>
+
+- The name shows its roots in JavaScript, but it is used well beyond JavaScript, including as a generic format for describing various notations.
+- It has been successful because it is easy to describe and very natural. With some indentation it is also very easy to read.
+- It works very well with JavaScript, so it is a very useful tool for transferring data back and forth between different parts of a system.
+
+</TopicSection>

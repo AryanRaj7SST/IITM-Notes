@@ -1,0 +1,188 @@
+---
+subject: "mad2"
+week: 1
+lecture: 5
+title: "Introduction to DOM Manipulation and Interactivity"
+duration: "15 mins"
+overviewSummary: "Transitions from basic console logging to frontend DOM manipulation, covering how to select and modify HTML elements, introduce time delays using async/await, and handle user inputs via event listeners."
+topics:
+  - id: "dom-manipulation"
+    title: "1. From Console to DOM Manipulation"
+    keyIdea: "JavaScript in the browser is designed to manipulate the Document Object Model (DOM), moving beyond limited console.log debugging to actual user-facing interactions."
+  - id: "document-object"
+    title: "2. The Document Object and Element Selection"
+    keyIdea: "The global `document` variable provides methods like `getElementById` to hook into existing HTML elements and dynamically change their content."
+  - id: "async-delays"
+    title: "3. UI Timing and Asynchronous Delays"
+    keyIdea: "Using `async` functions and `await new Promise` allows developers to pause JavaScript execution without freezing the browser, enabling timed UI updates."
+  - id: "event-listeners"
+    title: "4. Event Listeners and Dynamic Styling"
+    keyIdea: "The `addEventListener` method binds user actions (like clicks) to anonymous arrow functions, allowing for dynamic updates to element content and CSS styles."
+projectTree: |
+  dom-interactivity-demo/
+  ├── index.html
+  └── interact.js
+codeSnippets:
+  - title: "HTML Structure"
+    filename: "dom-interactivity-demo/index.html"
+    language: "html"
+    tested: true
+    code: |
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <title>DOM Manipulation</title>
+      </head>
+      <body>
+          <div id="d1">Hello world</div>
+          <div id="d2"></div>
+          
+          <script src="interact.js"></script>
+      </body>
+      </html>
+    explanations:
+      - lines: "8-9"
+        explanation: "Two div elements are created. d1 has initial text, while d2 is invisible initially because it is empty."
+  - title: "DOM Manipulation, Async Delays, and Event Listeners"
+    filename: "dom-interactivity-demo/interact.js"
+    language: "javascript"
+    tested: false
+    code: |
+      // Part 1: Basic DOM Manipulation & Async Delays
+      async function demo() {
+        const d1 = document.getElementById('d1');
+        const d2 = document.getElementById('d2');
+
+        // Wait for 2 seconds
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        d1.innerHTML = "Welcome to d1";
+        console.log("Updated d1");
+
+        // Wait for another 2 seconds
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        d2.innerHTML = "Goodbye from d2";
+        console.log("Updated d2");
+      }
+
+      // Execute the demo function
+      demo();
+
+      // Part 2: Interactivity and Event Listeners
+      let x = 0;
+      const d1 = document.getElementById('d1');
+
+      d1.addEventListener('click', e => {
+        x++;
+        d1.innerHTML = `Click count: ${x}`;
+        // Dynamically increase font size
+        d1.style.fontSize = (x + 10) + 'px'; 
+      });
+    explanations:
+      - lines: "3-4"
+        explanation: "Accesses the global `document` object to retrieve references to the HTML elements with IDs 'd1' and 'd2'."
+      - lines: "7-8"
+        explanation: "Creates an artificial 2-second delay using a Promise before changing the inner HTML of d1."
+      - lines: "24-29"
+        explanation: "Attaches a click event listener using an anonymous arrow function. Uses template literals to display the count and directly modifies the CSS fontSize style property."
+    output: |
+      // Initial page load:
+      "Hello world"
+      // After 2 seconds:
+      "Welcome to d1" (overwrites Hello world)
+      // After 4 seconds:
+      "Welcome to d1"
+      "Goodbye from d2"
+      // On clicking d1:
+      "Click count: 1" (text size increases to 11px)
+selfTest:
+  - question: "Why is `console.log` considered insufficient for production frontend applications?"
+    answer: "`console.log` is primarily designed for basic error logging and limited debugging. It does not interact with the user or manipulate the document displayed on the screen."
+    explanation: "JavaScript's core purpose in the browser is DOM manipulation—taking inputs from the page and dynamically updating the UI."
+  - question: "What is the `document` variable in JavaScript?"
+    answer: "It is a pre-existing global variable (of type `Document`) provided by the browser environment that acts as the entry point to the webpage's DOM."
+    explanation: "You do not need to declare it; it is immediately available to query elements using methods like `getElementById`."
+  - question: "Why do we use an arrow function inside `addEventListener` instead of a standard named function?"
+    answer: "It is an idiom used when a function is only needed in one specific place. An anonymous arrow function prevents us from having to declare a standalone function elsewhere just to pass its name."
+    explanation: "While you can declare a named function and pass it in, an inline arrow function is often cleaner for short event handlers."
+  - question: "Why is the script wrapped inside an `async function demo()`?"
+    answer: "Because we want to use the `await` keyword to pause execution (waiting for the Promise to resolve after two seconds)."
+    explanation: "In standard JavaScript (prior to top-level await modules), the `await` keyword can only be used inside a function explicitly marked as `async`."
+resources:
+  - title: "MDN Web Docs: Document Object Model (DOM)"
+    url: "https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Introduction"
+    type: "Official Docs"
+    description: "Overview of what the DOM is and how JavaScript interacts with it."
+    verified: true
+  - title: "MDN Web Docs: EventTarget.addEventListener()"
+    url: "https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener"
+    type: "Official Docs"
+    description: "Detailed documentation on attaching event handlers to DOM elements."
+    verified: true
+---
+
+<TopicSection id="dom-manipulation" title="1. From Console to DOM Manipulation">
+
+<KeyIdea>
+JavaScript in the browser is designed to manipulate the Document Object Model (DOM), moving beyond limited console.log debugging to actual user-facing interactions.
+</KeyIdea>
+
+While `console.log` is useful for basic error checking during development, it is generally not used for user interaction in production. JavaScript was designed from the beginning for **document manipulation**. 
+
+This means it can:
+*   Receive inputs directly from the document (mouse clicks, typing in input boxes).
+*   Manipulate the DOM by inserting new text, modifying existing elements, and changing visual layouts on the fly.
+
+When a webpage loads, the HTML renders first. Once the JavaScript begins executing, it runs extremely fast, often modifying the HTML elements immediately after they are drawn to the screen.
+
+</TopicSection>
+
+---
+
+<TopicSection id="document-object" title="2. The Document Object and Element Selection">
+
+<KeyIdea>
+The global `document` variable provides methods like `getElementById` to hook into existing HTML elements and dynamically change their content.
+</KeyIdea>
+
+To manipulate HTML from JavaScript, you use the `document` object.
+*   **Global Variable:** `document` is a global variable of type `Document` automatically provided by the browser environment. You do not declare it.
+*   **Element Selection:** The method `document.getElementById('elementId')` retrieves a specific element from the HTML.
+*   **Modifying Content:** Once selected, assigning a string to the element's `.innerHTML` property immediately updates the text visible to the user.
+
+If an element like `<div id="d2"></div>` exists in the HTML without text, it is invisible until JavaScript injects content into its `innerHTML`.
+
+</TopicSection>
+
+---
+
+<TopicSection id="async-delays" title="3. UI Timing and Asynchronous Delays">
+
+<KeyIdea>
+Using `async` functions and `await new Promise` allows developers to pause JavaScript execution without freezing the browser, enabling timed UI updates.
+</KeyIdea>
+
+You can create time-based interactivity by putting deliberate pauses in your code execution. This requires wrapping your logic in an `async function`.
+
+*   By calling `await new Promise`, we can hook into browser timers to wait for a set number of seconds before executing the next line of code.
+*   Because this operation uses asynchronous promises, it pauses the local function's execution but does not freeze the rest of the webpage.
+*   This pattern is necessary because `await` can only be used inside functions marked with the `async` keyword.
+
+</TopicSection>
+
+---
+
+<TopicSection id="event-listeners" title="4. Event Listeners and Dynamic Styling">
+
+<KeyIdea>
+The `addEventListener` method binds user actions (like clicks) to anonymous arrow functions, allowing for dynamic updates to element content and CSS styles.
+</KeyIdea>
+
+To make the application truly interactive, we need to respond to user input dynamically.
+
+*   **Event Listeners:** Calling `addEventListener('click', ...)` on an HTML element tells the browser to execute a specific block of code whenever that element is clicked.
+*   **Anonymous Arrow Functions:** Rather than declaring a separate named function, it is standard practice (an idiom) to pass a small, anonymous arrow function `e => { ... }` directly into the listener.
+*   **Template Literals:** Using backticks (`` ` ``), we can easily insert changing variables directly into strings, such as `` `Click count: ${x}` ``.
+*   **Dynamic Styling:** JavaScript can also alter CSS. Accessing the `.style` property of an element allows you to dynamically change visual properties, such as increasing the `fontSize` sequentially with every click.
+
+</TopicSection>

@@ -1,0 +1,204 @@
+---
+subject: "mad2"
+week: 2
+lecture: 1
+title: "Introduction to JavaScript Collections"
+duration: "16 mins"
+overviewSummary: "Explores JavaScript collections starting with arrays as mixed-type lists. It introduces iterables, functional callbacks, modern data structures like Maps and Sets, array destructuring, and generators for cooperative concurrency."
+topics:
+  - id: "js-arrays"
+    title: "1. Arrays as Generic Collections"
+    keyIdea: "Unlike C arrays, JavaScript arrays are generic, mixed-type collections (similar to Python lists) that can contain numbers, strings, and even functions simultaneously."
+  - id: "iterables"
+    title: "2. Iterables and Iteration"
+    keyIdea: "An iterable is an object accessed sequentially using a pointer (iterator). Examples include arrays, strings, maps, and the browser DOM tree."
+  - id: "first-class-functions"
+    title: "3. First-Class Functions and Callbacks"
+    keyIdea: "JavaScript treats functions as first-class objects, allowing them to be passed as arguments (callbacks) to higher-order functions like map, filter, and find."
+  - id: "modern-collections"
+    title: "4. Maps, Sets, and Cleaner Syntax"
+    keyIdea: "Modern JavaScript introduced structures like Map, Set, WeakMap, and WeakSet to provide cleaner, more readable alternatives to old scoping hacks (like IIFEs)."
+  - id: "destructuring"
+    title: "5. Array Destructuring"
+    keyIdea: "Destructuring splits an array or object into multiple distinct variables, enabling Python-like named arguments and default values in JavaScript."
+  - id: "generators"
+    title: "6. Generators and Cooperative Concurrency"
+    keyIdea: "Generators use the 'yield' keyword to pause execution and return a value without exiting, forming the basis for cooperative concurrency where multiple functions remain active."
+projectTree: |
+  replit-demo/
+  ├── index.html
+  └── collections.js
+codeSnippets:
+  - title: "HTML Setup"
+    filename: "replit-demo/index.html"
+    language: "html"
+    tested: true
+    code: |
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>JS Collections Demo</title>
+      </head>
+      <body>
+        <div>Hello world</div>
+        <script src="collections.js"></script>
+      </body>
+      </html>
+    explanations:
+      - lines: "7-8"
+        explanation: "Basic DOM structure with a single div, linking to the collections script as described in the lecture environment."
+  - title: "Array Declarations, Mixed Types, and the Length Property"
+    filename: "replit-demo/collections.js"
+    language: "javascript"
+    tested: true
+    code: |
+      // 1. Basic Array
+      let x = [1, 2, 3];
+      console.log(`Type of x: ${typeof x}`);
+      console.log("Array x:", x, "Length:", x.length);
+      console.log("First element:", x[0]);
+
+      // 2. Mixed Type Array (Number, String, Function)
+      let y = [1, 'b', a => a + 1];
+      console.log(`Type of y: ${typeof y}`);
+      console.log("Array y:", y, "Length:", y.length);
+
+      // 3. Clearing an Array
+      x = []; // Empties the collection
+      console.log(`x after clearing. Type: ${typeof x}, Length: ${x.length}`);
+
+      // 4. Extending Array Length (Creating "Holes")
+      y.length = 10;
+      console.log("y after length = 10:", y);
+      console.log("Accessing hole (y[4]):", y[4]);
+    explanations:
+      - lines: "2-5"
+        explanation: "Declares a basic array. Using the typeof operator reveals that arrays in JavaScript are technically just 'object' types."
+      - lines: "8-10"
+        explanation: "Demonstrates JS arrays holding mixed types: an integer, a string character, and an arrow function."
+      - lines: "13-14"
+        explanation: "Reassigning to an empty array (or setting length to 0) clears it, but it remains an object with a length of 0."
+      - lines: "17-19"
+        explanation: "Manually increasing the length property creates empty slots (holes) in the array. Accessing them yields 'undefined'."
+    output: |
+      Type of x: object
+      Array x: [ 1, 2, 3 ] Length: 3
+      First element: 1
+      Type of y: object
+      Array y: [ 1, 'b', [Function (anonymous)] ] Length: 3
+      x after clearing. Type: object, Length: 0
+      y after length = 10: [ 1, 'b', [Function (anonymous)], <7 empty items> ]
+      Accessing hole (y[4]): undefined
+selfTest:
+  - question: "How do JavaScript arrays differ from arrays in C?"
+    answer: "JavaScript arrays can hold mixed data types (numbers, strings, functions) simultaneously, similar to Python lists. C arrays require all elements to be of a single, declared data type."
+    explanation: "Because JS is dynamically typed, the array structure simply holds references to diverse objects rather than requiring fixed memory allocation for a single type."
+  - question: "What does the `typeof` operator return when applied to a JavaScript array?"
+    answer: "It returns 'object'."
+    explanation: "Arrays are not a distinct primitive data type in JavaScript; they are a specialized type of object."
+  - question: "What happens when you manually increase the `length` property of an existing JavaScript array?"
+    answer: "The array is expanded to the new length, filling the new indices with empty slots (holes)."
+    explanation: "If you try to access one of these newly created empty slots, JavaScript will return `undefined`."
+  - question: "What is a callback function in JavaScript?"
+    answer: "A callback function is a function passed as an argument into another function (like `map` or `filter`), which is then executed internally by the receiving function."
+    explanation: "This is possible because JavaScript treats functions as first-class objects."
+  - question: "What is the purpose of the `yield` keyword in a JavaScript generator?"
+    answer: "It pauses the function's execution, returns a value to the caller, and saves its state so it can be resumed later."
+    explanation: "This is different from `return`, which exits the function entirely. Generators allow for cooperative concurrency."
+resources:
+  - title: "MDN Web Docs: JavaScript Arrays"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array"
+    type: "Official Docs"
+    description: "Detailed documentation on the Array object, iteration, and methods."
+    verified: true
+  - title: "MDN Web Docs: Iterators and Generators"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Iterators_and_Generators"
+    type: "Official Docs"
+    description: "Guide on custom iterables, iterators, and cooperative functions using yield."
+    verified: true
+---
+
+<TopicSection id="js-arrays" title="1. Arrays as Generic Collections">
+
+<KeyIdea>
+Unlike C arrays, JavaScript arrays are generic, mixed-type collections (similar to Python lists) that can contain numbers, strings, and even functions simultaneously.
+</KeyIdea>
+
+In languages like C, an array must be explicitly declared to hold a specific data type (e.g., all `int` or all `char`). In JavaScript, arrays are much closer to Python lists. They are flexible and can hold a mix of data types at the same time.
+
+Arrays in JavaScript are fundamentally objects. If you use the `typeof` operator on an array, it will evaluate to `"object"`. You can easily manipulate an array's size—even creating empty "holes" by artificially setting the `.length` property to a number larger than the current number of elements.
+
+</TopicSection>
+
+---
+
+<TopicSection id="iterables" title="2. Iterables and Iteration">
+
+<KeyIdea>
+An iterable is an object accessed sequentially using a pointer (iterator). Examples include arrays, strings, maps, and the browser DOM tree.
+</KeyIdea>
+
+Iteration is the process of going over elements in a collection one by one. For an object to be iterated over, it must be an **iterable**. Single scalar values (like a single number `1` or character `a`) cannot be iterated.
+
+An iterable requires an internal pointer (an iterator) that tracks the current position and dictates how to move to the next element. In JavaScript, iterables extend far beyond arrays:
+*   Strings
+*   Maps and Sets
+*   The Browser Document Object Model (DOM), which is a tree structure that can be sequentially traversed.
+
+</TopicSection>
+
+---
+
+<TopicSection id="first-class-functions" title="3. First-Class Functions and Callbacks">
+
+<KeyIdea>
+JavaScript treats functions as first-class objects, allowing them to be passed as arguments (callbacks) to higher-order functions like map, filter, and find.
+</KeyIdea>
+
+JavaScript treats functions as first-class citizens. This means a function is just another object that can be passed as a parameter into another function. 
+
+While this is possible in C using complex function pointers, JavaScript makes the syntax fluid. Higher-order functions like `map`, `filter`, and `find` rely heavily on **callback functions**—functions provided as arguments that execute dynamically depending on the internal logic of the parent function. This enables powerful functional programming patterns and transformation chains.
+
+</TopicSection>
+
+---
+
+<TopicSection id="modern-collections" title="4. Maps, Sets, and Cleaner Syntax">
+
+<KeyIdea>
+Modern JavaScript introduced structures like Map, Set, WeakMap, and WeakSet to provide cleaner, more readable alternatives to old scoping hacks (like IIFEs).
+</KeyIdea>
+
+Historically, JavaScript was highly flexible but lacked structured concepts like block scoping or traditional classes. Developers hacked around these limitations using patterns like Immediately Invoked Function Expressions (IIFEs) or complex prototype chains, which were difficult to read.
+
+To solve this, modern JavaScript introduced new collection types (`Map`, `Set`, `WeakMap`, `WeakSet`). While standard JavaScript objects can act like dictionaries, a `Map` provides a cleaner, purpose-built structure for key-value pair collections. 
+
+</TopicSection>
+
+---
+
+<TopicSection id="destructuring" title="5. Array Destructuring">
+
+<KeyIdea>
+Destructuring splits an array or object into multiple distinct variables, enabling Python-like named arguments and default values in JavaScript.
+</KeyIdea>
+
+Destructuring is a simple syntactic feature that unwraps values from arrays or objects into separate variables. 
+
+One of its most powerful use cases is simulating named arguments for functions. Instead of passing arguments sequentially by their position (as in C), destructuring allows you to pass an object where variables are matched by name. It also makes setting default values for missing arguments incredibly straightforward.
+
+</TopicSection>
+
+---
+
+<TopicSection id="generators" title="6. Generators and Cooperative Concurrency">
+
+<KeyIdea>
+Generators use the 'yield' keyword to pause execution and return a value without exiting, forming the basis for cooperative concurrency where multiple functions remain active.
+</KeyIdea>
+
+A **generator** is an advanced function that can yield multiple values over time. Instead of using `return`—which completely terminates function execution—generators use the `yield` keyword. 
+
+`yield` hands a value back to the caller while saving the exact present state of the function. The function waits to be restarted exactly where it left off. This creates **cooperative concurrency**, allowing two or more functions to pass control back and forth, keeping multiple contexts active simultaneously (a precursor to full parallelism).
+
+</TopicSection>

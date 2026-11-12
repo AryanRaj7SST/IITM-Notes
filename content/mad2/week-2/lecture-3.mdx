@@ -1,0 +1,867 @@
+---
+subject: "mad2"
+week: 2
+lecture: 2
+title: "JavaScript Collections - Iterations and Destructuring"
+duration: "[check: not stated in transcript]"
+overviewSummary: "Covers iterating arrays and objects with for, for-in and for-of, why objects are not directly iterable, Object.entries, arrays with holes, the spread operator, the higher-order array methods find, filter, map, reduce and sort, and destructuring of arrays and objects including the rest pattern."
+topics:
+  - id: "for-loop-let"
+    title: "1. The C-style for Loop with let"
+    keyIdea: "A for loop that increments its index looks like C and needs the index declared with let."
+  - id: "for-in"
+    title: "2. for-in over an Array"
+    keyIdea: "for-in gives the indices of defined elements, skips holes, and works with const because each pass gets a new block scope."
+  - id: "for-of"
+    title: "3. for-of over an Array"
+    keyIdea: "for-of gives the values themselves, including undefined ones, so no indexing is needed."
+  - id: "objects-iteration"
+    title: "4. Iterating an Object"
+    keyIdea: "for-in over an object gives its keys, but for-of fails because an object is not iterable."
+  - id: "object-entries"
+    title: "5. Object.entries"
+    keyIdea: "Object.entries turns an object into an iterable list of key and value pairs."
+  - id: "new-array-holes"
+    title: "6. new Array(5) and Holes"
+    keyIdea: "An array created with new Array is full of holes that read as undefined, and for-in skips them."
+  - id: "spread"
+    title: "7. The Spread Operator"
+    keyIdea: "Three dots before an array spread its elements into the surrounding array instead of nesting it."
+  - id: "find-filter"
+    title: "8. find and filter"
+    keyIdea: "find returns the first element for which a function is true, and filter returns all such elements."
+  - id: "map"
+    title: "9. map"
+    keyIdea: "map applies a function to every element and returns the new values."
+  - id: "reduce"
+    title: "10. reduce"
+    keyIdea: "reduce combines all elements into one value using a callback and an initial accumulator."
+  - id: "sort"
+    title: "11. sort"
+    keyIdea: "The default sort is lexical, so numbers need a comparator function."
+  - id: "array-destructuring"
+    title: "12. Array Destructuring"
+    keyIdea: "Destructuring assigns the first elements of an array to variables and ignores the rest."
+  - id: "object-destructuring"
+    title: "13. Object Destructuring and Rest"
+    keyIdea: "Destructuring pulls named keys out of an object, with optional renaming and a rest object for the remaining keys."
+projectTree: |
+  js-basics-demo/
+  ├── index.html
+  └── script.js
+codeSnippets:
+  - title: "Classic for loop over a mixed array"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let x = [1, "b", a => a + 1];
+      x.length = 5;
+      for (let i = 0; i < x.length; i++) {
+        console.log(i, x[i], typeof x[i]);
+      }
+    explanations:
+      - lines: "1-2"
+        explanation: "A mixed array of a number, a string and a function; setting length to 5 adds two empty positions."
+      - lines: "3-5"
+        explanation: "Goes from 0 to length, printing the index, the value and the type; i must be let because it is incremented."
+    output: |
+      0 1 number
+      1 b string
+      2 [Function (anonymous)] function
+      3 undefined undefined
+      4 undefined undefined
+  - title: "for-in over the array"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let x = [1, "b", a => a + 1];
+      x.length = 5;
+      for (const i in x) {
+        console.log(i, x[i], typeof x[i]);
+      }
+    explanations:
+      - lines: "3-5"
+        explanation: "i is an index, so x[i] is needed for the value. Indices 3 and 4 are skipped, and i can be const."
+    output: |
+      0 1 number
+      1 b string
+      2 [Function (anonymous)] function
+  - title: "for-of over the array"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let x = [1, "b", a => a + 1];
+      x.length = 5;
+      for (const i of x) {
+        console.log(i, typeof i);
+      }
+    explanations:
+      - lines: "3-5"
+        explanation: "i is the value itself, so no x[i]. The two undefined positions are included."
+    output: |
+      1 number
+      b string
+      [Function (anonymous)] function
+      undefined undefined
+      undefined undefined
+  - title: "for-in and for-of on an object"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let x = { a: 1, b: "alpha", c: [3, 2, 1] };
+      for (const i in x) {
+        console.log(x[i]);
+      }
+      for (const i in x) {
+        console.log(i);
+      }
+      for (const i of x) {
+        console.log(i);
+      }
+    explanations:
+      - lines: "1"
+        explanation: "Curly brackets and colons make x an object, with keys a, b and c."
+      - lines: "2-4"
+        explanation: "for-in gives keys, so x[i] gives the values."
+      - lines: "5-7"
+        explanation: "Printing i gives the keys a, b and c."
+      - lines: "8-10"
+        explanation: "for-of throws a TypeError: x is not iterable."
+    output: |
+      1
+      alpha
+      [ 3, 2, 1 ]
+      a
+      b
+      c
+      TypeError: x is not iterable
+  - title: "Object.entries"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let x = { a: 1, b: "alpha", c: [3, 2, 1] };
+      for (const [k, v] of Object.entries(x)) {
+        console.log(v);
+      }
+      for (const [k, v] of Object.entries(x)) {
+        console.log(k, v);
+      }
+    explanations:
+      - lines: "2-4"
+        explanation: "Each entry is a key and value pair, like a Python tuple, assigned to k and v; only the value is printed."
+      - lines: "5-7"
+        explanation: "Printing both gives each key with its value."
+    output: |
+      1
+      alpha
+      [ 3, 2, 1 ]
+      a 1
+      b alpha
+      c [ 3, 2, 1 ]
+  - title: "new Array(5) with holes"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let x = new Array(5);
+      x[1] = 10;
+      x[3] = "hello";
+      for (let i = 0; i < x.length; i++) {
+        console.log(i, x[i], typeof x[i]);
+      }
+      for (const i in x) {
+        console.log(i, x[i]);
+      }
+    explanations:
+      - lines: "1"
+        explanation: "new creates an array object with five empty slots."
+      - lines: "2-3"
+        explanation: "Values are assigned at indices 1 and 3; the others stay holes."
+      - lines: "4-6"
+        explanation: "The classic loop shows undefined at 0, 2 and 4, and the type updates once a value is assigned."
+      - lines: "7-9"
+        explanation: "for-in visits only the defined indices 1 and 3."
+    output: |
+      0 undefined undefined
+      1 10 number
+      2 undefined undefined
+      3 hello string
+      4 undefined undefined
+      1 10
+      3 hello
+  - title: "Spread operator"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let x = [1, 2, 3];
+      let y = [0, ...x, 4];
+      console.log(y);
+      console.log(y.length);
+      let z = [0, x, 4];
+      console.log(z);
+      console.log(z.length);
+    explanations:
+      - lines: "2"
+        explanation: "Three dots spread the elements of x into y."
+      - lines: "3-4"
+        explanation: "y is a flat array of length 5."
+      - lines: "5-7"
+        explanation: "Without the dots x stays nested, so z has length 3."
+    output: |
+      [ 0, 1, 2, 3, 4 ]
+      5
+      [ 0, [ 1, 2, 3 ], 4 ]
+      3
+  - title: "find, filter, map and reduce"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let x = [1, -2, 3, -4, 5, 6, -7, 8];
+      let y = x.find(t => t < 0);
+      console.log(y);
+      console.log(x.filter(t => t < 0));
+      console.log(x.map(t => t > 0 ? "+" : "-"));
+      console.log(x.reduce((a, i) => a + i, 0));
+      console.log(x.reduce((a, i) => a * i, 0));
+      console.log(x.reduce((a, i) => a * i, 1));
+    explanations:
+      - lines: "2-3"
+        explanation: "find returns the first element that is below zero."
+      - lines: "4"
+        explanation: "filter returns all elements for which the function is true."
+      - lines: "5"
+        explanation: "map returns a plus or minus sign for each element."
+      - lines: "6"
+        explanation: "reduce with initial accumulator 0 and a plus callback adds all elements."
+      - lines: "7-8"
+        explanation: "With multiplication, starting from 0 stays zero; starting from 1 gives the product."
+    output: |
+      -2
+      [ -2, -4, -7 ]
+      ['+', '-', '+', '-', '+', '+', '-', '+']
+      10
+      -0
+      -40320
+  - title: "sort"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let x = [1, -2, 3, -4, 5, 6, -7, 8];
+      console.log([...x].sort());
+      console.log([...x].sort((a, b) => a - b));
+    explanations:
+      - lines: "2"
+        explanation: "The default sort is lexical (string based), so -2, -4, -7 come first in that order."
+      - lines: "3"
+        explanation: "A comparator a - b sorts numerically."
+    output: |
+      [ -2, -4, -7, 1, 3, 5, 6, 8 ]
+      [ -7, -4, -2, 1, 3, 5, 6, 8 ]
+  - title: "Array destructuring"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let x = [1, 2, 3];
+      const [a, b] = x;
+      console.log(a);
+      console.log(b);
+    explanations:
+      - lines: "2"
+        explanation: "a gets 1 and b gets 2; the third element is ignored."
+    output: |
+      1
+      2
+  - title: "Object destructuring, renaming and rest"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      const person = { firstName: "Ada", lastName: "Lovelace", age: 36, city: "London" };
+      console.log(person);
+      const { firstName: fn, city: c } = person;
+      console.log(fn, c);
+      const { lastName, age } = person;
+      console.log(lastName, age);
+      const { firstName, ...rem } = person;
+      console.log(firstName);
+      console.log(rem);
+    explanations:
+      - lines: "3"
+        explanation: "Takes firstName as fn and city as c."
+      - lines: "5"
+        explanation: "Without renaming, the variables take the key names."
+      - lines: "7"
+        explanation: "Takes firstName and spreads all remaining keys into a new object rem."
+    output: |
+      { firstName: 'Ada', lastName: 'Lovelace', age: 36, city: 'London' }
+      Ada London
+      Lovelace 36
+      Ada
+      { lastName: 'Lovelace', age: 36, city: 'London' }
+selfTest:
+  - question: "Why can the index be const in for-in and for-of but not in the classic for loop?"
+    answer: "In for-in and for-of, the iterator supplies the next value and the variable gets a new block scope on every pass, so it is never changed inside the scope. The classic loop increments the same variable, so it needs let."
+    explanation: "Use let only when you modify the variable yourself."
+  - question: "What is the difference between for-in and for-of on an array with holes?"
+    answer: "for-in visits only the indices that have defined values, while for-of gives the values themselves, including undefined for the holes."
+    explanation: "With a length of 5 and three defined values, for-in prints 3 indices and for-of prints 5 values."
+  - question: "Why does for-of fail on an object, and how can you iterate its keys and values?"
+    answer: "An object is not iterable, so for-of throws a TypeError. Use Object.entries(x), which gives an iterable list of key and value pairs."
+    explanation: "for-in does work on objects and gives the keys."
+  - question: "What are the values of y with and without the spread operator for x = [1, 2, 3]?"
+    answer: "With the dots, y is [0, 1, 2, 3, 4] with length 5. Without them the array x is nested inside, giving length 3."
+    explanation: "Spread puts the elements directly into the surrounding array."
+  - question: "Trace x.reduce((a, i) => a + i, 0) for [1, -2, 3, -4, 5, 6, -7, 8]."
+    answer: "The accumulator goes 0, 1, -1, 2, -2, 3, 9, 2, 10, so the result is 10."
+    explanation: "a starts at the initial value and each step applies the callback to a and the next element."
+  - question: "Why is the default sort wrong for numbers, and how is it fixed?"
+    answer: "The default sort is lexical, comparing strings, so the output is not numeric order. Pass a comparator such as a - b, which is negative, positive or zero as a is less than, greater than or equal to b."
+    explanation: "The same sort works for strings or objects with a suitable comparator."
+resources:
+  - title: "MDN Web Docs: Array"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array"
+    type: "Official Reference"
+    description: "Arrays and methods such as find, filter, map, reduce and sort."
+    verified: false
+  - title: "MDN Web Docs: Array.prototype.reduce()"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce"
+    type: "Official Reference"
+    description: "The accumulator and initial value."
+    verified: false
+  - title: "MDN Web Docs: Object.entries()"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/entries"
+    type: "Official Reference"
+    description: "Key and value pairs of an object."
+    verified: false
+  - title: "MDN Web Docs: Spread syntax"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax"
+    type: "Official Reference"
+    description: "Spreading arrays and objects."
+    verified: false
+  - title: "MDN Web Docs: Destructuring assignment"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment"
+    type: "Official Reference"
+    description: "Array and object destructuring, renaming, defaults and rest."
+    verified: false
+---
+
+<TopicSection id="for-loop-let" title="1. The C-style for Loop with let">
+
+<KeyIdea>
+A for loop that increments its index looks like C and needs the index declared with let.
+</KeyIdea>
+
+- The array x is a mixed array, with its length set to 5.
+- The loop goes from 0 to `x.length` with `i++`, printing `x[i]` and its type.
+- It must be `let`, not `const`, because `i` is modified by the loop.
+- Results: the first value is 1 (number), then b (string), then a function a to a + 1 (function). The last two, created by the length of 5, have value undefined and type undefined.
+- The elements could also have been objects, even an array.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let x = [1, "b", a => a + 1];
+x.length = 5;
+for (let i = 0; i < x.length; i++) {
+  console.log(i, x[i], typeof x[i]);
+}
+```
+
+**What each part does:** line 1 builds the mixed array, line 2 adds two empty positions, and lines 3 to 5 print index, value and type.
+
+**Expected output:**
+
+```text
+0 1 number
+1 b string
+2 [Function (anonymous)] function
+3 undefined undefined
+4 undefined undefined
+```
+
+[check: the array literal is not shown in the transcript; it is inferred from the described types. A browser console shows the function source instead of the Node text.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="for-in" title="2. for-in over an Array">
+
+<KeyIdea>
+for-in gives the indices, skips holes, and the variable can be const.
+</KeyIdea>
+
+- `const i in x` does the same iteration as before.
+- It did not look at elements 3 and 4, only 0, 1 and 2.
+- `i` is the index, so the value needs `x[i]`.
+- It goes over the index values but skips undefined ones.
+- `i` can be const because the iterator function is called internally to get the next value, so each pass through the braces gives `i` a new block scope, and it is never changed inside.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let x = [1, "b", a => a + 1];
+x.length = 5;
+for (const i in x) {
+  console.log(i, x[i], typeof x[i]);
+}
+```
+
+**What each part does:** lines 3 to 5 loop over defined indices and print index, value and type.
+
+**Expected output:**
+
+```text
+0 1 number
+1 b string
+2 [Function (anonymous)] function
+```
+
+</TopicSection>
+
+---
+
+<TopicSection id="for-of" title="3. for-of over an Array">
+
+<KeyIdea>
+for-of gives the values directly, including undefined ones.
+</KeyIdea>
+
+- With `const i of x`, the code prints `i` itself, not `x[i]`.
+- It takes the values of x, not the index values present in x.
+- Output: 1, b and the function with types number, string and function, then it continues over the remaining values, which are undefined.
+- These are the most basic forms of iteration.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let x = [1, "b", a => a + 1];
+x.length = 5;
+for (const i of x) {
+  console.log(i, typeof i);
+}
+```
+
+**What each part does:** lines 3 to 5 print each value and its type.
+
+**Expected output:**
+
+```text
+1 number
+b string
+[Function (anonymous)] function
+undefined undefined
+undefined undefined
+```
+
+</TopicSection>
+
+---
+
+<TopicSection id="objects-iteration" title="4. Iterating an Object">
+
+<KeyIdea>
+for-in over an object gives its keys, but for-of fails because an object is not iterable.
+</KeyIdea>
+
+- Curly brackets with `a: 1`, `b: "alpha"`, `c: [3, 2, 1]` make x an object, not an array. Its index values are the keys a, b and c, not 0, 1, 2.
+- `for (const i in x)` with `x[i]` prints 1, alpha and the array 3, 2, 1. Printing `i` gives a, b and c.
+- `for (const i of x)` fails with the error that x is not iterable.
+- The lecturer says for-in iterates over a function of x that extracts the keys, which is iterable (spoken as `x.keys`). For-of is supposed to iterate directly over the values but cannot, since there is no 0, 1, 2 indexing.
+- Advice: avoid such cases. Make explicit what you iterate over (keys or values); it is easier to maintain.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let x = { a: 1, b: "alpha", c: [3, 2, 1] };
+for (const i in x) {
+  console.log(x[i]);
+}
+for (const i in x) {
+  console.log(i);
+}
+for (const i of x) {
+  console.log(i);
+}
+```
+
+**What each part does:** lines 2 to 4 print values, lines 5 to 7 print keys, and lines 8 to 10 throw the error.
+
+**Expected output:**
+
+```text
+1
+alpha
+[ 3, 2, 1 ]
+a
+b
+c
+TypeError: x is not iterable
+```
+
+> **Added by tutor:** for-in iterates over the object's own enumerable property names, which is what `Object.keys(x)` returns; the lecturer's `x.keys` is a loose description. An object is not iterable because it has no iterator, which is why for-of fails.
+
+</TopicSection>
+
+---
+
+<TopicSection id="object-entries" title="5. Object.entries">
+
+<KeyIdea>
+Object.entries gives an iterable list of key and value pairs that for-of can use.
+</KeyIdea>
+
+- `Object` is a built-in class from which other data types derive, and `entries` is a method that makes an iterable list of all keys and values.
+- Each entry is like a Python tuple with two values, key and value, assigned in turn to `k` and `v`.
+- Logging only `v` gives the values; logging both gives a 1, b alpha and c 3 2 1.
+- Takeaway: objects are not directly iterable, but methods such as `Object.entries` can be called. The lecturer says this is implicitly called by `const i in x`, so for-in is safe, while `const i of x` on the object gives the error.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let x = { a: 1, b: "alpha", c: [3, 2, 1] };
+for (const [k, v] of Object.entries(x)) {
+  console.log(v);
+}
+for (const [k, v] of Object.entries(x)) {
+  console.log(k, v);
+}
+```
+
+**What each part does:** lines 2 to 4 print values, and lines 5 to 7 print key and value.
+
+**Expected output:**
+
+```text
+1
+alpha
+[ 3, 2, 1 ]
+a 1
+b alpha
+c [ 3, 2, 1 ]
+```
+
+[check: the lecturer says entries is implicitly called by for-in; in fact for-in uses the keys, not the entries.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="new-array-holes" title="6. new Array(5) and Holes">
+
+<KeyIdea>
+An array made with new Array is full of holes that read as undefined, and for-in skips them.
+</KeyIdea>
+
+- `new` creates a new object, here an array with five elements, instead of the square-bracket form used before.
+- Everything inside is undefined, but values can be assigned: `x[1] = 10` and `x[3] = "hello"`.
+- The classic loop shows undefined at 0, 2 and 4, 10 (number) at 1 and hello (string) at 3. The type updates when a value is assigned.
+- The array is full of holes, with values at only some places.
+- The `in` loop iterates only over indices where a value is defined, so only 1 and 3 are printed.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let x = new Array(5);
+x[1] = 10;
+x[3] = "hello";
+for (let i = 0; i < x.length; i++) {
+  console.log(i, x[i], typeof x[i]);
+}
+for (const i in x) {
+  console.log(i, x[i]);
+}
+```
+
+**What each part does:** lines 1 to 3 build the array, lines 4 to 6 print every position, and lines 7 to 9 print only defined ones.
+
+**Expected output:**
+
+```text
+0 undefined undefined
+1 10 number
+2 undefined undefined
+3 hello string
+4 undefined undefined
+1 10
+3 hello
+```
+
+</TopicSection>
+
+---
+
+<TopicSection id="spread" title="7. The Spread Operator">
+
+<KeyIdea>
+Three dots spread the elements of an array into the surrounding array instead of nesting it.
+</KeyIdea>
+
+- x is `[1, 2, 3]` and y starts with 0, then the dots and x, then 4.
+- The dots are the spread operator: the elements of x are spread out inside the larger array.
+- Without the dots, the second element of y is an array (square brackets are retained), so its length is 3: 0, the array 1 2 3, and 4.
+- With the dots, y has length 5 and elements 0, 1, 2, 3, 4.
+- It is useful in other places; it is an interesting piece of syntax.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let x = [1, 2, 3];
+let y = [0, ...x, 4];
+console.log(y);
+console.log(y.length);
+let z = [0, x, 4];
+console.log(z);
+console.log(z.length);
+```
+
+**What each part does:** line 2 spreads, line 5 nests, and the logs show both shapes and lengths.
+
+**Expected output:**
+
+```text
+[ 0, 1, 2, 3, 4 ]
+5
+[ 0, [ 1, 2, 3 ], 4 ]
+3
+```
+
+</TopicSection>
+
+---
+
+<TopicSection id="find-filter" title="8. find and filter">
+
+<KeyIdea>
+find returns the first element for which a function is true, and filter returns every such element.
+</KeyIdea>
+
+- `x.find(...)` takes a function as its argument. Here it is true when the value is less than zero.
+- find scans left to right and returns the first element that satisfies the function; here it is the first negative value.
+- The parameter name inside the function (the lecturer first used x) is unrelated to the outer x, so it is renamed `t`. Scoping rules mean there is no confusion for the interpreter, but avoid the same name for readability.
+- `filter` is like find but applied across the whole array, returning all negatives: -2, -4 and -7.
+- The lecturer also mentions using find to check whether a string contains the letter e; strings have more optimised functions for that.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let x = [1, -2, 3, -4, 5, 6, -7, 8];
+let y = x.find(t => t < 0);
+console.log(y);
+console.log(x.filter(t => t < 0));
+```
+
+**What each part does:** line 2 finds the first negative, and line 4 filters all negatives.
+
+**Expected output:**
+
+```text
+-2
+[ -2, -4, -7 ]
+```
+
+[check: the array values are inferred from the reduce walkthrough and filter result; the find-with-e example is garbled in the transcript.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="map" title="9. map">
+
+<KeyIdea>
+map applies a function to each element and returns the converted values.
+</KeyIdea>
+
+- filter keeps only the values for which the function is true; map can change the values.
+- Here the function returns the string plus if the value is greater than 0, else the string minus.
+- The output is plus, minus, plus, minus, plus, plus, minus, plus, one sign per position, depending on whether that value was positive or negative.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let x = [1, -2, 3, -4, 5, 6, -7, 8];
+console.log(x.map(t => t > 0 ? "+" : "-"));
+```
+
+**What each part does:** line 2 converts each value to its sign.
+
+**Expected output:**
+
+```text
+['+', '-', '+', '-', '+', '+', '-', '+']
+```
+
+</TopicSection>
+
+---
+
+<TopicSection id="reduce" title="10. reduce">
+
+<KeyIdea>
+reduce combines all elements into one value using a callback and an initial accumulator.
+</KeyIdea>
+
+- It takes a callback function and an initial value. The initial value is first used as `a`, the accumulator.
+- The callback takes two parameters, `a` (the accumulator from reduce) and `i` (the next element of x), and returns `a + i`.
+- For `x.reduce((a, i) => a + i, 0)`, the trace is below; the result is 10.
+- Using a for loop works too, but reduce is compact. Its form also lets a compiler optimise it, possibly for parallel hardware, though this is generally not done in JavaScript.
+- Changing the callback to multiplication works: starting from 0 gives 0, so start from 1. With three negative values the product is negative.
+
+| Step | a before | i | a after |
+| --- | --- | --- | --- |
+| 1 | 0 | 1 | 1 |
+| 2 | 1 | -2 | -1 |
+| 3 | -1 | 3 | 2 |
+| 4 | 2 | -4 | -2 |
+| 5 | -2 | 5 | 3 |
+| 6 | 3 | 6 | 9 |
+| 7 | 9 | -7 | 2 |
+| 8 | 2 | 8 | 10 |
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let x = [1, -2, 3, -4, 5, 6, -7, 8];
+console.log(x.reduce((a, i) => a + i, 0));
+console.log(x.reduce((a, i) => a * i, 0));
+console.log(x.reduce((a, i) => a * i, 1));
+```
+
+**What each part does:** line 2 sums, line 3 multiplies starting from 0, and line 4 multiplies starting from 1.
+
+**Expected output:**
+
+```text
+10
+-0
+-40320
+```
+
+> **Added by tutor:** the product -40320 is my calculation (checked in Node), because the lecturer's spoken product is garbled. JavaScript prints -0 for the start-from-0 case, where the lecturer says the result is 0.
+
+</TopicSection>
+
+---
+
+<TopicSection id="sort" title="11. sort">
+
+<KeyIdea>
+The default sort is lexical, so numeric sorting needs a comparator.
+</KeyIdea>
+
+- `x.sort()` does not give what you expect: -7 does not come first.
+- It does a lexical, string-based sort. The minus sign comes first, then the order is 2, 4, 7 (so -2, -4, -7).
+- For numeric sorting, pass a comparator taking a and b and returning `a - b`: less than zero means a is less than b, greater than zero means a is greater, zero means equal.
+- A similar comparator for strings or objects would let you use the same sort on them.
+- With the comparator, the order is proper numeric order.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let x = [1, -2, 3, -4, 5, 6, -7, 8];
+console.log([...x].sort());
+console.log([...x].sort((a, b) => a - b));
+```
+
+**What each part does:** line 2 uses the default sort, and line 3 uses a numeric comparator.
+
+**Expected output:**
+
+```text
+[ -2, -4, -7, 1, 3, 5, 6, 8 ]
+[ -7, -4, -2, 1, 3, 5, 6, 8 ]
+```
+
+> **Added by tutor:** `sort` changes the array it is called on, so I sort a copy (spread into a new array) to show both results from the original.
+
+</TopicSection>
+
+---
+
+<TopicSection id="array-destructuring" title="12. Array Destructuring">
+
+<KeyIdea>
+Destructuring assigns the leading elements of an array to variables and ignores the rest.
+</KeyIdea>
+
+- x is `[1, 2, 3]` and two variables a and b are destructured from it, so the target has fewer elements.
+- a gets 1 and b gets 2, and the 3 is ignored.
+- So destructuring can pull out a partial subset of the values.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let x = [1, 2, 3];
+const [a, b] = x;
+console.log(a);
+console.log(b);
+```
+
+**What each part does:** line 2 destructures x into a and b, and lines 3 and 4 print them.
+
+**Expected output:**
+
+```text
+1
+2
+```
+
+[check: the spoken text is a, b is equal to x; the square brackets are my reconstruction.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="object-destructuring" title="13. Object Destructuring and Rest">
+
+<KeyIdea>
+Destructuring pulls named keys out of an object, can rename them, and collects the remaining keys into a rest object.
+</KeyIdea>
+
+- An object person has first name, last name, age and city, separated by commas. Printing it dumps it as typed.
+- `{ firstName: fn, city: c } = person` takes first name as the variable `fn` and city as `c`. The curly brackets are on the left; the object has no name of its own.
+- Logging `fn` and `c` gives the first name and city.
+- `{ lastName, age } = person` needs no renaming, so the variables take the key names.
+- `{ firstName, ...rem } = person` takes `firstName`, and `rem` becomes a new object with all the remaining keys.
+- This is powerful for function parameters: declare the parameter as an object and pick out only the needed values, with default values if wanted. Look up how this is done in practice.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+const person = { firstName: "Ada", lastName: "Lovelace", age: 36, city: "London" };
+console.log(person);
+const { firstName: fn, city: c } = person;
+console.log(fn, c);
+const { lastName, age } = person;
+console.log(lastName, age);
+const { firstName, ...rem } = person;
+console.log(firstName);
+console.log(rem);
+```
+
+**What each part does:** line 3 renames while extracting, line 5 extracts without renaming, and line 7 extracts one key and keeps the rest.
+
+**Expected output:**
+
+```text
+{ firstName: 'Ada', lastName: 'Lovelace', age: 36, city: 'London' }
+Ada London
+Lovelace 36
+Ada
+{ lastName: 'Lovelace', age: 36, city: 'London' }
+```
+
+[check: the key spelling and the person's values are not stated; I used camelCase keys and sample values.]
+
+> **Added by tutor:** the sample values (Ada, Lovelace, 36, London) are mine.
+
+</TopicSection>

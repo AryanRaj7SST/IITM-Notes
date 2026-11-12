@@ -1,0 +1,556 @@
+---
+subject: "mad2"
+week: 2
+lecture: 4
+title: "JavaScript - Function Methods, Prototypes and Classes"
+duration: "[check: not stated in transcript]"
+overviewSummary: "Covers getter and setter derived properties, the function methods call, apply and bind (with closures), prototype-based inheritance using the dunder proto property, and the class syntax with constructors, new, extends and super, including a small Animal, Dog and Cat hierarchy."
+topics:
+  - id: "getters-setters"
+    title: "1. Getters and Setters (Derived Properties)"
+    keyIdea: "The get and set keywords define derived properties so a computed value can be read and assigned like a plain property."
+  - id: "call"
+    title: "2. The call Method"
+    keyIdea: "Every function has a call method whose first argument supplies this, so a method can run in the context of any object."
+  - id: "apply"
+    title: "3. The apply Method"
+    keyIdea: "apply works like call but takes its arguments as a single array, and extra arguments are ignored."
+  - id: "bind"
+    title: "4. The bind Method and Closures"
+    keyIdea: "bind creates a new function with this and some arguments fixed in advance."
+  - id: "prototype-inheritance"
+    title: "5. Inheritance with a Prototype"
+    keyIdea: "Setting the prototype of an object to another object gives it all of that object's properties and methods."
+  - id: "class-syntax"
+    title: "6. Class Syntax over Prototypes"
+    keyIdea: "The class keyword is cleaner syntax for the same prototype-based inheritance, and is the recommended style."
+  - id: "constructor-new"
+    title: "7. Constructor and new"
+    keyIdea: "A class has a constructor that sets up each object, and new creates an instance."
+  - id: "extends-super"
+    title: "8. extends and super"
+    keyIdea: "A subclass extends a parent class and calls super in its constructor to run the parent constructor."
+  - id: "hierarchies"
+    title: "9. Why Use Classes: Hierarchies"
+    keyIdea: "Classes let you build a hierarchy of related types, as in any object-oriented language."
+projectTree: |
+  js-basics-demo/
+  ├── index.html
+  └── script.js
+codeSnippets:
+  - title: "Getter and setter"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let user = {
+        first: "Albert",
+        last: "Pinto",
+        get full() {
+          return this.first + " " + this.last;
+        },
+        set full(value) {
+          const parts = value.split(" ");
+          this.first = parts[0];
+          this.last = parts[1];
+        }
+      };
+      console.log(user.full);
+      user.full = "John Smith";
+      console.log(user.first);
+      console.log(user.last);
+    explanations:
+      - lines: "4-6"
+        explanation: "The getter joins first and last with a space; it is read as user.full with no parentheses."
+      - lines: "7-11"
+        explanation: "The setter splits a value on a space and stores the two parts. It works only for a single first name and last name."
+      - lines: "13"
+        explanation: "Prints the derived full name."
+      - lines: "14-16"
+        explanation: "Assigning to user.full calls the setter, so first and last are set separately."
+    output: |
+      Albert Pinto
+      John
+      Smith
+  - title: "call, apply and bind"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let xx = {
+        a: 5,
+        add: function (x, y) {
+          return x + y + this.a;
+        }
+      };
+      console.log(xx.add(3, 4));
+      let z = xx.add;
+      console.log(z.call("", 3, 4));
+      console.log(z.call(xx, 3, 4));
+      console.log(z.apply(xx, [1, 2, 3, 4]));
+      let z2 = z.bind(xx, 2);
+      console.log(z2(3));
+    explanations:
+      - lines: "3-5"
+        explanation: "add returns x plus y plus the object's a."
+      - lines: "7"
+        explanation: "Called as a method, this is xx, so 3 + 4 + 5 gives 12."
+      - lines: "8"
+        explanation: "z refers to the same function without an object."
+      - lines: "9"
+        explanation: "With an empty string as this, this.a is undefined, so the result is NaN."
+      - lines: "10"
+        explanation: "With xx as the first argument, this.a is 5 and the result is 12."
+      - lines: "11"
+        explanation: "apply passes an array; 1 and 2 are used, 3 and 4 are ignored, giving 1 + 2 + 5 = 8."
+      - lines: "12-13"
+        explanation: "bind fixes this to xx and x to 2, so z2(3) gives 2 + 3 + 5 = 10."
+    output: |
+      12
+      NaN
+      12
+      8
+      10
+  - title: "Prototype inheritance"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      const x = {
+        a: 1,
+        inc: function () {
+          this.a++;
+        }
+      };
+      console.log(x);
+      const y = { __proto__: x, b: 2 };
+      console.log(y);
+      console.log(y.a);
+      y.inc();
+      console.log(y.a);
+    explanations:
+      - lines: "1-6"
+        explanation: "Base object x with a value and a method inc that increments a."
+      - lines: "8"
+        explanation: "y is an object literal whose prototype is set to x through the proto property, plus its own b."
+      - lines: "9"
+        explanation: "Printing y shows only b; the prototype is not displayed."
+      - lines: "10"
+        explanation: "y.a is still available (it is 1), because y inherits from x."
+      - lines: "11-12"
+        explanation: "y.inc, defined in x, works on y, and a becomes 2."
+    output: |
+      { a: 1, inc: [Function: inc] }
+      { b: 2 }
+      1
+      2
+  - title: "Classes: Animal, Dog and Cat"
+    filename: "js-basics-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      class Animal {
+        constructor(name) {
+          this.name = name;
+        }
+        describe() {
+          return `${this.name} makes a sound ${this.sound}`;
+        }
+      }
+      class Dog extends Animal {
+        constructor(name) {
+          super(name);
+          this.sound = "woof";
+        }
+      }
+      class Cat extends Animal {
+        constructor(name) {
+          super(name);
+          this.sound = "meow";
+        }
+      }
+      let x = new Animal("Jerry");
+      console.log(x.describe());
+      let d = new Dog("Spike");
+      console.log(d.describe());
+      let c = new Cat("Tom");
+      console.log(c.describe());
+    explanations:
+      - lines: "1-8"
+        explanation: "Animal has a constructor storing the name and a describe method using a template string. this.sound is not defined here."
+      - lines: "9-14"
+        explanation: "Dog extends Animal, calls super to run the parent constructor, then sets its sound."
+      - lines: "15-20"
+        explanation: "Cat does the same with the sound meow."
+      - lines: "21-22"
+        explanation: "A plain Animal prints undefined for the sound."
+      - lines: "23-26"
+        explanation: "Dog and Cat instances print their own sounds."
+    output: |
+      Jerry makes a sound undefined
+      Spike makes a sound woof
+      Tom makes a sound meow
+selfTest:
+  - question: "What are get and set in an object literal, and how are they used?"
+    answer: "They define derived properties: a getter computes a value (such as a full name from first and last) and a setter takes one value and sets other properties. They are used like plain properties: user.full to read and user.full = value to assign."
+    explanation: "This is cleaner than calling a separate function."
+  - question: "Why did z.call with an empty string as the first argument give NaN?"
+    answer: "The first argument of call becomes this. An empty string has no property a, so this.a is undefined, and 3 + 4 + undefined is NaN."
+    explanation: "Passing the object xx as the first argument gives 12."
+  - question: "How does apply differ from call, and what happens to extra arguments?"
+    answer: "apply takes the arguments as one array, which it spreads out. JavaScript ignores extra arguments, and missing ones become undefined, so z.apply(xx, [1, 2, 3, 4]) uses only 1 and 2."
+    explanation: "The result is 1 + 2 + 5, which is 8."
+  - question: "What does bind do, and what does z.bind(xx, 2) followed by z2(3) give?"
+    answer: "bind returns a new function with this and some arguments fixed. Here x is fixed at 2, so z2 takes only y and gives 2 + 3 + 5, which is 10."
+    explanation: "The bound value is carried with the new function, which is a closure."
+  - question: "How does prototype inheritance work with the dunder proto property?"
+    answer: "Setting the proto of a new object to another object makes it inherit that object's properties and methods. So y with proto x has a equal to 1 and can call inc, even though only b is shown when y is printed."
+    explanation: "A class is built on the same mechanism."
+  - question: "What does super do in a subclass constructor?"
+    answer: "super refers to the parent class; calling super(name) runs the parent constructor with that name, after which the subclass can set its own values such as this.sound."
+    explanation: "Dog and Cat both extend Animal and add their own sounds."
+resources:
+  - title: "MDN Web Docs: getter"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get"
+    type: "Official Reference"
+    description: "Getters in object literals and classes."
+    verified: false
+  - title: "MDN Web Docs: Function.prototype.call()"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call"
+    type: "Official Reference"
+    description: "Calling a function with a chosen this."
+    verified: false
+  - title: "MDN Web Docs: Function.prototype.bind()"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind"
+    type: "Official Reference"
+    description: "Fixing this and arguments in a new function."
+    verified: false
+  - title: "MDN Web Docs: Inheritance and the prototype chain"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain"
+    type: "Official Reference"
+    description: "How prototype-based inheritance works."
+    verified: false
+  - title: "MDN Web Docs: Classes"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes"
+    type: "Official Reference"
+    description: "Class syntax, constructors, extends and super."
+    verified: false
+---
+
+<TopicSection id="getters-setters" title="1. Getters and Setters (Derived Properties)">
+
+<KeyIdea>
+The get and set keywords define derived properties that are read and assigned like ordinary properties.
+</KeyIdea>
+
+- Besides object literals and methods, there are derived properties, the most common being the getter and setter patterns, which JavaScript supports directly.
+- Example: a `user` object with literal properties first and last. We want the full name without repeatedly joining first, a space and last.
+- A plain function `full name` would work, but then first and last are properties and the full name is a method. JavaScript makes this easier.
+- Define two functions, a getter (`get full`) and a setter (`set full`, which takes one parameter). Both have the same name, a bit like overloading, but for a specific purpose.
+- The getter takes `this.first`, a space and `this.last`. `user.full` prints Albert Pinto.
+- The setter splits a full name on a space and sets the first part as first and the second as last. This works only for a single first name and last name (a middle name would break it), so it is a trivial example.
+- Use `user.full = ...` directly, without calling a set function: it is more intuitive and cleaner. Then `user.first` and `user.last` are separated.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let user = {
+  first: "Albert",
+  last: "Pinto",
+  get full() {
+    return this.first + " " + this.last;
+  },
+  set full(value) {
+    const parts = value.split(" ");
+    this.first = parts[0];
+    this.last = parts[1];
+  }
+};
+console.log(user.full);
+user.full = "John Smith";
+console.log(user.first);
+console.log(user.last);
+```
+
+**What each part does:** lines 4 to 6 are the getter, lines 7 to 11 the setter, line 13 reads the derived value, and lines 14 to 16 assign to it and read the parts.
+
+**Expected output:**
+
+```text
+Albert Pinto
+John
+Smith
+```
+
+[check: the lecturer does not state the name assigned in the setter demo; I used John Smith.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="call" title="2. The call Method">
+
+<KeyIdea>
+A function has its own call method, and its first argument supplies this.
+</KeyIdea>
+
+- An object `xx` has an anonymous function `add` taking x and y and returning `x + y + this.a`, where `a` is 5. Running with 3 and 4 gives 12.
+- Assign the method to a separate variable: `let z = xx.add`.
+- A function itself has methods, such as `z.call`. It is a method applied to the function.
+- `z.call` takes the parameters 3 and 4 as before, plus one in front: the equivalent of this, the context in which z is called.
+- With an empty string as the first argument, the result is NaN: this has no `a`, so `this.a` is undefined, and 3 + 4 + undefined is NaN.
+- With the object `xx` as the first argument, `z.call(xx, 3, 4)` gives 12.
+- The example is contrived. It becomes useful if you choose at run time which function to call and with which context. Usually prefer a pure object-oriented call, but call lets you use a method of one object in the context of another.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let xx = {
+  a: 5,
+  add: function (x, y) {
+    return x + y + this.a;
+  }
+};
+console.log(xx.add(3, 4));
+let z = xx.add;
+console.log(z.call("", 3, 4));
+console.log(z.call(xx, 3, 4));
+```
+
+**What each part does:** line 7 calls normally, line 9 calls with an empty string as this, and line 10 with xx as this.
+
+**Expected output:**
+
+```text
+12
+NaN
+12
+```
+
+</TopicSection>
+
+---
+
+<TopicSection id="apply" title="3. The apply Method">
+
+<KeyIdea>
+apply is like call but takes the arguments as an array, and extra arguments are ignored.
+</KeyIdea>
+
+- `z.apply(xx, [1, 2, 3, 4])` gives the array of arguments, spread out. It amounts to `z.call(xx, 1, 2, 3, 4)`.
+- JavaScript was written to be forgiving of syntax errors: extra arguments to a function are ignored, and missing ones become undefined, without complaint.
+- Here only 1 and 2 are used, so the result is `1 + 2 + this.a`, which is 8. The last two values (3 and 4) are ignored.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+console.log(z.apply(xx, [1, 2, 3, 4]));
+```
+
+**What each part does:** it passes xx as this and an array of arguments.
+
+**Expected output:**
+
+```text
+8
+```
+
+[check: the transcript garbles the result as the result a; it follows from 1 + 2 + 5.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="bind" title="4. The bind Method and Closures">
+
+<KeyIdea>
+bind creates a new function with this and some arguments fixed in advance.
+</KeyIdea>
+
+- More common in functional programming; good to know, though not essential yet.
+- z took two parameters x and y. Bind one of them to 2: the new function is effectively `2 + y + this.a`, with this bound to the object where `a` is 5.
+- Called directly (`z2(3)`, not `z2.call`), it gives 2 + 3 + 5, which is 10.
+- A function with two inputs became a function with one input, y.
+- This is a closure: the bound value 2 is associated with this new function. It can be a powerful way to create new functions.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+let z2 = z.bind(xx, 2);
+console.log(z2(3));
+```
+
+**What each part does:** line 1 fixes this to xx and x to 2, and line 2 supplies y.
+
+**Expected output:**
+
+```text
+10
+```
+
+</TopicSection>
+
+---
+
+<TopicSection id="prototype-inheritance" title="5. Inheritance with a Prototype">
+
+<KeyIdea>
+Setting an object's prototype to another object gives it that object's properties and methods.
+</KeyIdea>
+
+- How can one object inherit from another? Start with a simple object: `const x` with `a: 1` and a function `inc` that does `this.a++`. Printing x shows a is 1 and inc is a function, without its definition.
+- Define `y` with curly brackets, so it is an object. Its first literal is `__proto__` (spoken as dunder proto, double underscore), set to x, plus a literal `b` equal to 2.
+- Printing y shows only b, not the proto.
+- The proto says y's prototype, the template it is derived from, is x. So y gets any function or literal that x has: `y.a` is 1.
+- `y.inc()` works even though inc is defined in x, the prototype of y. After it, `y.a` is 2.
+- This is the basis of classes in JavaScript: there is no separate class concept. For a base class, create it as an object and set other objects' prototype to it.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+const x = {
+  a: 1,
+  inc: function () {
+    this.a++;
+  }
+};
+console.log(x);
+const y = { __proto__: x, b: 2 };
+console.log(y);
+console.log(y.a);
+y.inc();
+console.log(y.a);
+```
+
+**What each part does:** line 8 creates y with x as its prototype, line 10 reads an inherited value, and lines 11 and 12 call an inherited method.
+
+**Expected output:**
+
+```text
+{ a: 1, inc: [Function: inc] }
+{ b: 2 }
+1
+2
+```
+
+> **Added by tutor:** after `y.inc()`, `y` gets its own `a` (it holds 2), while `x.a` stays 1 (tested in Node: `Object.keys(y)` gives b and a). The method found on the prototype changes the object it is called on.
+
+</TopicSection>
+
+---
+
+<TopicSection id="class-syntax" title="6. Class Syntax over Prototypes">
+
+<KeyIdea>
+The class keyword is a cleaner syntax for prototype inheritance, and it is the recommended style.
+</KeyIdea>
+
+- The prototype approach is simple but can be confusing for beginners, so newer ECMAScript versions added syntax to define classes directly.
+- A class uses the keyword `class`, a name, and curly brackets holding its functionality.
+- Under the hood it is the same prototype-based inheritance, so it has the restrictions of prototypes.
+- Use it rather than managing prototypes directly, since it makes code easier for others to understand.
+- Multiple inheritance is possible but difficult; otherwise it has all the features you need.
+
+</TopicSection>
+
+---
+
+<TopicSection id="constructor-new" title="7. Constructor and new">
+
+<KeyIdea>
+A class has a constructor to set up each object, and new creates an instance.
+</KeyIdea>
+
+- `class Animal` implicitly extends the base class `Object`, the ultimate base class; everything extends from it, and this is not written anywhere.
+- It has a constructor taking one parameter, `name`, which sets `this.name`: one object variable.
+- It has a method `describe` returning a template string, name makes a sound followed by `this.sound`. `this.sound` is not defined anywhere yet.
+- `let x = new Animal("Jerry")` creates an object; `new` creates a new object of the class.
+- `x.describe()` gives Jerry makes a sound undefined, because `this.sound` is undefined.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+class Animal {
+  constructor(name) {
+    this.name = name;
+  }
+  describe() {
+    return `${this.name} makes a sound ${this.sound}`;
+  }
+}
+let x = new Animal("Jerry");
+console.log(x.describe());
+```
+
+**What each part does:** lines 2 to 4 are the constructor, lines 5 to 7 the method, and lines 9 and 10 create and use an instance.
+
+**Expected output:**
+
+```text
+Jerry makes a sound undefined
+```
+
+</TopicSection>
+
+---
+
+<TopicSection id="extends-super" title="8. extends and super">
+
+<KeyIdea>
+A subclass uses extends and calls super in its constructor to run the parent constructor.
+</KeyIdea>
+
+- To fix the undefined sound without setting it in the Animal constructor, create `class Dog extends Animal`.
+- Dog has its own constructor taking a name. It calls `super(name)`, where super refers to the parent class, so the Animal constructor runs with that name. Then it sets `this.sound`.
+- A new Dog called Spike, described, gives Spike makes a sound (woof); the plain Animal still prints undefined.
+- Another class `Cat` has the same kind of constructor with the sound meow, and `new Cat("Tom")` describes as Tom makes a sound meow.
+- Cat also has a static method, which the lecturer says will be covered later.
+
+**File:** `js-basics-demo/script.js`
+
+```javascript
+class Dog extends Animal {
+  constructor(name) {
+    super(name);
+    this.sound = "woof";
+  }
+}
+class Cat extends Animal {
+  constructor(name) {
+    super(name);
+    this.sound = "meow";
+  }
+}
+let d = new Dog("Spike");
+console.log(d.describe());
+let c = new Cat("Tom");
+console.log(c.describe());
+```
+
+**What each part does:** lines 2 to 5 and 8 to 11 are the subclass constructors (super runs the parent first), and lines 14 to 17 create and describe instances.
+
+**Expected output:**
+
+```text
+Spike makes a sound woof
+Tom makes a sound meow
+```
+
+[check: the dog's sound is transcribed as go; I assumed woof. The static method in Cat is not shown or explained.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="hierarchies" title="9. Why Use Classes: Hierarchies">
+
+<KeyIdea>
+Classes let you build a hierarchy of related types, as in any object-oriented language.
+</KeyIdea>
+
+- A basic Animal, a Cat class, and multiple instances of Cat illustrate the idea.
+- A practical case: an Employee class with different kinds of employees (sales, manager, engineer), each a subclass of Employee.
+- Engineering can have further subclasses, such as software or hardware.
+- This is standard object-oriented programming, which the lecture does not cover in detail; it is pretty much the same as in Python or any other object-oriented language.
+
+</TopicSection>

@@ -1,0 +1,540 @@
+---
+subject: "mad2"
+week: 2
+lecture: "screencast-2.1"
+title: "Screencast 2.1 - JavaScript - Basic Calculator"
+duration: "[check: not stated in transcript]"
+overviewSummary: "Builds a simple calculator with only HTML and JavaScript: a Bootstrap grid with a text box and a button, evaluating expressions with eval and math.js, reading and writing values through the DOM, validating input, catching errors, logging results by creating list items dynamically, and attaching events with addEventListener on body load."
+topics:
+  - id: "goal-and-setup"
+    title: "1. Goal and Setup"
+    keyIdea: "The first version is a text box and a Calculate button that turns an expression such as 5 * 6 into 30, using only HTML and JavaScript."
+  - id: "bootstrap-layout"
+    title: "2. Bootstrap Grid Layout"
+    keyIdea: "Linking Bootstrap CSS and JS and using a container with a row of three columns places the controls in the middle column."
+  - id: "form-elements"
+    title: "3. Form Elements: Input and Button"
+    keyIdea: "A text input with id expression and a button with id calculate are the only controls needed."
+  - id: "eval"
+    title: "4. Evaluating Strings with eval"
+    keyIdea: "eval takes an expression as a string, evaluates it at run time with correct operator order, and returns the result."
+  - id: "onclick-and-script"
+    title: "5. Responding to a Click with onclick"
+    keyIdea: "The onclick attribute names a function to call when the button is clicked, and the function must be defined inside a script tag."
+  - id: "read-write-value"
+    title: "6. Reading and Writing the Text Box"
+    keyIdea: "document.getElementById gives an element whose value attribute can be read and then replaced by the answer."
+  - id: "validation-try-catch"
+    title: "7. Validation and try-catch"
+    keyIdea: "Check that the expression is not empty, and wrap the evaluation in try and catch so a bad expression does not break the page."
+  - id: "dom-log"
+    title: "8. Logging Results by Creating DOM Nodes"
+    keyIdea: "createElement and createTextNode build list items dynamically, and appendChild adds them to the existing page."
+  - id: "mathjs"
+    title: "9. Scientific Functions with math.js"
+    keyIdea: "Including math.js and calling math.evaluate instead of eval gives scientific functions such as sin."
+  - id: "event-listener-onload"
+    title: "10. addEventListener and onload"
+    keyIdea: "Attaching the click handler in an initialize function, called from the body onload event, keeps the HTML free of JavaScript."
+  - id: "summary"
+    title: "11. What Was Learned and What Comes Next"
+    keyIdea: "The screencast covered dynamic node creation, event handling, exception handling and functions, and the next part adds a grid of buttons."
+projectTree: |
+  calculator/
+  └── index.html
+codeSnippets:
+  - title: "First version: eval with onclick"
+    filename: "calculator/index.html"
+    language: "html"
+    tested: true
+    code: |
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <title>Calculator</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+      </head>
+      <body>
+        <div class="container">
+          <div class="row">
+            <div class="col"></div>
+            <div class="col">
+              <input type="text" id="expression" placeholder="3 * 5" class="form-control">
+              <button type="button" id="calculate" class="btn btn-primary" onclick="calculate()">Calculate</button>
+            </div>
+            <div class="col"></div>
+          </div>
+        </div>
+        <script>
+          function calculate() {
+            const expression = document.getElementById("expression").value;
+            if (expression) {
+              const answer = eval(expression);
+              document.getElementById("expression").value = answer;
+            }
+          }
+        </script>
+      </body>
+      </html>
+    explanations:
+      - lines: "6-7"
+        explanation: "Bootstrap CSS and the Bootstrap JavaScript bundle from a CDN."
+      - lines: "10-19"
+        explanation: "A container, one row and three columns; the input and button go in the middle column."
+      - lines: "14"
+        explanation: "Text box for the expression, with a placeholder hint and the form-control class."
+      - lines: "15"
+        explanation: "Blue (primary) Bootstrap button of type button; onclick calls the calculate function."
+      - lines: "20-28"
+        explanation: "The JavaScript must be inside a script tag. The function reads the text box, skips empty input, evaluates with eval and writes the answer back."
+    output: |
+      Entering 5*6 and clicking Calculate shows 30; 3*5+2 shows 17; 4/2+3 shows 5; an empty box does nothing.
+  - title: "Final version: log list, math.js and addEventListener"
+    filename: "calculator/index.html"
+    language: "html"
+    tested: true
+    code: |
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <title>Calculator</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/mathjs@12.4.2/lib/browser/math.js"></script>
+      </head>
+      <body onload="initializeApp()">
+        <div class="container">
+          <div class="row">
+            <div class="col"></div>
+            <div class="col">
+              <input type="text" id="expression" placeholder="3 * 5" class="form-control">
+              <button type="button" id="calculate" class="btn btn-primary">Calculate</button>
+              <div>
+                <h3>Log</h3>
+                <ul id="log"></ul>
+              </div>
+            </div>
+            <div class="col"></div>
+          </div>
+        </div>
+        <script>
+          function calculate() {
+            const expression = document.getElementById("expression").value;
+            if (expression) {
+              try {
+                const answer = eval(expression);
+                document.getElementById("expression").value = answer;
+                addLog(expression + " = " + answer);
+              } catch (e) {
+                console.log("bad expression");
+                addLog(expression + " is bad, please fix it");
+              }
+            }
+          }
+
+          function mathCalculate() {
+            const expression = document.getElementById("expression").value;
+            if (expression) {
+              try {
+                const answer = math.evaluate(expression);
+                document.getElementById("expression").value = answer;
+                addLog(expression + " = " + answer);
+              } catch (e) {
+                console.log("bad expression");
+                addLog(expression + " is bad, please fix it");
+              }
+            }
+          }
+
+          function addLog(message) {
+            const ul = document.getElementById("log");
+            const li = document.createElement("li");
+            const messageTextNode = document.createTextNode(message);
+            li.appendChild(messageTextNode);
+            ul.appendChild(li);
+          }
+
+          function initializeApp() {
+            const calculateButton = document.getElementById("calculate");
+            calculateButton.addEventListener("click", mathCalculate);
+          }
+        </script>
+      </body>
+      </html>
+    explanations:
+      - lines: "8"
+        explanation: "math.js from a CDN (the lecturer uses jsDelivr)."
+      - lines: "10"
+        explanation: "onload on the body calls initializeApp once the page has loaded."
+      - lines: "17-20"
+        explanation: "A div with a Log heading and an empty list where results are appended."
+      - lines: "26-38"
+        explanation: "calculate with validation, try and catch; success and failure are both added to the log."
+      - lines: "40-52"
+        explanation: "A copy of calculate that uses math.evaluate instead of eval."
+      - lines: "54-60"
+        explanation: "addLog creates a list item, a text node with the message, joins them, and appends the item to the log list."
+      - lines: "62-65"
+        explanation: "initializeApp finds the button and attaches the click listener; the function name is passed without parentheses."
+    output: |
+      3*5 shows 15 and logs 3*5 = 15. 6*7 shows 42. sin(90) shows 0.8939966636005579. A bad expression such as 3 + leaves the box unchanged, prints bad expression in the console and logs 3 + is bad, please fix it.
+selfTest:
+  - question: "What does eval do, and why is it used here despite not being very safe?"
+    answer: "eval takes an expression as a string, evaluates it at run time and returns the result, including operator order. It works for this example, but it is not very safe."
+    explanation: "For example eval of 3 * 5 gives 15, and 3 * 5 + 2 gives 17."
+  - question: "How do you read the expression and put the answer back into the text box?"
+    answer: "Use document.getElementById with the id expression and read its value attribute, then assign the answer to the same value attribute."
+    explanation: "The button, text box and log list are all found by their ids."
+  - question: "Why does clicking Calculate on an empty box print undefined, and how was it fixed?"
+    answer: "The empty box has no usable value. An if check runs the evaluation only when there is a valid value in the expression."
+    explanation: "With the check, nothing happens on empty input."
+  - question: "How does a bad expression get handled?"
+    answer: "Put the evaluation in a try block. The catch block logs bad expression to the console and adds a message to the log list instead of letting the page break."
+    explanation: "The lecturer first left the catch block doing nothing, then added the log."
+  - question: "Which functions create and attach a new list item, in order?"
+    answer: "document.createElement with li creates the item, document.createTextNode creates the message, li.appendChild adds the text to the item, and ul.appendChild adds the item to the list."
+    explanation: "This is how HTML nodes are created dynamically and added to the existing DOM."
+  - question: "Give two ways to attach a click event, and what the second one needs."
+    answer: "Use the onclick attribute on the button, or call addEventListener with the event name click and the function. The second keeps JavaScript out of the HTML, and is wired up by an initialize function called from the body onload event."
+    explanation: "Functions are first-class, so the function is passed as an argument. Many listeners can be added to the same button."
+resources:
+  - title: "Bootstrap: Grid system"
+    url: "https://getbootstrap.com/docs/5.3/layout/grid/"
+    type: "Official Reference"
+    description: "Containers, rows and columns."
+    verified: false
+  - title: "MDN Web Docs: eval()"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval"
+    type: "Official Reference"
+    description: "What eval does and its safety caveats."
+    verified: false
+  - title: "MDN Web Docs: EventTarget.addEventListener()"
+    url: "https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener"
+    type: "Official Reference"
+    description: "Attaching event handlers to elements."
+    verified: false
+  - title: "MDN Web Docs: Document.createElement()"
+    url: "https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement"
+    type: "Official Reference"
+    description: "Creating HTML elements dynamically."
+    verified: false
+  - title: "math.js"
+    url: "https://mathjs.org/"
+    type: "Official Reference"
+    description: "Library used for scientific expression evaluation."
+    verified: false
+---
+
+<TopicSection id="goal-and-setup" title="1. Goal and Setup">
+
+<KeyIdea>
+The first version is a text box and a Calculate button that turns an expression such as 5 * 6 into 30, using only HTML and JavaScript.
+</KeyIdea>
+
+- Use any editor (the presenter uses Sublime Text; VSCodium or others work) and a browser such as Chrome or Firefox.
+- Start from an HTML template and open the same file in the browser.
+- Part one: a text box and a button, say Calculate. Typing `5 * 6` and clicking should give 30.
+- The calculator is then enhanced step by step.
+
+</TopicSection>
+
+---
+
+<TopicSection id="bootstrap-layout" title="2. Bootstrap Grid Layout">
+
+<KeyIdea>
+Link Bootstrap CSS and JavaScript, then use a container with a row of three columns and put the controls in the middle one.
+</KeyIdea>
+
+- Add the Bootstrap CSS and the Bootstrap JavaScript bundle to make the page look good.
+- Use the grid for a column structure: one container, one row, three columns (class `col`).
+- Only the middle column is used for the controls.
+- The grid was covered in the Bootstrap screencast of Modern Application Development 1.
+
+```html
+<div class="container">
+  <div class="row">
+    <div class="col"></div>
+    <div class="col">
+      <!-- controls go here -->
+    </div>
+    <div class="col"></div>
+  </div>
+</div>
+```
+
+**What each part does:** line 1 is the container, line 2 the row, and lines 3 to 7 the three columns, with the middle one holding the controls.
+
+> **Added by tutor:** the transcript gives no CDN or version. I used Bootstrap 5.3.3 (jsDelivr) and math.js 12.4.2, both confirmed on npm. [untested: Bootstrap styling and CDN loading were not run in a real browser.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="form-elements" title="3. Form Elements: Input and Button">
+
+<KeyIdea>
+A text input with id expression and a button with id calculate are the only controls needed.
+</KeyIdea>
+
+- The input is a text box where the user types the expression, so its id is `expression`.
+- A placeholder such as `3 * 5` shows people what to type.
+- Add the class `form-control` to the input.
+- The button has type `button`, id `calculate`, and class `btn btn-primary` (primary is blue). The class names can be looked up on the Bootstrap site.
+- The button needs a label, so it is given the text Calculate.
+- When clicked, the button should update the box with the value.
+
+**File:** `calculator/index.html` (fragment)
+
+```html
+<input type="text" id="expression" placeholder="3 * 5" class="form-control">
+<button type="button" id="calculate" class="btn btn-primary">Calculate</button>
+```
+
+**What each part does:** line 1 is the expression box, and line 2 is the blue button.
+
+</TopicSection>
+
+---
+
+<TopicSection id="eval" title="4. Evaluating Strings with eval">
+
+<KeyIdea>
+eval evaluates an expression given as a string at run time and returns the result.
+</KeyIdea>
+
+- Shown in the browser console: `eval("3 * 5")` gives 15, and `eval("3 * 5 + 2")` gives 17.
+- It respects operator order, so the page does not have to handle that.
+- It is not very safe, but it works for this example. MDN docs describe it.
+
+</TopicSection>
+
+---
+
+<TopicSection id="onclick-and-script" title="5. Responding to a Click with onclick">
+
+<KeyIdea>
+The onclick attribute names the function to call, and the function must be defined inside a script tag.
+</KeyIdea>
+
+- Adding an event to the button is the most important part.
+- The easiest way is the `onclick` attribute, naming a function, here `calculate`.
+- The function does not exist yet, so it is defined. First test: the function just shows an alert.
+- It did not work at first because the JavaScript had no script tag; JavaScript functions go inside one.
+- After adding the script tag and refreshing, clicking Calculate calls the function.
+
+**File:** `calculator/index.html` (fragment)
+
+```html
+<button type="button" id="calculate" class="btn btn-primary" onclick="calculate()">Calculate</button>
+<script>
+  function calculate() {
+    alert("calculate called");
+  }
+</script>
+```
+
+**What each part does:** line 1 calls `calculate` on click, and lines 3 to 5 define it, showing an alert.
+
+[check: the alert text is not stated by the lecturer.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="read-write-value" title="6. Reading and Writing the Text Box">
+
+<KeyIdea>
+document.getElementById returns an element whose value attribute can be read and then set to the answer.
+</KeyIdea>
+
+- Get the element by its id (here `expression`) and read the value attribute.
+- First check with `console.log` that the value arrives: entering `3 + 6` logs it.
+- Compute the answer with `eval` and set it back into the same text box, so 3 + 6 becomes 9.
+- Typing `6 * 7` gives 42, and `4 / 2 + 3` gives 5.
+
+**File:** `calculator/index.html` (fragment)
+
+```javascript
+function calculate() {
+  const expression = document.getElementById("expression").value;
+  console.log(expression);
+  const answer = eval(expression);
+  document.getElementById("expression").value = answer;
+}
+```
+
+**What each part does:** line 2 reads the box, line 3 checks it in the console, line 4 evaluates it, and line 5 writes the answer back.
+
+**Expected output:** `5 * 6` becomes 30 in the box. (Tested: 5 * 6 gives 30, 3 * 5 + 2 gives 17, 4 / 2 + 3 gives 5.)
+
+</TopicSection>
+
+---
+
+<TopicSection id="validation-try-catch" title="7. Validation and try-catch">
+
+<KeyIdea>
+Run the evaluation only when the box has a value, and wrap it in try and catch so errors are handled.
+</KeyIdea>
+
+- With an empty box, clicking prints undefined, because the value is undefined.
+- Add a check so the work is done only if there is a valid value; otherwise nothing happens.
+- A bad expression throws an exception, so add a try and catch block.
+- First the catch block just logs `bad expression` to the console.
+- Test by entering a bad expression.
+
+**File:** `calculator/index.html` (fragment)
+
+```javascript
+function calculate() {
+  const expression = document.getElementById("expression").value;
+  if (expression) {
+    try {
+      const answer = eval(expression);
+      document.getElementById("expression").value = answer;
+    } catch (e) {
+      console.log("bad expression");
+    }
+  }
+}
+```
+
+**What each part does:** line 3 skips empty input, lines 4 to 6 try the evaluation, and lines 7 to 9 handle errors.
+
+**Expected output:** a bad expression such as `3 +` leaves the box unchanged and prints `bad expression` in the console.
+
+</TopicSection>
+
+---
+
+<TopicSection id="dom-log" title="8. Logging Results by Creating DOM Nodes">
+
+<KeyIdea>
+createElement and createTextNode build list items at run time, and appendChild attaches them to the page.
+</KeyIdea>
+
+- Show all evaluated expressions and errors at the bottom, in a div with a list that keeps growing.
+- Put this work in a separate function, `addLog(message)`, because functions should be small and purposeful.
+- Steps: get the list by id `log` (variable `ul`); create an `li` with `document.createElement`; create the message with `document.createTextNode`; append the text to the `li`; append the `li` to the list.
+- `createElement` takes the tag name, so any tag can be created dynamically.
+- On a bad expression, the log gets a message such as the expression is bad, please fix it. On success it logs the expression and answer.
+- An h3 with the word Log is added to make the list more visible.
+- Examples: 3 + 5, then 6 * 7 and a division each add to the list; an error adds the message.
+
+**File:** `calculator/index.html` (fragments)
+
+```html
+<div>
+  <h3>Log</h3>
+  <ul id="log"></ul>
+</div>
+```
+
+```javascript
+function addLog(message) {
+  const ul = document.getElementById("log");
+  const li = document.createElement("li");
+  const messageTextNode = document.createTextNode(message);
+  li.appendChild(messageTextNode);
+  ul.appendChild(li);
+}
+```
+
+**What each part does:** line 2 finds the list, line 3 creates the item, line 4 creates the text, line 5 puts the text in the item, and line 6 puts the item in the list.
+
+[check: the lecturer says ordered list but names it ul and says slash ul; I used ul. The success message is spoken as expression equal to answer; I used expression = answer.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="mathjs" title="9. Scientific Functions with math.js">
+
+<KeyIdea>
+Include math.js and call math.evaluate instead of eval to get scientific functions.
+</KeyIdea>
+
+- Go further with a math library, math.js, and call its evaluate function, which also supports scientific functions.
+- Download it or load it from a CDN (the lecturer uses jsDelivr) with a script tag with a src.
+- Copy the existing function without modifying it, name it `mathCalculate`, and replace `eval` with `math.evaluate`.
+- Now `sin 90` style input gives scientific answers.
+
+**File:** `calculator/index.html` (fragment)
+
+```javascript
+function mathCalculate() {
+  const expression = document.getElementById("expression").value;
+  if (expression) {
+    try {
+      const answer = math.evaluate(expression);
+      document.getElementById("expression").value = answer;
+      addLog(expression + " = " + answer);
+    } catch (e) {
+      console.log("bad expression");
+      addLog(expression + " is bad, please fix it");
+    }
+  }
+}
+```
+
+**What each part does:** line 5 is the only change from `calculate`, using `math.evaluate`.
+
+**Expected output:** `3 * 5` gives 15, and `sin(90)` gives 0.8939966636005579 (tested with math.js 12.4.2).
+
+> **Added by tutor:** math.js uses radians by default, so `sin(90)` is not 1. Writing `sin(90 deg)` gives 1 (tested).
+
+</TopicSection>
+
+---
+
+<TopicSection id="event-listener-onload" title="10. addEventListener and onload">
+
+<KeyIdea>
+Attach the click handler from JavaScript in an initialize function that runs when the body has loaded.
+</KeyIdea>
+
+- Events need not be attached in the HTML. To centralise them, create a function `initializeApp`, keeping the HTML plain with no JavaScript.
+- Inside it, get the button by id `calculate`. The variable is named `calculateButton` to avoid confusion with the function of similar name.
+- Call `addEventListener` with the event name `click` and the function to call, here `mathCalculate`.
+- The function is passed as a value, because functions are first-class and can be passed around.
+- The first attempt used the wrong method name; the correct one is `addEventListener`. Many listeners can be added to the same button.
+- `initializeApp` must run on load. First it was called at the end of the script after the DOM loaded. Better is the body `onload` event, which fires once the body has loaded fully, and the `onclick` attribute is removed.
+- After this, `3 * 5` gives 15 and `sin(90)` works.
+
+**File:** `calculator/index.html` (fragments)
+
+```html
+<body onload="initializeApp()">
+```
+
+```javascript
+function initializeApp() {
+  const calculateButton = document.getElementById("calculate");
+  calculateButton.addEventListener("click", mathCalculate);
+}
+```
+
+**What each part does:** line 2 gets the button, and line 3 attaches `mathCalculate` as the click handler.
+
+> **Added by tutor:** `mathCalculate` is passed without parentheses, so the function itself is handed over rather than called. In my final file the older `calculate` function remains but is no longer attached to the button.
+
+</TopicSection>
+
+---
+
+<TopicSection id="summary" title="11. What Was Learned and What Comes Next">
+
+<KeyIdea>
+The screencast covered dynamic node creation, event handling, exception handling and functions; part 2 adds a grid of buttons.
+</KeyIdea>
+
+- Learned: creating HTML nodes dynamically and adding them to the existing DOM.
+- Learned: responding to events, catching and handling exceptions, and writing functions.
+- Part 2 adds a grid of buttons to look like a regular calculator.
+- [check: the transcript ends mid-sentence about how a regular calculator looks.]
+
+</TopicSection>

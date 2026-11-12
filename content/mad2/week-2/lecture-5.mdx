@@ -1,0 +1,739 @@
+---
+subject: "mad2"
+week: 2
+lecture: 3
+title: "JavaScript - Modularity and Objects"
+duration: "[check: not stated in transcript]"
+overviewSummary: "Explains why JavaScript needs modules, the history from plain scripts through CommonJS and AMD to ES6 modules, npm and bundlers, then covers import and export forms (named, renamed, default), read-only imported variables, and an introduction to JavaScript objects: object literals, methods, this, prototype-based inheritance, classes, and the difference between copying a reference and copying an object."
+topics:
+  - id: "modules-idea"
+    title: "1. What a Module Is"
+    keyIdea: "A module bundles related functions, objects or values into a file that other code can import for reuse."
+  - id: "front-vs-back-end"
+    title: "2. Front End versus Back End Loading"
+    keyIdea: "Browsers must decide where code comes from and cannot block, while Node on the server uses files and directories like Python."
+  - id: "module-history"
+    title: "3. History: Scripts, CommonJS, AMD, ES6 Modules"
+    keyIdea: "ES6 modules are the modern standard for both browsers and servers, with asynchronous loading, and are what this course uses."
+  - id: "npm-and-bundlers"
+    title: "4. npm and Bundlers"
+    keyIdea: "npm packages Node modules, and bundlers such as webpack and rollup turn them into files a browser can include; the course ignores this for now."
+  - id: "script-type-module"
+    title: "5. The script Tag with type module"
+    keyIdea: "A page needs type module on its script tag to use import and export, and imported files are loaded automatically."
+  - id: "basic-import-export"
+    title: "6. Basic Import and Export"
+    keyIdea: "A value marked export in one file can be imported by name into another."
+  - id: "named-exports"
+    title: "7. Named Exports and the Missing-Export Error"
+    keyIdea: "Only items marked for export can be imported; importing anything else is an error."
+  - id: "renaming"
+    title: "8. Renaming Imports and Exports"
+    keyIdea: "Use as to rename a name on import, or to export an internal name under a different public name."
+  - id: "default-export"
+    title: "9. Default Export"
+    keyIdea: "A module can export one default item, which the importer names freely without braces."
+  - id: "read-only-imports"
+    title: "10. Imported Variables Are Read-Only"
+    keyIdea: "An importer cannot assign to an imported variable, but can change it by calling an exported function from the same module."
+  - id: "design-caution"
+    title: "11. Think Before Structuring Modules"
+    keyIdea: "Plan how code is structured before deciding what to export and import."
+  - id: "objects-overview"
+    title: "12. Objects in JavaScript"
+    keyIdea: "Everything in JavaScript is an object, with literals, methods, this, and standard methods such as keys, values and entries."
+  - id: "prototypes-and-classes"
+    title: "13. Prototype-Based Inheritance and Classes"
+    keyIdea: "Objects inherit by setting another object as their prototype, with single inheritance, and the class keyword gives cleaner syntax."
+  - id: "methods-and-this"
+    title: "14. Methods and this"
+    keyIdea: "A function stored on an object is a method, and this refers to the object itself, like self in Python."
+  - id: "copying-objects"
+    title: "15. Copying Objects"
+    keyIdea: "Assigning an object copies only a reference; the spread operator copies the values, but only one level deep."
+projectTree: |
+  modularity-demo/
+  ├── index.html
+  ├── modularity.js
+  └── module1.js
+codeSnippets:
+  - title: "Loading a module from the page"
+    filename: "modularity-demo/index.html"
+    language: "html"
+    tested: false
+    code: |
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <title>Modularity</title>
+      </head>
+      <body>
+        <script type="module" src="modularity.js"></script>
+      </body>
+      </html>
+    explanations:
+      - lines: "8"
+        explanation: "type module is required so that modularity.js can use import. module1.js is not listed here; it is loaded automatically from modularity.js."
+    output: |
+      (no visible output; the console shows what modularity.js prints)
+  - title: "Named exports"
+    filename: "modularity-demo/module1.js"
+    language: "javascript"
+    tested: true
+    code: |
+      function sq(x) {
+        return x * x;
+      }
+      export const c = 299792458;
+      export function energy(m) {
+        return m * sq(c);
+      }
+    explanations:
+      - lines: "1-3"
+        explanation: "sq squares a value and is not exported, so it stays private to the module."
+      - lines: "4"
+        explanation: "c is exported."
+      - lines: "5-7"
+        explanation: "energy is exported and uses sq."
+    output: |
+      (no output on its own)
+  - title: "Importing named exports"
+    filename: "modularity-demo/modularity.js"
+    language: "javascript"
+    tested: true
+    code: |
+      import { c, energy } from "./module1.js";
+      console.log(c);
+      console.log(energy(1));
+    explanations:
+      - lines: "1"
+        explanation: "Imports the two exported names from module1.js."
+      - lines: "2-3"
+        explanation: "Prints c and the result of energy(1)."
+    output: |
+      299792458
+      89875517873681760
+  - title: "A module exporting a changeable variable"
+    filename: "modularity-demo/module1.js"
+    language: "javascript"
+    tested: true
+    code: |
+      export let x = 0;
+      export function incx() {
+        x += 1;
+      }
+    explanations:
+      - lines: "1"
+        explanation: "x is declared with let, so the module can change it."
+      - lines: "2-4"
+        explanation: "incx changes x inside the module."
+    output: |
+      (no output on its own)
+  - title: "Changing an imported variable through a function"
+    filename: "modularity-demo/modularity.js"
+    language: "javascript"
+    tested: true
+    code: |
+      import { x, incx } from "./module1.js";
+      console.log(x);
+      incx();
+      console.log(x);
+    explanations:
+      - lines: "2"
+        explanation: "Prints the default value 0."
+      - lines: "3-4"
+        explanation: "Calling incx changes the value, so the next print shows 1."
+    output: |
+      0
+      1
+  - title: "Object with methods and this"
+    filename: "modularity-demo/objects.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let xx = { a: 5 };
+      console.log(xx);
+      xx.add = function (x, y) {
+        return x + y;
+      };
+      console.log(typeof xx);
+      console.log(typeof xx.add);
+      console.log(xx.add(3, 4));
+      xx.f = function (x) {
+        return this.a + x;
+      };
+      console.log(xx.f(10));
+    explanations:
+      - lines: "1-2"
+        explanation: "A basic object with one property, printed directly."
+      - lines: "3-5"
+        explanation: "Adds a function as a property, making add a method."
+      - lines: "6-8"
+        explanation: "xx is an object, xx.add is a function, and add(3, 4) gives 7."
+      - lines: "9-12"
+        explanation: "this refers to the object, so this.a is 5 and f(10) gives 15."
+    output: |
+      { a: 5 }
+      object
+      function
+      7
+      15
+  - title: "Copying objects"
+    filename: "modularity-demo/objects.js"
+    language: "javascript"
+    tested: true
+    code: |
+      let x = { a: 1, b: 2 };
+      let y = x;
+      console.log(x, y);
+      x.a = 3;
+      console.log(x, y);
+      let z = { ...x };
+      x.a = 5;
+      console.log(x, y, z);
+    explanations:
+      - lines: "2"
+        explanation: "y is only a reference to the same object as x."
+      - lines: "4-5"
+        explanation: "Changing x.a changes what y sees as well."
+      - lines: "6-8"
+        explanation: "z is a spread copy, so it keeps a equal to 3 when x.a becomes 5."
+    output: |
+      { a: 1, b: 2 } { a: 1, b: 2 }
+      { a: 3, b: 2 } { a: 3, b: 2 }
+      { a: 5, b: 2 } { a: 5, b: 2 } { a: 3, b: 2 }
+selfTest:
+  - question: "Why is synchronous loading fine for CommonJS on the server but unacceptable in a browser?"
+    answer: "Synchronous loading waits for an import to finish before proceeding. On a server this is fine because it runs once and continues. In a browser it blocks, giving a poor user experience, and if the server being loaded from is down the page freezes."
+    explanation: "Browsers therefore needed asynchronous loading, first AMD and then ES6 modules."
+  - question: "What is needed in the HTML page to use import and export, and does the page list each module file?"
+    answer: "The script tag needs type module. Only the entry file (modularity.js) is listed; module1.js is picked up automatically from where it is imported."
+    explanation: "Without type module, import and export cannot be used."
+  - question: "What happens if you import a function that was not marked export, and why?"
+    answer: "You get an error that the module does not provide an export with that name. Only exported items can be imported; the rest stay private to the module."
+    explanation: "In the lecture sq was not exported, so importing sq failed."
+  - question: "Show two ways to rename and how a default export differs."
+    answer: "On import use c as speedOfLight. On export use export of speedOfLight as c. A default export (export default) exports one unnamed item, and the importer writes import energy with no braces and picks any name."
+    explanation: "The default form was shown with an unnamed function."
+  - question: "Can you assign to an imported let variable, and how can it change?"
+    answer: "No: assigning gives an assignment to constant variable error, because imports are read-only views. It can change by calling an exported function from the same module, such as incx, which then shows the new value."
+    explanation: "This lets a value change over time without direct modification such as x++."
+  - question: "Why does y = x not copy an object, and how does the spread operator differ?"
+    answer: "y = x copies only a reference (a pointer), so changing x.a changes y as well. Spreading creates a separate copy of the values, so z keeps its own values. It is a shallow copy, so nested objects are not copied individually."
+    explanation: "Helper functions exist for complete copies."
+resources:
+  - title: "MDN Web Docs: JavaScript modules"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules"
+    type: "Official Reference"
+    description: "Import, export, default exports and type module."
+    verified: false
+  - title: "MDN Web Docs: export"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/export"
+    type: "Official Reference"
+    description: "Named and default exports and renaming."
+    verified: false
+  - title: "MDN Web Docs: import"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import"
+    type: "Official Reference"
+    description: "Import forms, renaming and read-only bindings."
+    verified: false
+  - title: "MDN Web Docs: Inheritance and the prototype chain"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain"
+    type: "Official Reference"
+    description: "Prototype-based inheritance."
+    verified: false
+  - title: "MDN Web Docs: Classes"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes"
+    type: "Official Reference"
+    description: "The class keyword, constructors and inheritance."
+    verified: false
+---
+
+<TopicSection id="modules-idea" title="1. What a Module Is">
+
+<KeyIdea>
+A module bundles related functions, objects or values into a file that other code can import for reuse.
+</KeyIdea>
+
+- So far the objects seen were arrays, not generic objects. Before objects, the lecture covers how JavaScript encapsulates code in modules.
+- Modules matter for reusability: you collect related functions, objects or values together.
+- Python analogies: numpy collects numeric functions, scipy is for scientific Python, and there are modules for CSV (comma separated values).
+- Many related functions and classes are bundled into one or more files that others import and use.
+- In JavaScript, you explicitly export values for other scripts to use and import values from other scripts.
+
+</TopicSection>
+
+---
+
+<TopicSection id="front-vs-back-end" title="2. Front End versus Back End Loading">
+
+<KeyIdea>
+Front-end code has to be clear about where packages come from, while back-end code on Node works like Python.
+</KeyIdea>
+
+- A lot of JavaScript runs on the front end, so it must be clear how to import: from a local file, from somewhere on the net, downloaded if required, and how packages are addressed relatively.
+- JavaScript also runs on the back end using the node.js interpreter. There you can use it like Python: packages, directory hierarchies, and files in directories imported as required.
+- Because of these two uses, care is needed about how things are packaged and how code is used.
+
+</TopicSection>
+
+---
+
+<TopicSection id="module-history" title="3. History: Scripts, CommonJS, AMD, ES6 Modules">
+
+<KeyIdea>
+ES6 modules, from ECMAScript 2015, work on servers and browsers with asynchronous loading and are the course's choice.
+</KeyIdea>
+
+| Stage | What it is | Notes |
+| --- | --- | --- |
+| Plain scripts | Scripts included directly in a browser and executed | No notion of modules at the start |
+| CommonJS | Server-side modules, once server-side JavaScript began | Uses synchronous loading |
+| AMD | Asynchronous module definitions for the browser side | Client-side answer to blocking |
+| ES6 modules | ECMAScript 6, formalised in 2015 and developing since | Works on servers and browsers, asynchronous load |
+
+- Synchronous (blocking) loading waits at the import until it completes. That is fine on the server, which imports once and runs.
+- On a browser, blocking is unacceptable: it ruins the user experience, and if the server being loaded from is down, the page freezes, since JavaScript works that way (covered later).
+- Some packages, and possibly some browsers, do not fully support ES6 modules. Browsers should mostly support it now; some old packages do not.
+- The course uses the latest version of the language, not the old one. For older code you may need to learn how modules were written there.
+
+</TopicSection>
+
+---
+
+<TopicSection id="npm-and-bundlers" title="4. npm and Bundlers">
+
+<KeyIdea>
+npm is the node package manager, and bundlers let Node-style packages be used in the browser; the course ignores this for now.
+</KeyIdea>
+
+- node is a command-line interface for JavaScript, mainly used for back-end code, and can also be used for testing.
+- npm can also package modules for the front end, usually with bundlers. Examples: webpack and rollup.
+- Bundlers take packages defined with node modules and put them into js files that can be included or imported on the client side.
+- This is ignored for now; it is needed later when bundling an application.
+
+</TopicSection>
+
+---
+
+<TopicSection id="script-type-module" title="5. The script Tag with type module">
+
+<KeyIdea>
+A script tag needs type module to use import and export, and modules are loaded automatically.
+</KeyIdea>
+
+- In `index.html`, a script tag has `src` set to `modularity.js` and `type` set to `module` (line 16 in the lecturer's file).
+- Without `type="module"`, import and export statements cannot be used.
+- `modularity.js` imports from `module1.js`. `module1.js` does not appear in `index.html`; it is picked up from where it is needed and run.
+- `modularity.js` otherwise has regular JavaScript.
+
+**File:** `modularity-demo/index.html`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Modularity</title>
+</head>
+<body>
+  <script type="module" src="modularity.js"></script>
+</body>
+</html>
+```
+
+**What each part does:** line 8 loads `modularity.js` as a module.
+
+[untested: running the page in a real browser. The JavaScript was tested in Node.]
+
+> **Added by tutor:** browsers generally refuse to load module scripts from a `file:` address, so serve the folder over http (for example with a small local server) when trying this.
+
+</TopicSection>
+
+---
+
+<TopicSection id="basic-import-export" title="6. Basic Import and Export">
+
+<KeyIdea>
+Mark a value with export in one file, then import it by name in another.
+</KeyIdea>
+
+- `module1.js` has one line: `export const c` equal to some number.
+- `modularity.js` imports c from module1 and prints it, giving the value.
+- This is the most basic form. It is better than declaring c directly in the other file because of reuse.
+
+**File:** `modularity-demo/module1.js`
+
+```javascript
+export const c = 299792458;
+```
+
+**File:** `modularity-demo/modularity.js`
+
+```javascript
+import { c } from "./module1.js";
+console.log(c);
+```
+
+**What each part does:** `module1.js` exports c, and line 1 of `modularity.js` imports it so line 2 can print it.
+
+**Expected output:**
+
+```text
+299792458
+```
+
+[check: the lecturer says only some number; I used 299792458.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="named-exports" title="7. Named Exports and the Missing-Export Error">
+
+<KeyIdea>
+Only items marked export can be imported; a private function cannot.
+</KeyIdea>
+
+- `module1.js` defines `sq(x)`, which squares a value, an exported const `c`, and an exported function `energy` that uses `sq`.
+- Both `c` and `energy` are exported, so `import { c, energy }` works and printing each gives a value.
+- Importing `sq` too, and printing `sq(10)`, fails: the module does not provide an export named sq, because sq has no export.
+- Removing sq from the import lets the code run again.
+
+**File:** `modularity-demo/module1.js`
+
+```javascript
+function sq(x) {
+  return x * x;
+}
+export const c = 299792458;
+export function energy(m) {
+  return m * sq(c);
+}
+```
+
+**File:** `modularity-demo/modularity.js`
+
+```javascript
+import { c, energy } from "./module1.js";
+console.log(c);
+console.log(energy(1));
+```
+
+**What each part does:** `sq` stays private to the module, and lines 2 and 3 print c and the energy for a mass of 1.
+
+**Expected output:**
+
+```text
+299792458
+89875517873681760
+```
+
+**File:** `modularity-demo/modularity.js` (importing sq, fails)
+
+```javascript
+import { c, energy, sq } from "./module1.js";
+console.log(sq(10));
+```
+
+**Expected output:**
+
+```text
+SyntaxError: The requested module './module1.js' does not provide an export named 'sq'
+```
+
+[check: the lecturer does not state the body of energy or its argument; I used m times sq of c and an argument of 1.]
+
+> **Added by tutor:** the exact error wording is from Node; browsers word it differently.
+
+</TopicSection>
+
+---
+
+<TopicSection id="renaming" title="8. Renaming Imports and Exports">
+
+<KeyIdea>
+as renames a name on import, or exports an internal name under a different public name.
+</KeyIdea>
+
+- On import, `c as speedOfLight` renames it, and the new name is used from then on (for internal use).
+- On export, write the module with internal names `speedOfLight` and `e`, then `export { speedOfLight as c, e as energy }`.
+- The importer still writes `import { c, energy }` and it works as before: internally the value is speedOfLight, but it is exported as c.
+
+**File:** `modularity-demo/modularity.js` (rename on import)
+
+```javascript
+import { c as speedOfLight, energy } from "./module1.js";
+console.log(speedOfLight);
+console.log(energy(1));
+```
+
+**Expected output:**
+
+```text
+299792458
+89875517873681760
+```
+
+**File:** `modularity-demo/module1.js` (rename on export)
+
+```javascript
+const speedOfLight = 299792458;
+function e(m) {
+  return m * speedOfLight * speedOfLight;
+}
+export { speedOfLight as c, e as energy };
+```
+
+**What each part does:** line 5 exports the two internal names under the public names c and energy, so the earlier `modularity.js` runs unchanged.
+
+[check: the body of e is not stated by the lecturer.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="default-export" title="9. Default Export">
+
+<KeyIdea>
+export default exports one item, and the importer chooses its name, without braces.
+</KeyIdea>
+
+- In `module1.js`, a value is declared but not exported, and an unnamed function is exported with `export default function`. Normally it would be named, like `function energy(m)`.
+- The module exports only a single thing, here a function.
+- `import c, energy` no longer works since they are not exported.
+- `import energy from "./module1.js"` takes the default export and gives it the name energy, and calling it gives the expected value.
+
+**File:** `modularity-demo/module1.js`
+
+```javascript
+const c = 299792458;
+export default function (m) {
+  return m * c * c;
+}
+```
+
+**File:** `modularity-demo/modularity.js`
+
+```javascript
+import energy from "./module1.js";
+console.log(energy(1));
+```
+
+**What each part does:** c stays private, the unnamed function is the default export, and line 1 imports it with the name energy.
+
+**Expected output:**
+
+```text
+89875517873681760
+```
+
+</TopicSection>
+
+---
+
+<TopicSection id="read-only-imports" title="10. Imported Variables Are Read-Only">
+
+<KeyIdea>
+An importer cannot assign to an imported variable, but an exported function in the module can change it.
+</KeyIdea>
+
+- The module exports a value x declared with let (not const) and a function incx that modifies x.
+- The importer imports x and incx, and logging x gives the default value 0.
+- Trying to change x directly (for example with x plus plus) gives assignment to constant variable. Even though x is let in the module, importers get only a read-only view of exported variables.
+- Calling `incx()` works: x becomes 1.
+- So the only way to change an imported value is to call functions written in the same scope as the exported value. This gives a value that changes over time but cannot be directly modified.
+
+**File:** `modularity-demo/module1.js`
+
+```javascript
+export let x = 0;
+export function incx() {
+  x += 1;
+}
+```
+
+**File:** `modularity-demo/modularity.js` (direct change, fails)
+
+```javascript
+import { x, incx } from "./module1.js";
+console.log(x);
+x++;
+```
+
+**Expected output:**
+
+```text
+0
+TypeError: Assignment to constant variable.
+```
+
+**File:** `modularity-demo/modularity.js` (through the function)
+
+```javascript
+import { x, incx } from "./module1.js";
+console.log(x);
+incx();
+console.log(x);
+```
+
+**What each part does:** line 3 calls the module's function, and line 4 shows the changed value.
+
+**Expected output:**
+
+```text
+0
+1
+```
+
+</TopicSection>
+
+---
+
+<TopicSection id="design-caution" title="11. Think Before Structuring Modules">
+
+<KeyIdea>
+Plan how you structure code before deciding what to export and import.
+</KeyIdea>
+
+- Do not just copy these export forms and use them the other way.
+- Before using exports and imports, think clearly about how the code is structured to start with.
+
+</TopicSection>
+
+---
+
+<TopicSection id="objects-overview" title="12. Objects in JavaScript">
+
+<KeyIdea>
+Everything in JavaScript is an object, and objects have literals, methods, this and standard methods.
+</KeyIdea>
+
+- Object literals assign values to named parameters in an object.
+- Object methods are functions that can be called on the object.
+- The special variable `this` is found inside objects (covered below).
+- Call, apply and bind are functions of functions, interesting to know.
+- The parent class Object has standard methods: keys, values, entries and so on. An object can be used as a dictionary, and these methods iterate through its values.
+
+</TopicSection>
+
+---
+
+<TopicSection id="prototypes-and-classes" title="13. Prototype-Based Inheritance and Classes">
+
+<KeyIdea>
+JavaScript objects inherit through prototypes with single inheritance, and the class keyword is a cleaner syntax on top.
+</KeyIdea>
+
+- Object orientation exists but not as in Java or Python. The `class` keyword now exists and should be used, as it makes code cleaner.
+- Underneath it works with prototypes: instead of one object inheriting from another, create two objects and set the prototype of one to the other, so it automatically gets the behaviour of the parent object.
+- There is a single inheritance track: always one direct parent, unlike multiple inheritance in other languages.
+- Multiple inheritance should be used with caution anyway, so this is not a showstopper. Often you can do without it, and prototype-based inheritance is quite powerful.
+- A class is a better syntax. Constructors must explicitly call the parent constructor. Mixins or multiple inheritance can be implemented but are complicated and are not covered.
+
+</TopicSection>
+
+---
+
+<TopicSection id="methods-and-this" title="14. Methods and this">
+
+<KeyIdea>
+A function stored on an object is a method, and this refers to the object itself.
+</KeyIdea>
+
+- Start with a basic object and print it. A function can be added as an element: `xx.add = function...`.
+- `typeof xx` is object, `typeof xx.add` is function, and `xx.add(3, 4)` gives 7. So add is a method of this object; there are no classes yet.
+- `xx.f` is an anonymous function of x returning `this.a + x`. `this` refers to the object, like self in Python or this in Java, and `this.a` is 5, so `f(10)` gives 15.
+- Writing just `a + x` does not work, because there is no variable a in that scope.
+
+**File:** `modularity-demo/objects.js`
+
+```javascript
+let xx = { a: 5 };
+console.log(xx);
+xx.add = function (x, y) {
+  return x + y;
+};
+console.log(typeof xx);
+console.log(typeof xx.add);
+console.log(xx.add(3, 4));
+xx.f = function (x) {
+  return this.a + x;
+};
+console.log(xx.f(10));
+```
+
+**What each part does:** lines 3 to 5 add a method, lines 6 to 8 show its type and result, and lines 9 to 12 use this.a.
+
+**Expected output:**
+
+```text
+{ a: 5 }
+object
+function
+7
+15
+```
+
+**Without this (fails):**
+
+```javascript
+xx.g = function (x) {
+  return a + x;
+};
+console.log(xx.g(10));
+```
+
+**Expected output:**
+
+```text
+ReferenceError: a is not defined
+```
+
+[check: the file name and the exact object literal are not stated; I used objects.js and a equal to 5, inferred from this.a being 5.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="copying-objects" title="15. Copying Objects">
+
+<KeyIdea>
+Assigning an object copies only a reference; spreading copies the values, but only one level deep.
+</KeyIdea>
+
+- With `y = x`, printing both gives the same value. After setting `x.a` to a new value, both x and y show the change: y is just a pointer (reference) to x.
+- To copy, use the spread operator: `z = { ...x }` spreads the values out into individual copies.
+- After changing `x.a` again to 5, x and y show 5 but z still shows 3.
+- Shallow versus deep copying: if there are further objects inside the object, spreading does not copy them individually.
+- Helper functions can make complete copies. Plain assignment is not enough for a copy.
+
+**File:** `modularity-demo/objects.js`
+
+```javascript
+let x = { a: 1, b: 2 };
+let y = x;
+console.log(x, y);
+x.a = 3;
+console.log(x, y);
+let z = { ...x };
+x.a = 5;
+console.log(x, y, z);
+```
+
+**What each part does:** line 2 makes a reference, line 6 makes a copy, and line 8 shows all three.
+
+**Expected output:**
+
+```text
+{ a: 1, b: 2 } { a: 1, b: 2 }
+{ a: 3, b: 2 } { a: 3, b: 2 }
+{ a: 5, b: 2 } { a: 5, b: 2 } { a: 3, b: 2 }
+```
+
+[check: the transcript says the object is a 1 2; I read it as a equal to 1 and b equal to 2.]
+
+> **Added by tutor:** for a nested object, `{ ...p }` shares the inner object, so changing `p.inner.n` also changes the spread copy, while `structuredClone(p)` gives a fully independent copy (tested in Node: the shallow copy shows 99 and the deep copy shows 1). The lecturer only mentions that helper functions exist.
+
+</TopicSection>

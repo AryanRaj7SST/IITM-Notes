@@ -1,0 +1,422 @@
+---
+subject: "mad2"
+week: 2
+lecture: 5
+title: "JavaScript - Asynchrony"
+duration: "[check: not stated in transcript]"
+overviewSummary: "Explains asynchrony in JavaScript: function calls as branches, stack frames and the call stack, the task queue and event loop, run-to-completion semantics and why blocking freezes a page, callbacks for long-running work, and Node.js examples contrasting synchronous and asynchronous file reading, with a pointer to promises and async/await."
+topics:
+  - id: "asynchrony-definition"
+    title: "1. What Asynchrony Means"
+    keyIdea: "Asynchrony means tasks can happen without a direct time relationship or tight synchronisation between them."
+  - id: "function-call-as-branch"
+    title: "2. A Function Call Is a Branch"
+    keyIdea: "A function call is a branch to code stored elsewhere, with the added ability to come back."
+  - id: "call-stack"
+    title: "3. Stack Frames and the Call Stack"
+    keyIdea: "The runtime saves the program counter and registers in a stack frame pushed on a call stack for each call."
+  - id: "call-stack-example"
+    title: "4. Call Stack Example: main, f, g, h"
+    keyIdea: "Nested calls push frames and returns pop them in reverse order."
+  - id: "task-queue-event-loop"
+    title: "5. Task Queue and Event Loop"
+    keyIdea: "The event loop moves the next task from the queue onto the call stack only when the stack is empty."
+  - id: "task-sources"
+    title: "6. Where Tasks Come From"
+    keyIdea: "Tasks come from events such as clicks, typing and network responses, which let the runtime avoid freezing."
+  - id: "run-to-completion"
+    title: "7. Run-to-Completion"
+    keyIdea: "A task on the call stack must finish before the next is fetched, so a long task blocks everything."
+  - id: "blocking-demo"
+    title: "8. The Blocking Demo"
+    keyIdea: "A loop that spins for five seconds makes the page unresponsive until it finishes."
+  - id: "callbacks"
+    title: "9. Callbacks"
+    keyIdea: "A callback is a function you give to a long-running or network operation to be called when it completes."
+  - id: "threads-and-io"
+    title: "10. Threads versus the Event Loop"
+    keyIdea: "JavaScript is single threaded but handles many requests by making input and output asynchronous."
+  - id: "sync-file-read"
+    title: "11. Synchronous File Read in Node.js"
+    keyIdea: "readFileSync blocks everything until the file is read, which may be acceptable on a back end."
+  - id: "async-file-read"
+    title: "12. Asynchronous File Read with a Callback"
+    keyIdea: "readFile takes an anonymous callback with error and data parameters that runs after the read completes."
+  - id: "summary-promises"
+    title: "13. Summary, Promises and async/await"
+    keyIdea: "JavaScript pushes long-running work into separate tasks to stay responsive, and promises with async and await make this look like regular code."
+projectTree: |
+  async-demo/
+  ├── example.txt
+  └── script.js
+codeSnippets:
+  - title: "Synchronous file read"
+    filename: "async-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      const fs = require("fs");
+      try {
+        const data = fs.readFileSync("example.txt", "utf8");
+        console.log(data);
+      } catch (err) {
+        console.error(err);
+      }
+    explanations:
+      - lines: "1"
+        explanation: "Loads the fs (file system) package with require."
+      - lines: "2-4"
+        explanation: "Tries to read the file synchronously; nothing else runs until it is read, then the data is logged."
+      - lines: "5-7"
+        explanation: "If the read fails, the error is shown on the console, like try and except in Python."
+    output: |
+      hello from file
+  - title: "Asynchronous file read with a callback"
+    filename: "async-demo/script.js"
+    language: "javascript"
+    tested: true
+    code: |
+      const fs = require("fs");
+      fs.readFile("example.txt", "utf8", (err, data) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        console.log(data);
+      });
+    explanations:
+      - lines: "2"
+        explanation: "readFile starts the read and returns at once; the arrow function with parameters err and data is an anonymous callback."
+      - lines: "3-6"
+        explanation: "If there was an error, it is reported and the callback returns."
+      - lines: "7"
+        explanation: "Otherwise the data is logged."
+    output: |
+      hello from file
+selfTest:
+  - question: "How is a function call like a branch, and what extra does it need?"
+    answer: "A call jumps to code stored elsewhere so it can be reused, like a branch. Unlike an arbitrary branch it must be able to come back to where it was, which the runtime handles by saving the state."
+    explanation: "At machine level there are mostly just branches; software remembers the return point."
+  - question: "What is saved in a stack frame, and what is the call stack?"
+    answer: "The program counter (where the processor is reading instructions) plus values such as registers being used. The call stack is the runtime's stack where these frames are pushed on a call and popped on return, tracking the chain of nested calls."
+    explanation: "With main calling f, g and h, the stack is four levels deep, then pops back to main."
+  - question: "Describe the event loop and task queue."
+    answer: "The task queue holds tasks (such as t1, t2, t3). The event loop waits until the call stack is empty, then takes the next task from the queue and pushes it onto the stack to run. Tasks come from events such as clicks, typing and network results."
+    explanation: "While t1 is on the stack, t2 and t3 simply wait."
+  - question: "What is run-to-completion and what is its danger?"
+    answer: "Once a task is on the call stack it must complete before the next task is fetched. A long loop or sleep in a task therefore hangs the page, and poor code can even crash the system."
+    explanation: "The five-second blocking demo shows the page not responding to clicks."
+  - question: "What is a callback and why use one for a network request?"
+    answer: "A callback is a function passed to an operation, to be called back once it completes. A network request can be slow, so the request is handed off and the callback runs when the response arrives, keeping the browser responsive."
+    explanation: "The event loop does this without needing multiple threads."
+  - question: "Contrast readFileSync with readFile."
+    answer: "readFileSync blocks until the file is read, which may be fine on a back end that cannot proceed without it. readFile reads asynchronously, returns immediately and calls a callback with error and data once done."
+    explanation: "The asynchronous readFile is the default form, with no async in its name."
+resources:
+  - title: "MDN Web Docs: The event loop"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop"
+    type: "Official Reference"
+    description: "Call stack, task queue and run-to-completion."
+    verified: false
+  - title: "MDN Web Docs: Callback function"
+    url: "https://developer.mozilla.org/en-US/docs/Glossary/Callback_function"
+    type: "Official Reference"
+    description: "Definition of callbacks."
+    verified: false
+  - title: "Node.js documentation: File system"
+    url: "https://nodejs.org/api/fs.html"
+    type: "Official Reference"
+    description: "readFile and readFileSync."
+    verified: false
+  - title: "Exploring JS"
+    url: "https://exploringjs.com/"
+    type: "Free Book"
+    description: "The review of JavaScript the lecturer mentions, with a blocking example."
+    verified: false
+---
+
+<TopicSection id="asynchrony-definition" title="1. What Asynchrony Means">
+
+<KeyIdea>
+Asynchrony means tasks can happen without a direct time relationship or tight synchronisation between them.
+</KeyIdea>
+
+- Asynchrony: multiple events, tasks or things can happen without being tightly synchronised with each other.
+- There is no direct time relationship between them.
+- It is important to understand in the context of JavaScript.
+
+</TopicSection>
+
+---
+
+<TopicSection id="function-call-as-branch" title="2. A Function Call Is a Branch">
+
+<KeyIdea>
+A function call is a branch to code stored elsewhere, with the ability to come back.
+</KeyIdea>
+
+- Take a function `square(x)` returning the square of x. Instructions run one by one until the call; the function's code is stored elsewhere so it can be reused many times after one definition.
+- In machine language this is a branch: jump to the new location and start executing.
+- At machine or assembly level there are only branches: run the next instruction, or go somewhere else and continue from there.
+- The only difference between an arbitrary branch and a function call is that we must be able to come back.
+- Hardware does not fundamentally provide this. Some processors support branches with return, but mostly it is not needed: the software, compiler or executor remembers where the function was called from and where to return.
+
+</TopicSection>
+
+---
+
+<TopicSection id="call-stack" title="3. Stack Frames and the Call Stack">
+
+<KeyIdea>
+The runtime saves the present state in a stack frame and pushes it on a call stack at each call.
+</KeyIdea>
+
+- The present state: in a processor the key variable is the program counter, which says which memory location is being read for instructions.
+- It also includes intermediate register values used in the present function that need saving.
+- The program counter plus these saved values form a stack frame, a concept common across most programming languages.
+- Each language runtime maintains a call stack: on a function call, the present program counter and other register values are pushed onto it, stored in memory using a stack data structure (as in a data structures course).
+
+</TopicSection>
+
+---
+
+<TopicSection id="call-stack-example" title="4. Call Stack Example: main, f, g, h">
+
+<KeyIdea>
+Nested calls push frames, and returns pop them in reverse order back to main.
+</KeyIdea>
+
+| Step | Event | Call stack (bottom to top) |
+| --- | --- | --- |
+| 1 | Program starts in main | main |
+| 2 | main calls f | main, f |
+| 3 | f calls g | main, f, g |
+| 4 | g calls h | main, f, g, h |
+| 5 | h returns | main, f, g |
+| 6 | g returns | main, f |
+| 7 | f returns | main |
+| 8 | main exits | empty, back to the operating system |
+
+- At step 4 the program is four levels deep.
+- You cannot dump the other frames: you must return to where you were in g before calling h, and continue from the next instruction.
+- The call stack keeps track of the chain of functions called up to any point in execution.
+- Exiting main goes back to the operating system, which runs a loop that never exits (exiting it would shut down the machine).
+- Key point: function calls act like branches, and the call stack saves the state so we know where to come back.
+- There is an explanatory video on visualising the call stack.
+
+</TopicSection>
+
+---
+
+<TopicSection id="task-queue-event-loop" title="5. Task Queue and Event Loop">
+
+<KeyIdea>
+The event loop pushes the next task from the queue onto the call stack only when the stack is empty.
+</KeyIdea>
+
+- The call stack builds up only with nested calls. JavaScript also has an event loop and a task queue; the task queue is a queue, not a stack.
+- Tasks (t1, t2, t3 and so on) are pushed into the queue; they could be functions.
+- When t1 is ready it goes on the call stack, and may invoke other functions, which continue on the stack.
+- While t1 is on the stack, t2 and t3 wait; nothing else happens. Only when the stack is empty is the next task, t2, pushed onto the stack.
+- Then t2 runs, calls other functions that exit, and leaves; then t3 comes, and so on.
+- The event loop waits for the call stack to become empty, pops a task from the queue and starts executing it.
+
+[check: the lecture says d1 d2 d3 for the queued tasks, then t1 t2 t3; I used t1, t2, t3.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="task-sources" title="6. Where Tasks Come From">
+
+<KeyIdea>
+Tasks come from events such as clicks, typing and network responses, which is the key to asynchronous processing.
+</KeyIdea>
+
+- Tasks come from an internal notion of generating tasks, or from events: a mouse click, something typed in a text box, or a network request returning.
+- Events can be user interaction, network, or other kinds external to the runtime, or related to the runtime but not part of executing the code.
+- A network request can be handled in two ways: the runtime freezes until it finishes, or the request is handed to the runtime, which waits for the result and then pushes a new task to process it onto the queue.
+- This is the key to the asynchronous processing used later.
+
+</TopicSection>
+
+---
+
+<TopicSection id="run-to-completion" title="7. Run-to-Completion">
+
+<KeyIdea>
+Once a task is on the call stack it must complete before the next task is fetched.
+</KeyIdea>
+
+- JavaScript guarantees run-to-completion semantics for any task.
+- If a task gets on the stack and its code sleeps or runs a very long loop (up to the biggest number the system handles), the system hangs, because no next task is fetched until it completes.
+- It is possible to crash a system with poor code that does not give up its position for others.
+- Conversely, a long-running task can be handed off to someone else who eventually pushes a task back into the queue. This clears the stack so the next task can be processed.
+- It needs some thought; more examples come later.
+
+</TopicSection>
+
+---
+
+<TopicSection id="blocking-demo" title="8. The Blocking Demo">
+
+<KeyIdea>
+A loop that spins for five seconds leaves the page unresponsive until it finishes.
+</KeyIdea>
+
+- exploringjs.com is a good review of JavaScript and has an example showing what it means to block a thread.
+- In the demo, each click on a button gives a response (a change in colour and so on).
+- Clicking block for five seconds makes the page say blocking. Even the cursor does not change shape until done appears, after which the button works again.
+- The block button calls a JavaScript loop that sits for five seconds checking the current date for elapsed time, without letting go of the task.
+- That one task is on the call stack spinning, so no function or task proceeds, and clicks get no response.
+- Browsers eventually show that the page is unresponsive, asking to wait or force quit. They use a separate timeout outside the JavaScript runtime, like an operating system interrupt, to ask whether to kill the page.
+
+**File:** `async-demo/script.js` (illustration)
+
+```javascript
+function blockFor(ms) {
+  const start = Date.now();
+  while (Date.now() - start < ms) {}
+}
+const t = Date.now();
+blockFor(5000);
+console.log(Math.round((Date.now() - t) / 1000), "seconds blocked");
+```
+
+**What each part does:** lines 1 to 4 spin until the time has elapsed, and line 7 reports how long the thread was blocked.
+
+**Expected output:**
+
+```text
+5 seconds blocked
+```
+
+> **Added by tutor:** this loop is my illustration of the lecturer's description, not code from the lecture. I ran it in Node (it blocked for 5 seconds).
+
+</TopicSection>
+
+---
+
+<TopicSection id="callbacks" title="9. Callbacks">
+
+<KeyIdea>
+A callback is a function handed to a long-running operation, to be called when it completes.
+</KeyIdea>
+
+- Long-running code that is useful, not an empty loop: for example a machine-learning inference (such as a TensorFlow.js deep neural network) taking a few seconds, which makes the page unresponsive until it finishes.
+- Another common example, a reason JavaScript became popular: update part of a page by fetching information from elsewhere on the internet.
+- Fetch time depends on whether the remote server is up or under load, whether the network is congested, and whether your own machine is fast enough or overloaded.
+- You do not want the browser to hang, so you make an asynchronous request using a callback: give the network request function a function that says, once the request has completed successfully, invoke this other function, call me back.
+- The callback pushes long-running code into a separate task.
+
+</TopicSection>
+
+---
+
+<TopicSection id="threads-and-io" title="10. Threads versus the Event Loop">
+
+<KeyIdea>
+JavaScript is single threaded, but asynchronous input and output let it handle many requests.
+</KeyIdea>
+
+- This is conceptually similar to threads in Java, C or Python: push the long task somewhere that does not block the main flow, and find out when it completes.
+- You can wait for it, or do other work and check back. The callback triggers something to tell the main code the work is done, so it can update the page or do something else.
+- JavaScript does this without being multi-threaded, using the event loop.
+- So input and output in the engine is almost completely asynchronous: reading files, reading from the network and other input or output can be handed to asynchronous calls that eventually trigger callbacks.
+- A single-threaded engine can therefore handle a large number of requests and give the impression of running in parallel: while tasks wait for their results, the engine proceeds and feels fast and responsive.
+
+</TopicSection>
+
+---
+
+<TopicSection id="sync-file-read" title="11. Synchronous File Read in Node.js">
+
+<KeyIdea>
+readFileSync blocks the whole engine until the file is read.
+</KeyIdea>
+
+- Asynchronous code is hard to demonstrate directly; later lectures use it a lot. For now, two examples, used more in node.js, the command-line form of JavaScript, to read from the file system.
+- There is a package called `fs`. The code uses `require`, taken directly from a Node.js example. Ideally you would use `import` instead, but `require` is sometimes needed when libraries are still in the older module format.
+- `fs` has `readFileSync`, which reads a file synchronously. A try and catch is like Python try and except (and the same in C++ and JavaScript): try the read, log the data to the console, and on failure log an error.
+- It blocks, meaning nothing else in the engine proceeds until the file is read. A network file system or a very large file makes this slow, and the system must wait.
+- On a back end this may be acceptable: there is no live interactivity, and the code may not proceed without the file (for example it holds a password or secret).
+
+**File:** `async-demo/script.js`
+
+```javascript
+const fs = require("fs");
+try {
+  const data = fs.readFileSync("example.txt", "utf8");
+  console.log(data);
+} catch (err) {
+  console.error(err);
+}
+```
+
+**What each part does:** line 1 loads the package, lines 2 to 4 read and log the data, and lines 5 to 7 report a failure.
+
+**Expected output:**
+
+```text
+hello from file
+```
+
+[check: the file name and the encoding argument are not stated; I used example.txt (containing the text hello from file) and utf8.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="async-file-read" title="12. Asynchronous File Read with a Callback">
+
+<KeyIdea>
+readFile takes an anonymous callback with error and data parameters, called after the read completes.
+</KeyIdea>
+
+- The asynchronous form from the same module is `readFile`. It is the default form, so its name has no async in it.
+- It reads from the same file name and also takes a callback.
+- The callback is an arrow function with two parameters, error and data, and a block of code in curly brackets. It is an anonymous function used as a callback.
+- Anonymous functions suit this: the function is never called by itself, so there is no need to name it.
+- The callback runs only after the read has finished. The call to `fs.readFile` returns and the code proceeds; when the read completes, the callback runs. On an error it reports the error and returns; otherwise it logs the data.
+- A named function could be given in place of the anonymous one, which also works. The anonymous form is a common JavaScript pattern.
+
+**File:** `async-demo/script.js`
+
+```javascript
+const fs = require("fs");
+fs.readFile("example.txt", "utf8", (err, data) => {
+  if (err) {
+    console.error(err);
+    return;
+  }
+  console.log(data);
+});
+```
+
+**What each part does:** line 2 starts the read and passes the callback, lines 3 to 6 handle an error, and line 7 logs the data.
+
+**Expected output:**
+
+```text
+hello from file
+```
+
+> **Added by tutor:** to see the order, add `console.log("after readFile call");` after the call. It prints before the file contents, because the callback runs later (tested in Node).
+
+</TopicSection>
+
+---
+
+<TopicSection id="summary-promises" title="13. Summary, Promises and async/await">
+
+<KeyIdea>
+JavaScript keeps the interface responsive by pushing long-running work into separate tasks, and promises with async and await make this look like regular code.
+</KeyIdea>
+
+- You will meet asynchronous programming a lot in JavaScript. It takes getting used to.
+- It exists because JavaScript's main purpose is user interaction, so it must not slow down. Anything long-running that might affect the interface should be pushed into a separate task.
+- JavaScript excels at this because the event loop pulls tasks out and puts them back on the call stack when needed. As long as tasks can be pushed into the queue, the event loop runs things cleanly.
+- Newer ECMAScript versions add promises, and with the `async` and `await` keywords asynchronous programs look much like regular ones, though you must still think about which operations are asynchronous.
+- The details of how promises are implemented are beyond the scope of the course; they are explained as needed to understand code.
+
+</TopicSection>

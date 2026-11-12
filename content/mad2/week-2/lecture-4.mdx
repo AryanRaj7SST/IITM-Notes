@@ -1,0 +1,382 @@
+---
+subject: "mad2"
+week: 2
+lecture: "screencast-2.2"
+title: "Screencast 2.2 - JavaScript - GUI Calculator"
+duration: "[check: not stated in transcript]"
+overviewSummary: "Extends the basic calculator into a keypad-style GUI calculator using Bootstrap grid rows of buttons, moves the log to its own row, colours operator buttons, uses the equals button for evaluation, and adds inputNumber and inputOperator functions that append to the expression box, then lists exercises to finish the calculator."
+topics:
+  - id: "goal-and-plan"
+    title: "1. Goal and Plan"
+    keyIdea: "Build a calculator that looks like the operating system's built-in one, finish about 60 percent, and leave the rest as an exercise."
+  - id: "grid-rows"
+    title: "2. Keypad Rows with the Grid"
+    keyIdea: "Each keypad row is a Bootstrap row of four columns holding one button each, under a row with the text box."
+  - id: "log-row"
+    title: "3. Moving the Log to the Last Row"
+    keyIdea: "The log gets its own final row so it appears below the keypad."
+  - id: "labels-and-colours"
+    title: "4. Button Labels and Colours"
+    keyIdea: "Number and operator buttons get their labels, and operator buttons use a different Bootstrap colour class."
+  - id: "equals-button"
+    title: "5. The Equals Button"
+    keyIdea: "Giving the equals button the id calculate reuses the existing click handler, so the Calculate button is no longer needed."
+  - id: "input-number"
+    title: "6. inputNumber"
+    keyIdea: "inputNumber appends a digit to the text box by string concatenation."
+  - id: "input-operator"
+    title: "7. inputOperator"
+    keyIdea: "inputOperator works the same way, appending an operator, so 7, /, 8 and equals give 0.875."
+  - id: "exercises"
+    title: "8. Suggested Improvements (Exercises)"
+    keyIdea: "Add clear and backspace, a decimal point, better layout, centralised listeners, and extra functions such as square and brackets."
+projectTree: |
+  calculator/
+  └── index.html
+codeSnippets:
+  - title: "GUI calculator (about 60 percent complete)"
+    filename: "calculator/index.html"
+    language: "html"
+    tested: true
+    code: |
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <title>Calculator</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/mathjs@12.4.2/lib/browser/math.js"></script>
+      </head>
+      <body onload="initializeApp()">
+        <div class="container">
+          <div class="row">
+            <div class="col">
+              <input type="text" id="expression" placeholder="3 * 5" class="form-control">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col"><button type="button" class="btn btn-primary" onclick="inputNumber('7')">7</button></div>
+            <div class="col"><button type="button" class="btn btn-primary" onclick="inputNumber('8')">8</button></div>
+            <div class="col"><button type="button" class="btn btn-primary" onclick="inputNumber('9')">9</button></div>
+            <div class="col"><button type="button" class="btn btn-warning" onclick="inputOperator('/')">/</button></div>
+          </div>
+          <div class="row">
+            <div class="col"><button type="button" class="btn btn-primary">4</button></div>
+            <div class="col"><button type="button" class="btn btn-primary">5</button></div>
+            <div class="col"><button type="button" class="btn btn-primary">6</button></div>
+            <div class="col"><button type="button" class="btn btn-warning" onclick="inputOperator('*')">x</button></div>
+          </div>
+          <div class="row">
+            <div class="col"><button type="button" class="btn btn-primary">1</button></div>
+            <div class="col"><button type="button" class="btn btn-primary">2</button></div>
+            <div class="col"><button type="button" class="btn btn-primary">3</button></div>
+            <div class="col"><button type="button" class="btn btn-warning">-</button></div>
+          </div>
+          <div class="row">
+            <div class="col"><button type="button" class="btn btn-primary">0</button></div>
+            <div class="col"><button type="button" class="btn btn-primary">.</button></div>
+            <div class="col"><button type="button" id="calculate" class="btn btn-danger">=</button></div>
+            <div class="col"><button type="button" class="btn btn-warning">+</button></div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <h3>Log</h3>
+              <ul id="log"></ul>
+            </div>
+          </div>
+        </div>
+        <script>
+          function mathCalculate() {
+            const expression = document.getElementById("expression").value;
+            if (expression) {
+              try {
+                const answer = math.evaluate(expression);
+                document.getElementById("expression").value = answer;
+                addLog(expression + " = " + answer);
+              } catch (e) {
+                console.log("bad expression");
+                addLog(expression + " is bad, please fix it");
+              }
+            }
+          }
+
+          function addLog(message) {
+            const ul = document.getElementById("log");
+            const li = document.createElement("li");
+            const messageTextNode = document.createTextNode(message);
+            li.appendChild(messageTextNode);
+            ul.appendChild(li);
+          }
+
+          function inputNumber(v) {
+            let expression = document.getElementById("expression").value;
+            expression = expression + v;
+            document.getElementById("expression").value = expression;
+          }
+
+          function inputOperator(o) {
+            let expression = document.getElementById("expression").value;
+            expression = expression + o;
+            document.getElementById("expression").value = expression;
+          }
+
+          function initializeApp() {
+            const calculateButton = document.getElementById("calculate");
+            calculateButton.addEventListener("click", mathCalculate);
+          }
+        </script>
+      </body>
+      </html>
+    explanations:
+      - lines: "12-16"
+        explanation: "The top row holds only the expression text box."
+      - lines: "17-22"
+        explanation: "Row of 7, 8, 9 and divide; number buttons call inputNumber with a string, and the operator calls inputOperator."
+      - lines: "23-28"
+        explanation: "Row of 4, 5, 6 and multiply; only the multiply button is wired in the lecture."
+      - lines: "29-34"
+        explanation: "Row of 1, 2, 3 and minus (no handlers yet)."
+      - lines: "35-40"
+        explanation: "Row of 0, decimal point, equals and plus. The equals button has the id calculate, so the existing listener attaches to it. Operator buttons use btn-warning (yellow)."
+      - lines: "41-46"
+        explanation: "Final row holding the log heading and list."
+      - lines: "49-61"
+        explanation: "mathCalculate evaluates the expression with math.js, logs it, and handles bad input."
+      - lines: "71-75"
+        explanation: "inputNumber reads the box, concatenates the digit v, and writes the result back."
+      - lines: "77-81"
+        explanation: "inputOperator does the same for an operator o."
+      - lines: "83-86"
+        explanation: "initializeApp attaches mathCalculate to the button with id calculate when the body loads."
+    output: |
+      Clicking 7, /, 8 gives 7/8 in the box; clicking = shows 0.875 and logs 7/8 = 0.875. Buttons without handlers (such as 4) do nothing.
+selfTest:
+  - question: "How are the keypad rows built with the Bootstrap grid?"
+    answer: "Each keypad row is a Bootstrap row copied from the earlier one, with four columns holding one button each, below a row that holds the text box."
+    explanation: "The first version was a row with three columns and an input, a button and a log."
+  - question: "Why does the equals button get the id calculate?"
+    answer: "The initialise function already attaches the evaluate function to the element with that id, so the equals button works without new code and the old Calculate button can be removed."
+    explanation: "Typing 4 / 5 and pressing equals worked straight away."
+  - question: "What does inputNumber do, and why are digits passed as strings?"
+    answer: "It reads the current expression from the box, appends v to it, and sets the box back. The expression must be a string for eval and math.js, so the digits are passed as strings."
+    explanation: "Clicking 7 then 8 then 9 gives 789 in the box."
+  - question: "How is inputOperator different from inputNumber?"
+    answer: "It has the same logic but takes an operator o. It is a separate function to keep functions purposeful, and it is attached to operator buttons."
+    explanation: "Pressing 7, divide, 8 then equals gives 0.875."
+  - question: "Name the improvements the presenter leaves as an exercise."
+    answer: "Clear and backspace buttons, handling the decimal point, a better layout (spacing and equal button sizes), attaching listeners in the initialise function instead of on each button, and extras such as square and brackets for operator precedence."
+    explanation: "About 60 percent of the calculator is built; the rest is left to the learner."
+resources:
+  - title: "Bootstrap: Buttons"
+    url: "https://getbootstrap.com/docs/5.3/components/buttons/"
+    type: "Official Reference"
+    description: "Button colour classes such as btn-primary, btn-warning, btn-success and btn-danger."
+    verified: false
+  - title: "Bootstrap: Grid system"
+    url: "https://getbootstrap.com/docs/5.3/layout/grid/"
+    type: "Official Reference"
+    description: "Rows and columns."
+    verified: false
+  - title: "MDN Web Docs: Addition (+)"
+    url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Addition"
+    type: "Official Reference"
+    description: "How plus concatenates when one operand is a string."
+    verified: false
+  - title: "math.js"
+    url: "https://mathjs.org/"
+    type: "Official Reference"
+    description: "The library behind math.evaluate."
+    verified: false
+---
+
+<TopicSection id="goal-and-plan" title="1. Goal and Plan">
+
+<KeyIdea>
+Build a calculator that looks almost like the operating system's built-in one, finish about 60 percent, and leave the rest as an exercise.
+</KeyIdea>
+
+- This continues the previous screencast, using only HTML and JavaScript. The last version was a text box and one button.
+- The target looks like the built-in calculator (the presenter shows the one on Ubuntu), built with Bootstrap grids and then given functionality.
+- Scope: a 4 by 4 keypad with a text box on top. The presenter's left-hand column of the OS calculator is not built.
+- The presenter completes about three fourths (or 60 percent) and leaves about 40 percent to the learner as an exercise.
+
+</TopicSection>
+
+---
+
+<TopicSection id="grid-rows" title="2. Keypad Rows with the Grid">
+
+<KeyIdea>
+Each keypad row is a Bootstrap row of four columns holding one button each, under a row with the text box.
+</KeyIdea>
+
+- The previous grid had one row. The first row is kept and three more rows are added by copying the row structure.
+- In the copies the input and the log are removed; only a button is kept, with no id for now, because the ids are decided later.
+- The extra buttons are removed so that each row has four columns.
+- Rows: 7, 8, 9 and division; 4, 5, 6 and multiplication; 1, 2, 3 and minus; 0, dot, equal and plus. The OS calculator has a percent key, which is replaced here by equal.
+- The result is not exactly like the OS calculator but similar.
+
+**File:** `calculator/index.html` (fragment)
+
+```html
+<div class="row">
+  <div class="col"><button type="button" class="btn btn-primary" onclick="inputNumber('7')">7</button></div>
+  <div class="col"><button type="button" class="btn btn-primary" onclick="inputNumber('8')">8</button></div>
+  <div class="col"><button type="button" class="btn btn-primary" onclick="inputNumber('9')">9</button></div>
+  <div class="col"><button type="button" class="btn btn-warning" onclick="inputOperator('/')">/</button></div>
+</div>
+```
+
+**What each part does:** line 1 is one keypad row, and lines 2 to 5 are its four columns, each with one button.
+
+[check: the structure of the top row is not described; I used one column holding the input.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="log-row" title="3. Moving the Log to the Last Row">
+
+<KeyIdea>
+The log gets its own final row so it appears below the keypad.
+</KeyIdea>
+
+- The log should be at the bottom, not within the first row.
+- Create a final row, give it space, remove everything else, and keep only the log in it.
+- The log is then removed from the first row.
+
+**File:** `calculator/index.html` (fragment)
+
+```html
+<div class="row">
+  <div class="col">
+    <h3>Log</h3>
+    <ul id="log"></ul>
+  </div>
+</div>
+```
+
+**What each part does:** lines 1 to 6 form a row containing only the log heading and list.
+
+</TopicSection>
+
+---
+
+<TopicSection id="labels-and-colours" title="4. Button Labels and Colours">
+
+<KeyIdea>
+Give each button its label and set operator buttons to a different Bootstrap colour class.
+</KeyIdea>
+
+- Buttons are labelled with the digits and operators. For multiplication the presenter says you can also use x.
+- The operator (action) buttons are made yellow using the Bootstrap button colour classes, `btn btn-warning`.
+- Green (`btn-success`) or red were considered; green is the colour to click, and the equals button is made red.
+- Spacing around the buttons is not done for now; the presenter says you can adjust it.
+- The numbers, operations and equals are the three kinds of button.
+
+[check: the labels for divide and multiply (x or star), and the equals colour (green versus red), are unclear in the transcript; I used x and btn-danger.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="equals-button" title="5. The Equals Button">
+
+<KeyIdea>
+Giving the equals button the id calculate reuses the existing click handler.
+</KeyIdea>
+
+- The Calculate button is no longer needed and is removed.
+- The equals button takes the id `calculate`, so the listener attached in `initializeApp` applies to it.
+- Test: typing 4 / 5 and clicking equals works.
+
+**File:** `calculator/index.html` (fragment)
+
+```html
+<div class="col"><button type="button" id="calculate" class="btn btn-danger">=</button></div>
+```
+
+**What each part does:** the id calculate is what `initializeApp` looks up to attach `mathCalculate`.
+
+</TopicSection>
+
+---
+
+<TopicSection id="input-number" title="6. inputNumber">
+
+<KeyIdea>
+inputNumber appends a digit to the text box by string concatenation.
+</KeyIdea>
+
+- Events must be attached to the number buttons so pressing a number adds it to the box.
+- `inputNumber(v)` takes a number v: it reads the current expression, sets it to the expression plus v (plus means concatenation here), and writes it back.
+- Eval and math.js both need the whole expression as a string, so the numbers are sent as strings.
+- After a refresh (the first test failed because the page was not refreshed), clicking 7, 8, 9 gives 789, and clicking multiple times keeps adding digits.
+- The handler is attached to only some buttons here: `onclick` on 7, 8 and 9. The semicolon is optional but the presenter sometimes adds it.
+
+**File:** `calculator/index.html` (fragment)
+
+```javascript
+function inputNumber(v) {
+  let expression = document.getElementById("expression").value;
+  expression = expression + v;
+  document.getElementById("expression").value = expression;
+}
+```
+
+**What each part does:** line 2 reads the box, line 3 appends v, and line 4 writes it back.
+
+> **Added by tutor:** the value of a text box is already a string, so the plus joins text even if a number were passed. In my tested file, buttons with no handler (such as 4) do nothing, because the lecture wires only some buttons.
+
+</TopicSection>
+
+---
+
+<TopicSection id="input-operator" title="7. inputOperator">
+
+<KeyIdea>
+inputOperator works like inputNumber but appends an operator.
+</KeyIdea>
+
+- A similar function takes the operator as o and appends it to the expression.
+- It is attached as `onclick` on the division button, and similarly on multiplication.
+- Test: 7, divide, 8, equals gives 0.875.
+- This is a next-level calculator; there are ways to optimise it.
+
+**File:** `calculator/index.html` (fragment)
+
+```javascript
+function inputOperator(o) {
+  let expression = document.getElementById("expression").value;
+  expression = expression + o;
+  document.getElementById("expression").value = expression;
+}
+```
+
+**What each part does:** it has the same three steps as `inputNumber`, with o in place of v.
+
+**Expected output:** clicking 7, /, 8 then = shows 0.875 (tested in jsdom with math.js).
+
+[untested: Bootstrap styling and CDN loading in a real browser.]
+
+</TopicSection>
+
+---
+
+<TopicSection id="exercises" title="8. Suggested Improvements (Exercises)">
+
+<KeyIdea>
+The presenter leaves clear, backspace, decimal point, layout, listener cleanup and extra functions to the learner.
+</KeyIdea>
+
+- Add a clear button (make it large) and a backspace button; also cancel. An extra row can be added for these.
+- Handle the dot, the decimal point, which is not handled.
+- Make it look better: bring the size of the container back to normal, give space between rows, and make all buttons the same size by adding spaces and similar styling.
+- Optimise the listeners: attaching one to each button is too much work, so initialise them all inside `initializeApp`. The current approach also works.
+- Add more functions such as square, and especially brackets, because operation precedence matters.
+- Experiment and build on what was done.
+
+[check: the presenter's phrase about bringing the size of the dome back to this is unclear; I read it as restoring the container width.]
+
+</TopicSection>

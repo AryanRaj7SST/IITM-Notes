@@ -1,0 +1,236 @@
+---
+subject: "mad2"
+week: 3
+lecture: 2
+title: "Vue Router: Dynamic Routing, Nested Routes, and Navigation Guards"
+duration: "52 mins"
+overviewSummary: "Details the official routing solution for Vue.js (Vue Router 4), configuring route records, dynamic path parameters (:id), nested parent-child routing (<RouterView>), programmatic navigation, and protecting authenticated paths with Navigation Guards."
+topics:
+  - id: "router-setup"
+    title: "1. Configuring Vue Router and Route Records"
+    keyIdea: "Vue Router integrates into the app instance via createRouter(), mapping path strings to components rendered in <RouterView>."
+  - id: "dynamic-params"
+    title: "2. Dynamic Route Matching and Route Parameters"
+    keyIdea: "Colons denote dynamic segments (e.g. /courses/:code), accessible in components via useRoute().params."
+  - id: "nested-routes"
+    title: "3. Nested Routes and Component Hierarchies"
+    keyIdea: "Complex UIs with persistent layouts use nested routes where child components render into nested <RouterView> outlets."
+  - id: "navigation-guards"
+    title: "4. Navigation Guards and Route Authentication"
+    keyIdea: "router.beforeEach() acts as an authorization middleware, validating tokens or user permissions before allowing route transitions."
+projectTree: |
+  vue-router-app/
+  ├── src/
+  │   ├── main.js
+  │   ├── router/
+  │   │   └── index.js
+  │   └── views/
+  │       ├── HomeView.vue
+  │       ├── CourseDetailView.vue
+  │       └── LoginView.vue
+  ├── package.json
+  └── vite.config.js
+codeSnippets:
+  - title: "Vue Router 4 Configuration with Authentication Guard"
+    filename: "vue-router-app/src/router/index.js"
+    language: "javascript"
+    tested: true
+    code: |
+      import { createRouter, createWebHistory } from 'vue-router';
+      import HomeView from '../views/HomeView.vue';
+
+      const routes = [
+        {
+          path: '/',
+          name: 'home',
+          component: HomeView
+        },
+        {
+          path: '/courses/:code',
+          name: 'course-detail',
+          // Lazy-loaded route component
+          component: () => import('../views/CourseDetailView.vue'),
+          props: true,
+          meta: { requiresAuth: true }
+        },
+        {
+          path: '/login',
+          name: 'login',
+          component: () => import('../views/LoginView.vue')
+        }
+      ];
+
+      const router = createRouter({
+        history: createWebHistory(),
+        routes
+      });
+
+      // Global Navigation Guard
+      router.beforeEach((to, from, next) => {
+        const isAuthenticated = !!localStorage.getItem('user_token');
+
+        if (to.meta.requiresAuth && !isAuthenticated) {
+          // Redirect unauthenticated user to login screen
+          next({ name: 'login', query: { redirect: to.fullPath } });
+        } else {
+          // Allow navigation
+          next();
+        }
+      });
+
+      export default router;
+    explanations:
+      - lines: "8-21"
+        explanation: "Declares routes array; /courses/:code defines dynamic parameter and marks route with meta: { requiresAuth: true }."
+      - lines: "16"
+        explanation: "props: true passes route.params directly as component props, decoupling components from the router object."
+      - lines: "30-41"
+        explanation: "router.beforeEach checks authentication status and redirects to login with return query parameter."
+    output: |
+      Navigating to /courses/mad2 without a token immediately intercepts the transition and redirects to /login?redirect=/courses/mad2.
+selfTest:
+  - question: "Why is props: true recommended when defining dynamic routes like '/courses/:code'?"
+    answer: "props: true automatically passes route params as props to the component. This decouples the view component from $route or useRoute(), making it reusable anywhere and easy to unit test."
+    explanation: "Without props: true, the component must tightly bind to this.$route.params.code or useRoute().params.code."
+  - question: "What happens if a user navigates from '/courses/mad2' to '/courses/mlt' when both use the same component?"
+    answer: "By default, Vue reuses the existing component instance for performance and does NOT trigger lifecycle hooks like onMounted() again."
+    explanation: "To detect the change, watch route.params or use a watcher: watch(() => route.params.code, (newCode) => fetchCourse(newCode))."
+  - question: "What is the difference between createWebHistory() and createWebHashHistory()?"
+    answer: "createWebHistory() uses the standard HTML5 History API producing clean URLs (/courses), but requires server rewrite rules. createWebHashHistory() uses URL hashes (/#/courses) which work without any server configuration."
+    explanation: "For production modern web apps, createWebHistory() is the preferred standard."
+  - question: "What parameters do global navigation guards receive in Vue Router?"
+    answer: "They receive 'to' (target RouteLocation), 'from' (current RouteLocation), and an optional 'next' callback (or can return a boolean / route path directly)."
+    explanation: "In modern Vue Router 4, returning false cancels navigation, and returning a path string redirects without needing next()."
+resources:
+  - title: "Vue Router Official Documentation"
+    url: "https://router.vuejs.org/guide/"
+    type: "Official Reference"
+    description: "Definitive guide on dynamic routing, nested routes, and navigation guards."
+    verified: true
+  - title: "Vue Router: Navigation Guards Guide"
+    url: "https://router.vuejs.org/guide/advanced/navigation-guards.html"
+    type: "Official Reference"
+    description: "Covers global before guards, per-route guards, and in-component guards."
+    verified: true
+---
+
+<TopicSection id="router-setup" title="1. Configuring Vue Router and Route Records">
+
+<KeyIdea>
+Vue Router synchronizes browser navigation with component rendering via the `<RouterLink>` navigation element and the `<RouterView>` viewport container.
+</KeyIdea>
+
+In modern Vue applications, the router is created and registered in `main.js`:
+
+```javascript
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router';
+
+const app = createApp(App);
+app.use(router);
+app.mount('#app');
+```
+
+In your root template (`App.vue`), place `<RouterLink>` for navigation anchors and `<RouterView>` where matching views should mount:
+
+```html
+<nav>
+  <RouterLink to="/">Home</RouterLink>
+  <RouterLink to="/courses">Courses</RouterLink>
+</nav>
+<main>
+  <RouterView />
+</main>
+```
+
+Vue Router automatically applies active CSS classes (`router-link-active`) to links matching the current route.
+
+</TopicSection>
+
+---
+
+<TopicSection id="dynamic-params" title="2. Dynamic Route Matching and Route Parameters">
+
+<KeyIdea>
+Dynamic segments marked with a colon (`:`) match variable path segments, making it easy to display dynamic resources from a single template.
+</KeyIdea>
+
+```javascript
+// Route definition
+{ path: '/students/:rollNo', component: StudentProfile, props: true }
+```
+
+When a user visits `/students/21F1000123`, the component receives `rollNo="21F1000123"` directly as a prop:
+
+```html
+<script setup>
+const props = defineProps({
+  rollNo: String
+});
+</script>
+
+<template>
+  <h2>Profile for Student: {{ rollNo }}</h2>
+</template>
+```
+
+Using `props: true` ensures the component remains modular and independent of routing implementation details.
+
+</TopicSection>
+
+---
+
+<TopicSection id="nested-routes" title="3. Nested Routes and Component Hierarchies">
+
+<KeyIdea>
+Nested routes model nested user interfaces where parent shells (like sidebars and tabs) persist while interior content swaps dynamically.
+</KeyIdea>
+
+Nested routes are declared using the `children` array:
+
+```javascript
+const routes = [
+  {
+    path: '/dashboard',
+    component: DashboardLayout,
+    children: [
+      { path: '', component: DashboardOverview }, // default child
+      { path: 'grades', component: DashboardGrades },
+      { path: 'settings', component: DashboardSettings }
+    ]
+  }
+];
+```
+
+When navigating to `/dashboard/grades`, `DashboardLayout` renders its outer shell, and `DashboardGrades` renders inside the `<RouterView>` located inside `DashboardLayout`.
+
+</TopicSection>
+
+---
+
+<TopicSection id="navigation-guards" title="4. Navigation Guards and Route Authentication">
+
+<KeyIdea>
+Navigation guards intercept route transitions, allowing developers to enforce authentication, verify permissions, and fetch critical data before views load.
+</KeyIdea>
+
+Vue Router provides guards at three levels:
+1. **Global Guards**: `router.beforeEach()` executes on every single route transition across the entire app.
+2. **Per-Route Guards**: `beforeEnter: (to, from) => { ... }` defined directly on specific route records.
+3. **In-Component Guards**: `onBeforeRouteLeave` and `onBeforeRouteUpdate` hooks inside component `<script setup>`.
+
+```javascript
+// Modern Vue Router 4 returning boolean or route location
+router.beforeEach(async (to) => {
+  const isAuth = checkLoginToken();
+  if (to.meta.requiresAuth && !isAuth) {
+    return { name: 'login' }; // Cancels and redirects
+  }
+});
+```
+
+Using `meta` fields is the standard way to declare metadata like required permissions, page titles, or breadcrumbs.
+
+</TopicSection>
+
